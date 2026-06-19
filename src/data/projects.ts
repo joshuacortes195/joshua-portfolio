@@ -1,10 +1,10 @@
 export type Project = {
   title: string
   role: string
-  icon: string        // an emoji, e.g. "📖"
-  iconBg: string      // tailwind bg color class, e.g. "bg-purple-500"
+  icon: string
+  iconBg: string
   tags: string[]
-  link: string        // where "Try it out" goes
+  link: string
 }
 
 export const projects: Project[] = [
