@@ -2,22 +2,100 @@ import { useState, useEffect } from 'react'
 import { projects } from './data/projects'
 import { education, work, type TimelineEntry } from './data/experience'
 
-type Tab = 'about' | 'projects' | 'experience' | 'gallery' | 'contact'
+type Tab =
+  | 'about'
+  | 'photography'
+  | 'anime'
+  | 'video-games'
+  | 'projects'
+  | 'education'
+  | 'experience'
+  | 'contact'
+
+const ABOUT_GROUP = new Set<Tab>(['about', 'photography', 'anime', 'video-games'])
+
+const ABOUT_SUBS: { id: Tab; label: string }[] = [
+  { id: 'photography', label: 'photography/' },
+  { id: 'anime',       label: 'anime/'        },
+  { id: 'video-games', label: 'video-games/'  },
+]
 
 const NAV: { id: Tab; label: string }[] = [
   { id: 'about',      label: 'about.txt'   },
   { id: 'projects',   label: 'projects/'   },
+  { id: 'education',  label: 'education/'  },
   { id: 'experience', label: 'experience/' },
-  { id: 'gallery',    label: 'gallery/'    },
   { id: 'contact',    label: 'contact.sh'  },
 ]
 
-const ASCII_JOS = `     ██╗  ██████╗  ███████╗
-     ██║ ██╔═══██╗ ██╔════╝
-     ██║ ██║   ██║ ███████╗
-██   ██║ ██║   ██║ ╚════██║
-╚█████╔╝ ╚██████╔╝ ███████║
- ╚════╝   ╚═════╝  ╚══════╝`
+// ─── Animated side art: scrolling wave + dog ─────────────────────────────────
+
+// Left panel: alternating wave styles
+const WAVE_TILE_L = [
+  '        ',
+  '  ≈≈≈≈  ',
+  ' ≈    ≈ ',
+  '≈  ~~  ≈',
+  ' ≈    ≈ ',
+  '  ≈≈≈≈  ',
+  '        ',
+  '  ~~~~  ',
+  ' ~    ~ ',
+  '~  ≈≈  ~',
+  ' ~    ~ ',
+  '  ~~~~  ',
+]
+
+// Right panel: waves + a cute little dog
+const WAVE_TILE_R = [
+  '        ',
+  '  ~~~~  ',
+  ' ~    ~ ',
+  '~  ≈≈  ~',
+  ' ~    ~ ',
+  '  ~~~~  ',
+  '        ',
+  '  /V\\   ',  // dog ears
+  ' (o.o)  ',  // dog eyes
+  ' ( u )  ',  // dog snout
+  ' -===-  ',  // dog body
+  '        ',
+]
+
+function WaveSidePanel({ side }: { side: 'left' | 'right' }) {
+  const TILE = side === 'left' ? WAVE_TILE_L : WAVE_TILE_R
+  // 10 repetitions → scroll -50% = 5 tile lengths, seamless loop
+  const rows = Array.from({ length: 10 }, () => TILE).flat()
+  const speed = side === 'left' ? '16s' : '22s'
+  const mask = side === 'left'
+    ? 'linear-gradient(to right, transparent 0%, black 70%)'
+    : 'linear-gradient(to left, transparent 0%, black 70%)'
+
+  return (
+    <div
+      className="shrink-0 overflow-hidden select-none pointer-events-none"
+      style={{ width: '56px', maskImage: mask, WebkitMaskImage: mask }}
+    >
+      <div style={{ animation: `wave-scroll ${speed} linear infinite` }}>
+        {rows.map((row, i) => (
+          <span
+            key={i}
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '10px',
+              lineHeight: '1.5',
+              color: '#3a4a2e',
+              display: 'block',
+              whiteSpace: 'pre',
+            }}
+          >
+            {row}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 // ─── Shared: typing command prompt ───────────────────────────────────────────
 
@@ -45,31 +123,6 @@ function TypedPrompt({ command }: { command: string }) {
   )
 }
 
-// ─── Shared: expandable disclosure ───────────────────────────────────────────
-
-function Disclosure({ label, children }: { label: string; children: React.ReactNode }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <div>
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-2 text-sm w-full text-left transition-colors py-1"
-        style={{ color: open ? '#f5cc60' : '#7a8560', fontFamily: "'JetBrains Mono', monospace" }}
-        onMouseEnter={e => { if (!open) (e.currentTarget as HTMLElement).style.color = '#e8b84b' }}
-        onMouseLeave={e => { if (!open) (e.currentTarget as HTMLElement).style.color = '#7a8560' }}
-      >
-        <span>{open ? '▾' : '▸'}</span>
-        <span>{label}</span>
-      </button>
-      {open && (
-        <div className="mt-3 pl-5" style={{ borderLeft: '1px solid #2a2c24' }}>
-          {children}
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ─── Panel: About ────────────────────────────────────────────────────────────
 
 function AboutPanel() {
@@ -77,21 +130,52 @@ function AboutPanel() {
     <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
       <TypedPrompt command="cat about.txt" />
 
-      <pre
-        className="text-xs leading-snug mb-6 select-none overflow-x-auto"
-        style={{ color: '#f5cc60', fontFamily: "'JetBrains Mono', monospace" }}
-      >
-        {ASCII_JOS}
-      </pre>
+      {/* Name — Joshua Cortes with J and C as prominent capitals */}
+      <div className="mb-5 select-none">
+        <p
+          style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '30px',
+            letterSpacing: '0.06em',
+            lineHeight: '1.15',
+            color: '#c8a040',
+          }}
+        >
+          <span style={{ color: '#f5cc60' }}>J</span>oshua{' '}
+          <span style={{ color: '#f5cc60' }}>C</span>ortes
+        </p>
+      </div>
 
       <div className="mb-6">
-        <p className="font-bold" style={{ color: '#f5cc60' }}>Joshua Cortes</p>
-        <p className="text-sm mt-0.5" style={{ color: '#c8a040' }}>
+        <p className="text-sm" style={{ color: '#c8a040' }}>
           Full-Stack Developer / Software Engineer
         </p>
-        <p className="text-xs mt-1" style={{ color: '#7a8560' }}>
-          CS @ California Baptist University &nbsp;·&nbsp; ML &amp; AI Concentration
-        </p>
+        <div className="flex items-center gap-3 mt-3 flex-wrap">
+          <a
+            href="/Joshua_Cortes_Resume.pdf"
+            download="Joshua_Cortes_Resume.pdf"
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded transition-colors"
+            style={{
+              background: '#161810',
+              border: '1px solid #2a2c24',
+              color: '#7a8560',
+              fontFamily: "'JetBrains Mono', monospace",
+              textDecoration: 'none',
+            }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#e8b84b')}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = '#7a8560')}
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            $ resume.pdf
+          </a>
+          <span className="text-xs" style={{ color: '#4a5038' }}>
+            ← click to download my resume!
+          </span>
+        </div>
       </div>
 
       <div style={{ borderTop: '1px solid #2a2c24' }} />
@@ -118,41 +202,61 @@ function AboutPanel() {
           been getting me into pickleball too.
         </p>
       </div>
+    </div>
+  )
+}
 
-      <div className="mt-8 space-y-3">
-        <Disclosure label="photography &amp; videography">
-          <div className="grid grid-cols-3 gap-2 mb-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="aspect-square rounded flex items-center justify-center text-xs"
-                style={{ background: '#161810', border: '1px solid #2a2c24', color: '#4a5038' }}
-              >
-                [ photo ]
-              </div>
-            ))}
-          </div>
-          <p className="text-xs" style={{ color: '#4a5038' }}>— photos &amp; videos coming soon</p>
-        </Disclosure>
+// ─── Panel: Photography & Videography ────────────────────────────────────────
 
-        <Disclosure label="anime">
-          <ul className="space-y-1.5 text-sm" style={{ color: '#c8a040' }}>
-            {[
-              'Attack on Titan',
-              'Fullmetal Alchemist: Brotherhood',
-              'Demon Slayer',
-              'Jujutsu Kaisen',
-              'Vinland Saga',
-            ].map(title => (
-              <li key={title} className="flex items-center gap-2">
-                <span style={{ color: '#4a5038' }}>·</span>
-                {title}
-              </li>
-            ))}
-            <li className="text-xs mt-2" style={{ color: '#4a5038' }}>— more coming soon</li>
-          </ul>
-        </Disclosure>
-      </div>
+function PhotographyPanel() {
+  return (
+    <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
+      <TypedPrompt command="ls photography/" />
+      <p className="text-sm" style={{ color: '#7a8560' }}>
+        [ photos &amp; videos — coming soon ]
+      </p>
+      <span className="mt-2 inline-block animate-pulse" style={{ color: '#e8b84b' }}>█</span>
+    </div>
+  )
+}
+
+// ─── Panel: Anime ────────────────────────────────────────────────────────────
+
+const ANIME_LIST = [
+  'Attack on Titan',
+  'Fullmetal Alchemist: Brotherhood',
+  'Demon Slayer',
+  'Jujutsu Kaisen',
+  'Vinland Saga',
+]
+
+function AnimePanel() {
+  return (
+    <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
+      <TypedPrompt command="cat anime/watchlist.txt" />
+      <p className="text-xs font-bold tracking-widest mb-4" style={{ color: '#c8a040' }}>ANIME</p>
+      <ul className="space-y-1.5 text-sm" style={{ color: '#c8a040' }}>
+        {ANIME_LIST.map(title => (
+          <li key={title} className="flex items-center gap-2">
+            <span style={{ color: '#4a5038' }}>·</span>
+            {title}
+          </li>
+        ))}
+        <li className="text-xs mt-2" style={{ color: '#4a5038' }}>— more coming soon</li>
+      </ul>
+    </div>
+  )
+}
+
+// ─── Panel: Video Games ──────────────────────────────────────────────────────
+
+function VideoGamesPanel() {
+  return (
+    <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
+      <TypedPrompt command="cat video-games/library.txt" />
+      <p className="text-xs font-bold tracking-widest mb-4" style={{ color: '#c8a040' }}>VIDEO GAMES</p>
+      <p className="text-sm" style={{ color: '#7a8560' }}>[ library — coming soon ]</p>
+      <span className="mt-2 inline-block animate-pulse" style={{ color: '#e8b84b' }}>█</span>
     </div>
   )
 }
@@ -160,42 +264,18 @@ function AboutPanel() {
 // ─── Panel: Projects ─────────────────────────────────────────────────────────
 
 function ProjectsPanel() {
-  const [filter, setFilter] = useState<'software' | 'photography'>('software')
-  const filtered = projects.filter(p => p.category === filter)
-
   return (
     <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
       <TypedPrompt command="ls -la projects/" />
 
-      <div className="flex gap-2 mb-6">
-        {(['software', 'photography'] as const).map(cat => {
-          const active = filter === cat
-          return (
-            <button
-              key={cat}
-              onClick={() => setFilter(cat)}
-              className="px-3 py-1 text-xs rounded transition-colors"
-              style={{
-                background: active ? '#1e2118' : '#161810',
-                border: `1px solid ${active ? '#e8b84b' : '#2a2c24'}`,
-                color: active ? '#f5cc60' : '#7a8560',
-                fontFamily: "'JetBrains Mono', monospace",
-              }}
-            >
-              {active ? '▸ ' : ''}{cat}
-            </button>
-          )
-        })}
-      </div>
-
-      {filtered.length === 0 ? (
+      {projects.length === 0 ? (
         <div>
           <p className="text-sm" style={{ color: '#7a8560' }}>[ no entries — coming soon ]</p>
           <span className="mt-2 inline-block animate-pulse" style={{ color: '#e8b84b' }}>█</span>
         </div>
       ) : (
         <div className="space-y-4">
-          {filtered.map((project, i) => (
+          {projects.map((project, i) => (
             <div
               key={project.title}
               className="rounded p-5"
@@ -223,13 +303,29 @@ function ProjectsPanel() {
                 href={project.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-2 text-xs transition-colors"
-                style={{ color: '#7a8560', fontFamily: "'JetBrains Mono', monospace" }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#e8b84b')}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = '#7a8560')}
+                className="mt-4 inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded transition-colors"
+                style={{
+                  background: '#1a1c16',
+                  border: '1px solid #3a3f28',
+                  color: '#7a8560',
+                  fontFamily: "'JetBrains Mono', monospace",
+                  textDecoration: 'none',
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.color = '#f5cc60'
+                  el.style.borderColor = '#e8b84b'
+                  el.style.background = '#1e2118'
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.color = '#7a8560'
+                  el.style.borderColor = '#3a3f28'
+                  el.style.background = '#1a1c16'
+                }}
               >
-                <span>$ open</span>
-                <span style={{ color: '#c8a040' }}>{project.link}</span>
+                <span>▸</span>
+                <span>try it out</span>
                 <span>→</span>
               </a>
             </div>
@@ -240,7 +336,7 @@ function ProjectsPanel() {
   )
 }
 
-// ─── Panel: Experience ───────────────────────────────────────────────────────
+// ─── Shared: timeline entry list ─────────────────────────────────────────────
 
 function EntryList({ entries }: { entries: TimelineEntry[] }) {
   return (
@@ -261,32 +357,26 @@ function EntryList({ entries }: { entries: TimelineEntry[] }) {
   )
 }
 
-function ExperiencePanel() {
+// ─── Panel: Education ────────────────────────────────────────────────────────
+
+function EducationPanel() {
   return (
     <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
-      <TypedPrompt command="cat experience/index" />
-
+      <TypedPrompt command="cat education/index" />
       <p className="text-xs font-bold tracking-widest mb-4" style={{ color: '#c8a040' }}>EDUCATION</p>
       <EntryList entries={education} />
-
-      <div className="my-8" style={{ borderTop: '1px solid #2a2c24' }} />
-
-      <p className="text-xs font-bold tracking-widest mb-4" style={{ color: '#c8a040' }}>WORK EXPERIENCE</p>
-      <EntryList entries={work} />
     </div>
   )
 }
 
-// ─── Panel: Gallery ──────────────────────────────────────────────────────────
+// ─── Panel: Experience ───────────────────────────────────────────────────────
 
-function GalleryPanel() {
+function ExperiencePanel() {
   return (
     <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
-      <TypedPrompt command="ls gallery/" />
-      <p className="text-sm" style={{ color: '#7a8560' }}>
-        [ photos &amp; videos — coming soon ]
-      </p>
-      <span className="mt-2 inline-block animate-pulse" style={{ color: '#e8b84b' }}>█</span>
+      <TypedPrompt command="cat experience/index" />
+      <p className="text-xs font-bold tracking-widest mb-4" style={{ color: '#c8a040' }}>WORK EXPERIENCE</p>
+      <EntryList entries={work} />
     </div>
   )
 }
@@ -476,11 +566,14 @@ function ContactPanel() {
 
 function TabContent({ tab }: { tab: Tab }) {
   switch (tab) {
-    case 'about':      return <AboutPanel />
-    case 'projects':   return <ProjectsPanel />
-    case 'experience': return <ExperiencePanel />
-    case 'gallery':    return <GalleryPanel />
-    case 'contact':    return <ContactPanel />
+    case 'about':        return <AboutPanel />
+    case 'photography':  return <PhotographyPanel />
+    case 'anime':        return <AnimePanel />
+    case 'video-games':  return <VideoGamesPanel />
+    case 'projects':     return <ProjectsPanel />
+    case 'education':    return <EducationPanel />
+    case 'experience':   return <ExperiencePanel />
+    case 'contact':      return <ContactPanel />
   }
 }
 
@@ -488,12 +581,10 @@ function TabContent({ tab }: { tab: Tab }) {
 
 export default function App() {
   const [active, setActive] = useState<Tab>('about')
+  const inAboutGroup = ABOUT_GROUP.has(active)
 
   return (
-    // Outer "desktop" — very dark background that peeks through the bezel gap
     <div className="h-full flex p-3" style={{ background: '#090a07' }}>
-
-      {/* Terminal window with old-school CRT border */}
       <div
         className="flex-1 flex flex-col overflow-hidden"
         style={{
@@ -534,50 +625,105 @@ export default function App() {
             className="w-52 shrink-0 flex flex-col overflow-y-auto"
             style={{ borderRight: '1px solid #2a2c24' }}
           >
-            <p className="px-4 pt-4 pb-2 text-xs" style={{ color: '#4a4f3a' }}>~/portfolio</p>
+            {/* Name at top of file explorer */}
+            <div className="px-4 pt-4 pb-2">
+              <p className="text-sm font-bold" style={{ color: '#f5cc60' }}>Joshua Cortes</p>
+              <div className="mt-1.5" style={{ borderBottom: '1px solid #2a2c24' }} />
+            </div>
+
+            <p className="px-4 pt-2 pb-1 text-xs" style={{ color: '#4a4f3a' }}>~/portfolio</p>
+
             <nav className="flex-1">
               {NAV.map((item, i) => {
                 const isLast = i === NAV.length - 1
                 const prefix = isLast ? '└── ' : '├── '
+                const isAboutItem = item.id === 'about'
                 const isActive = active === item.id
+                const isGroupActive = isAboutItem && inAboutGroup
+
                 return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActive(item.id)}
-                    className="w-full text-left px-4 py-1.5 text-sm transition-colors"
-                    style={{
-                      color: isActive ? '#f5cc60' : '#7a8560',
-                      background: isActive ? '#1e2118' : 'transparent',
-                      fontFamily: "'JetBrains Mono', monospace",
-                    }}
-                    onMouseEnter={e => {
-                      if (!isActive) {
-                        (e.currentTarget as HTMLButtonElement).style.color = '#e8b84b'
-                        ;(e.currentTarget as HTMLButtonElement).style.background = '#191b17'
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (!isActive) {
-                        (e.currentTarget as HTMLButtonElement).style.color = '#7a8560'
-                        ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                      }
-                    }}
-                  >
-                    <span style={{ color: '#2e3228' }}>{prefix}</span>
-                    {item.label}
-                  </button>
+                  <div key={item.id}>
+                    <button
+                      onClick={() => setActive(item.id)}
+                      className="w-full text-left px-4 py-1.5 text-sm transition-colors"
+                      style={{
+                        color: isActive || isGroupActive ? '#f5cc60' : '#7a8560',
+                        background: isActive ? '#1e2118' : 'transparent',
+                        fontFamily: "'JetBrains Mono', monospace",
+                      }}
+                      onMouseEnter={e => {
+                        if (!isActive) {
+                          (e.currentTarget as HTMLButtonElement).style.color = '#e8b84b'
+                          ;(e.currentTarget as HTMLButtonElement).style.background = '#191b17'
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (!isActive) {
+                          (e.currentTarget as HTMLButtonElement).style.color =
+                            isGroupActive ? '#f5cc60' : '#7a8560'
+                          ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                        }
+                      }}
+                    >
+                      <span style={{ color: '#2e3228' }}>{prefix}</span>
+                      {item.label}
+                    </button>
+
+                    {/* Sub-items under about.txt */}
+                    {isAboutItem && inAboutGroup && (
+                      <div>
+                        {ABOUT_SUBS.map((sub, si) => {
+                          const isSubLast = si === ABOUT_SUBS.length - 1
+                          const subPrefix = isSubLast ? '    └── ' : '    ├── '
+                          const isSubActive = active === sub.id
+                          return (
+                            <button
+                              key={sub.id}
+                              onClick={() => setActive(sub.id)}
+                              className="w-full text-left px-4 py-1 text-xs transition-colors"
+                              style={{
+                                color: isSubActive ? '#f5cc60' : '#4a5038',
+                                background: isSubActive ? '#1a1c18' : 'transparent',
+                                fontFamily: "'JetBrains Mono', monospace",
+                              }}
+                              onMouseEnter={e => {
+                                if (!isSubActive) {
+                                  (e.currentTarget as HTMLButtonElement).style.color = '#c8a040'
+                                  ;(e.currentTarget as HTMLButtonElement).style.background = '#181a16'
+                                }
+                              }}
+                              onMouseLeave={e => {
+                                if (!isSubActive) {
+                                  (e.currentTarget as HTMLButtonElement).style.color = '#4a5038'
+                                  ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
+                                }
+                              }}
+                            >
+                              <span style={{ color: '#1e2118' }}>{subPrefix}</span>
+                              {sub.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
                 )
               })}
             </nav>
+
             <div className="px-4 py-3 text-xs" style={{ color: '#3a3f2e' }}>
               <span style={{ color: '#7a8560' }}>$</span>
               <span className="ml-1 animate-pulse">█</span>
             </div>
           </div>
 
-          {/* Content panel */}
-          <div className="flex-1 overflow-y-auto">
-            <TabContent tab={active} />
+          {/* Content panel with scrolling wave art on sides */}
+          <div className="flex-1 overflow-hidden flex">
+            <WaveSidePanel side="left" />
+            <div className="flex-1 overflow-y-auto">
+              <TabContent tab={active} />
+            </div>
+            <WaveSidePanel side="right" />
           </div>
 
         </div>
