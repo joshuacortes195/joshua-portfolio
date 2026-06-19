@@ -1,10 +1,11 @@
 export type Project = {
   title: string
   role: string
-  icon: string        // an emoji, e.g. "📖"
-  iconBg: string      // tailwind bg color class, e.g. "bg-purple-500"
+  icon: string
+  iconBg: string
   tags: string[]
-  link: string        // where "Try it out" goes
+  link: string
+  category: 'software' | 'photography'
 }
 
 export const projects: Project[] = [
@@ -15,6 +16,7 @@ export const projects: Project[] = [
     iconBg: 'bg-neutral-800',
     tags: ['Java', 'OOP', 'Game Development'],
     link: 'https://asteroid-game01.netlify.app/',
+    category: 'software',
   },
   {
     title: 'Bible App',
@@ -23,6 +25,7 @@ export const projects: Project[] = [
     iconBg: 'bg-purple-500',
     tags: ['React', 'TypeScript', 'Tailwind CSS'],
     link: 'https://bibleapp.lovable.app/',
+    category: 'software',
   },
   {
     title: 'Wordle Game Clone',
@@ -31,5 +34,6 @@ export const projects: Project[] = [
     iconBg: 'bg-neutral-800',
     tags: ['JavaScript', 'HTML', 'CSS'],
     link: 'https://wordle-clone.lovable.app/',
+    category: 'software',
   },
 ]
