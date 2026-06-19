@@ -1,5 +1,57 @@
 @import "tailwindcss";
 
-html {
-  scroll-behavior: smooth;
+@theme {
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+  background: #090a07;
+}
+
+/* Subtle scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.04) 3px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0d0f0c; }
+::-webkit-scrollbar-thumb { background: #2e3028; border-radius: 2px; }
+
+.terminal-input {
+  width: 100%;
+  background: #0d0f0c;
+  border: 1px solid #2a2c24;
+  color: #e8b84b;
+  outline: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  transition: border-color 0.15s;
+}
+
+.terminal-input:focus {
+  border-color: #e8b84b;
+}
+
+.terminal-input::placeholder {
+  color: #3a3f2e;
+}
+
+@keyframes wave-scroll {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
 }
