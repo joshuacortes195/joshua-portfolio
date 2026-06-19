@@ -50,3 +50,8 @@ body::after {
 .terminal-input::placeholder {
   color: #3a3f2e;
 }
+
+@keyframes wave-scroll {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
