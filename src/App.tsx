@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { projects } from './data/projects'
 import { education, work, type TimelineEntry } from './data/experience'
+
+// ── Types & constants ────────────────────────────────────────────────────────
 
 type Tab =
   | 'about'
@@ -15,172 +17,104 @@ type Tab =
 const ABOUT_GROUP = new Set<Tab>(['about', 'photography', 'anime', 'video-games'])
 
 const ABOUT_SUBS: { id: Tab; label: string }[] = [
-  { id: 'photography', label: 'photography/' },
-  { id: 'anime',       label: 'anime/'        },
-  { id: 'video-games', label: 'video-games/'  },
+  { id: 'photography', label: 'Photography' },
+  { id: 'anime',       label: 'Anime'       },
+  { id: 'video-games', label: 'Video Games' },
 ]
 
 const NAV: { id: Tab; label: string }[] = [
-  { id: 'about',      label: 'about.txt'   },
-  { id: 'projects',   label: 'projects/'   },
-  { id: 'education',  label: 'education/'  },
-  { id: 'experience', label: 'experience/' },
-  { id: 'contact',    label: 'contact.sh'  },
+  { id: 'about',      label: 'About'      },
+  { id: 'projects',   label: 'Projects'   },
+  { id: 'education',  label: 'Education'  },
+  { id: 'experience', label: 'Experience' },
+  { id: 'contact',    label: 'Contact'    },
 ]
 
-// ─── Animated side art: scrolling wave + dog ─────────────────────────────────
+// ── Shared primitives ────────────────────────────────────────────────────────
 
-// Left panel: alternating wave styles
-const WAVE_TILE_L = [
-  '        ',
-  '  ≈≈≈≈  ',
-  ' ≈    ≈ ',
-  '≈  ~~  ≈',
-  ' ≈    ≈ ',
-  '  ≈≈≈≈  ',
-  '        ',
-  '  ~~~~  ',
-  ' ~    ~ ',
-  '~  ≈≈  ~',
-  ' ~    ~ ',
-  '  ~~~~  ',
-]
-
-// Right panel: waves + a cute little dog
-const WAVE_TILE_R = [
-  '        ',
-  '  ~~~~  ',
-  ' ~    ~ ',
-  '~  ≈≈  ~',
-  ' ~    ~ ',
-  '  ~~~~  ',
-  '        ',
-  '  /V\\   ',  // dog ears
-  ' (o.o)  ',  // dog eyes
-  ' ( u )  ',  // dog snout
-  ' -===-  ',  // dog body
-  '        ',
-]
-
-function WaveSidePanel({ side }: { side: 'left' | 'right' }) {
-  const TILE = side === 'left' ? WAVE_TILE_L : WAVE_TILE_R
-  // 10 repetitions → scroll -50% = 5 tile lengths, seamless loop
-  const rows = Array.from({ length: 10 }, () => TILE).flat()
-  const speed = side === 'left' ? '16s' : '22s'
-  const mask = side === 'left'
-    ? 'linear-gradient(to right, transparent 0%, black 70%)'
-    : 'linear-gradient(to left, transparent 0%, black 70%)'
-
+function SectionLabel({ text }: { text: string }) {
   return (
-    <div
-      className="shrink-0 overflow-hidden select-none pointer-events-none"
-      style={{ width: '56px', maskImage: mask, WebkitMaskImage: mask }}
+    <p
+      className="text-xs tracking-widest uppercase mb-5"
+      style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+      aria-hidden="true"
     >
-      <div style={{ animation: `wave-scroll ${speed} linear infinite` }}>
-        {rows.map((row, i) => (
-          <span
-            key={i}
-            style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: '10px',
-              lineHeight: '1.5',
-              color: '#3a4a2e',
-              display: 'block',
-              whiteSpace: 'pre',
-            }}
-          >
-            {row}
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ─── Shared: typing command prompt ───────────────────────────────────────────
-
-function TypedPrompt({ command }: { command: string }) {
-  const [shown, setShown] = useState('')
-
-  useEffect(() => {
-    setShown('')
-    let i = 0
-    const t = setInterval(() => {
-      i++
-      setShown(command.slice(0, i))
-      if (i >= command.length) clearInterval(t)
-    }, 35)
-    return () => clearInterval(t)
-  }, [command])
-
-  return (
-    <p className="text-xs mb-6" style={{ color: '#7a8560' }}>
-      $ {shown}
-      {shown.length < command.length && (
-        <span className="animate-pulse" style={{ color: '#e8b84b' }}>█</span>
-      )}
+      — {text} —
     </p>
   )
 }
 
-// ─── Panel: About ────────────────────────────────────────────────────────────
+function Rule({ className = '' }: { className?: string }) {
+  return (
+    <hr
+      className={className}
+      style={{ borderColor: 'var(--color-rule-subtle)', borderTopWidth: '1px', borderStyle: 'solid' }}
+    />
+  )
+}
+
+// Shared download icon
+const DownloadIcon = () => (
+  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+)
+
+// ── About panel ──────────────────────────────────────────────────────────────
 
 function AboutPanel() {
   return (
-    <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
-      <TypedPrompt command="cat about.txt" />
+    <div className="p-8 md:p-10 max-w-2xl mx-auto w-full">
+      <SectionLabel text="about" />
 
-      {/* Name — Joshua Cortes with J and C as prominent capitals */}
-      <div className="mb-5 select-none">
-        <p
-          style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: '30px',
-            letterSpacing: '0.06em',
-            lineHeight: '1.15',
-            color: '#c8a040',
-          }}
-        >
-          <span style={{ color: '#f5cc60' }}>J</span>oshua{' '}
-          <span style={{ color: '#f5cc60' }}>C</span>ortes
-        </p>
-      </div>
+      <h1
+        className="text-4xl md:text-5xl leading-tight mb-2"
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic', fontWeight: 700 }}
+      >
+        Joshua Cortes
+      </h1>
 
-      <div className="mb-6">
-        <p className="text-sm" style={{ color: '#c8a040' }}>
-          Full-Stack Developer / Software Engineer
-        </p>
-        <div className="flex items-center gap-3 mt-3 flex-wrap">
-          <a
-            href="/Joshua_Cortes_Resume.pdf"
-            download="Joshua_Cortes_Resume.pdf"
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded transition-colors"
-            style={{
-              background: '#161810',
-              border: '1px solid #2a2c24',
-              color: '#7a8560',
-              fontFamily: "'JetBrains Mono', monospace",
-              textDecoration: 'none',
-            }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#e8b84b')}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = '#7a8560')}
-          >
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            $ resume.pdf
-          </a>
-          <span className="text-xs" style={{ color: '#4a5038' }}>
-            ← click to download my resume!
-          </span>
-        </div>
-      </div>
+      <p
+        className="text-sm mb-7"
+        style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-accent-mid)' }}
+      >
+        Full-Stack Developer / Software Engineer
+      </p>
 
-      <div style={{ borderTop: '1px solid #2a2c24' }} />
+      <a
+        href="/Joshua_Cortes_Resume.pdf"
+        download="Joshua_Cortes_Resume.pdf"
+        className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded transition-colors duration-150 cursor-pointer"
+        style={{
+          background: 'var(--color-paper)',
+          border: '1px solid var(--color-rule)',
+          color: 'var(--color-accent)',
+          fontFamily: 'var(--font-mono)',
+          textDecoration: 'none',
+        }}
+        onMouseEnter={e => {
+          const el = e.currentTarget as HTMLAnchorElement
+          el.style.background = 'var(--color-paper-hover)'
+          el.style.borderColor = 'var(--color-accent)'
+        }}
+        onMouseLeave={e => {
+          const el = e.currentTarget as HTMLAnchorElement
+          el.style.background = 'var(--color-paper)'
+          el.style.borderColor = 'var(--color-rule)'
+        }}
+      >
+        <DownloadIcon />
+        resume.pdf
+      </a>
 
-      <div className="mt-6 space-y-4 text-sm leading-relaxed" style={{ color: '#c8a040' }}>
+      <Rule className="mt-7 mb-7" />
+
+      <div
+        className="space-y-5 text-base leading-relaxed"
+        style={{ fontFamily: 'var(--font-body)', color: 'var(--color-ink)', lineHeight: '1.75' }}
+      >
         <p>
           I'm a 20-year-old CS student pursuing a Bachelor's in Computer Science with a
           concentration in Machine Learning and AI at California Baptist University. I'm
@@ -206,21 +140,27 @@ function AboutPanel() {
   )
 }
 
-// ─── Panel: Photography & Videography ────────────────────────────────────────
+// ── Photography panel ────────────────────────────────────────────────────────
 
 function PhotographyPanel() {
   return (
-    <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
-      <TypedPrompt command="ls photography/" />
-      <p className="text-sm" style={{ color: '#7a8560' }}>
-        [ photos &amp; videos — coming soon ]
+    <div className="p-8 md:p-10 max-w-2xl mx-auto w-full">
+      <SectionLabel text="about / photography" />
+      <h2
+        className="text-3xl mb-6"
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+      >
+        Photography &amp; Videography
+      </h2>
+      <p className="text-base" style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-body)' }}>
+        Photos &amp; videos coming soon.{' '}
+        <span className="cursor-blink" style={{ color: 'var(--color-accent-mid)' }} aria-hidden="true">|</span>
       </p>
-      <span className="mt-2 inline-block animate-pulse" style={{ color: '#e8b84b' }}>█</span>
     </div>
   )
 }
 
-// ─── Panel: Anime ────────────────────────────────────────────────────────────
+// ── Anime panel ──────────────────────────────────────────────────────────────
 
 const ANIME_LIST = [
   'Attack on Titan',
@@ -232,103 +172,151 @@ const ANIME_LIST = [
 
 function AnimePanel() {
   return (
-    <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
-      <TypedPrompt command="cat anime/watchlist.txt" />
-      <p className="text-xs font-bold tracking-widest mb-4" style={{ color: '#c8a040' }}>ANIME</p>
-      <ul className="space-y-1.5 text-sm" style={{ color: '#c8a040' }}>
+    <div className="p-8 md:p-10 max-w-2xl mx-auto w-full">
+      <SectionLabel text="about / anime" />
+      <h2
+        className="text-3xl mb-6"
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+      >
+        Anime
+      </h2>
+      <ul className="space-y-2" style={{ fontFamily: 'var(--font-body)', color: 'var(--color-ink)' }}>
         {ANIME_LIST.map(title => (
-          <li key={title} className="flex items-center gap-2">
-            <span style={{ color: '#4a5038' }}>·</span>
+          <li key={title} className="flex items-center gap-3 text-base">
+            <span style={{ color: 'var(--color-rule)', fontFamily: 'var(--font-mono)' }}>—</span>
             {title}
           </li>
         ))}
-        <li className="text-xs mt-2" style={{ color: '#4a5038' }}>— more coming soon</li>
+        <li
+          className="text-sm mt-3"
+          style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-mono)' }}
+        >
+          more coming soon
+        </li>
       </ul>
     </div>
   )
 }
 
-// ─── Panel: Video Games ──────────────────────────────────────────────────────
+// ── Video games panel ────────────────────────────────────────────────────────
 
 function VideoGamesPanel() {
   return (
-    <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
-      <TypedPrompt command="cat video-games/library.txt" />
-      <p className="text-xs font-bold tracking-widest mb-4" style={{ color: '#c8a040' }}>VIDEO GAMES</p>
-      <p className="text-sm" style={{ color: '#7a8560' }}>[ library — coming soon ]</p>
-      <span className="mt-2 inline-block animate-pulse" style={{ color: '#e8b84b' }}>█</span>
+    <div className="p-8 md:p-10 max-w-2xl mx-auto w-full">
+      <SectionLabel text="about / video games" />
+      <h2
+        className="text-3xl mb-6"
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+      >
+        Video Games
+      </h2>
+      <p className="text-base" style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-body)' }}>
+        Library coming soon.{' '}
+        <span className="cursor-blink" style={{ color: 'var(--color-accent-mid)' }} aria-hidden="true">|</span>
+      </p>
     </div>
   )
 }
 
-// ─── Panel: Projects ─────────────────────────────────────────────────────────
+// ── Projects panel ───────────────────────────────────────────────────────────
+
+const ExternalLinkIcon = () => (
+  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    <polyline points="15 3 21 3 21 9" />
+    <line x1="10" y1="14" x2="21" y2="3" />
+  </svg>
+)
 
 function ProjectsPanel() {
   return (
-    <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
-      <TypedPrompt command="ls -la projects/" />
+    <div className="p-8 md:p-10 max-w-2xl mx-auto w-full">
+      <SectionLabel text="projects" />
+      <h2
+        className="text-3xl mb-8"
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+      >
+        Projects
+      </h2>
 
       {projects.length === 0 ? (
-        <div>
-          <p className="text-sm" style={{ color: '#7a8560' }}>[ no entries — coming soon ]</p>
-          <span className="mt-2 inline-block animate-pulse" style={{ color: '#e8b84b' }}>█</span>
-        </div>
+        <p className="text-base" style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-body)' }}>
+          Coming soon.{' '}
+          <span className="cursor-blink" style={{ color: 'var(--color-accent-mid)' }} aria-hidden="true">|</span>
+        </p>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {projects.map((project, i) => (
-            <div
+            <article
               key={project.title}
-              className="rounded p-5"
-              style={{ background: '#161810', border: '1px solid #2a2c24' }}
+              className="rounded-sm p-5 transition-colors duration-150"
+              style={{
+                background: 'var(--color-paper)',
+                border: '1px solid var(--color-rule)',
+              }}
             >
-              <div className="flex items-baseline gap-3 flex-wrap">
-                <span className="text-xs shrink-0" style={{ color: '#7a8560' }}>
-                  [{String(i + 1).padStart(2, '0')}]
+              <div className="flex items-baseline justify-between gap-3 flex-wrap mb-3">
+                <div className="flex items-baseline gap-3">
+                  <span
+                    className="text-xs shrink-0"
+                    style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <h3
+                    className="text-lg font-semibold"
+                    style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
+                  >
+                    {project.title}
+                  </h3>
+                </div>
+                <span
+                  className="text-xs shrink-0"
+                  style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+                >
+                  {project.role}
                 </span>
-                <span className="font-bold" style={{ color: '#f5cc60' }}>{project.title}</span>
-                <span className="text-xs ml-auto shrink-0" style={{ color: '#7a8560' }}>{project.role}</span>
               </div>
-              <div className="mt-3 flex flex-wrap gap-2">
+
+              <div className="flex flex-wrap gap-2 mb-4">
                 {project.tags.map(tag => (
                   <span
                     key={tag}
-                    className="text-xs px-2 py-0.5 rounded"
-                    style={{ background: '#1e2118', color: '#c8a040', border: '1px solid #2e3228' }}
+                    className="text-xs px-2.5 py-0.5 rounded-full"
+                    style={{
+                      background: 'var(--color-accent-light)',
+                      color: 'var(--color-accent)',
+                      fontFamily: 'var(--font-mono)',
+                      border: '1px solid var(--color-rule)',
+                    }}
                   >
                     {tag}
                   </span>
                 ))}
               </div>
+
               <a
                 href={project.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded transition-colors"
+                className="inline-flex items-center gap-2 text-sm transition-colors duration-150 cursor-pointer"
                 style={{
-                  background: '#1a1c16',
-                  border: '1px solid #3a3f28',
-                  color: '#7a8560',
-                  fontFamily: "'JetBrains Mono', monospace",
+                  color: 'var(--color-accent)',
+                  fontFamily: 'var(--font-mono)',
                   textDecoration: 'none',
                 }}
                 onMouseEnter={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.color = '#f5cc60'
-                  el.style.borderColor = '#e8b84b'
-                  el.style.background = '#1e2118'
+                  ;(e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-accent-mid)'
                 }}
                 onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.color = '#7a8560'
-                  el.style.borderColor = '#3a3f28'
-                  el.style.background = '#1a1c16'
+                  ;(e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-accent)'
                 }}
+                aria-label={`View ${project.title} project`}
               >
-                <span>▸</span>
-                <span>try it out</span>
-                <span>→</span>
+                <ExternalLinkIcon />
+                View project
               </a>
-            </div>
+            </article>
           ))}
         </div>
       )}
@@ -336,20 +324,44 @@ function ProjectsPanel() {
   )
 }
 
-// ─── Shared: timeline entry list ─────────────────────────────────────────────
+// ── Timeline entry list ──────────────────────────────────────────────────────
 
 function EntryList({ entries }: { entries: TimelineEntry[] }) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {entries.map(entry => (
-        <div key={entry.title} className="pl-4" style={{ borderLeft: '2px solid #2a2c24' }}>
-          <div className="flex items-baseline gap-3 flex-wrap">
-            <span className="font-bold text-sm" style={{ color: '#f5cc60' }}>{entry.title}</span>
-            <span className="text-xs ml-auto shrink-0" style={{ color: '#7a8560' }}>{entry.date}</span>
+        <div
+          key={entry.title}
+          className="pl-5"
+          style={{ borderLeft: '2px solid var(--color-rule)' }}
+        >
+          <div className="flex items-baseline justify-between gap-3 flex-wrap mb-1">
+            <h3
+              className="text-lg font-semibold"
+              style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
+            >
+              {entry.title}
+            </h3>
+            <span
+              className="text-xs shrink-0"
+              style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+            >
+              {entry.date}
+            </span>
           </div>
-          <p className="text-sm mt-0.5" style={{ color: '#e8b84b' }}>{entry.org}</p>
+          <p
+            className="text-base mb-1"
+            style={{ fontFamily: 'var(--font-body)', color: 'var(--color-accent-mid)', fontStyle: 'italic' }}
+          >
+            {entry.org}
+          </p>
           {entry.detail && (
-            <p className="text-xs mt-1" style={{ color: '#7a8560' }}>{entry.detail}</p>
+            <p
+              className="text-sm"
+              style={{ fontFamily: 'var(--font-body)', color: 'var(--color-ink-muted)' }}
+            >
+              {entry.detail}
+            </p>
           )}
         </div>
       ))}
@@ -357,41 +369,51 @@ function EntryList({ entries }: { entries: TimelineEntry[] }) {
   )
 }
 
-// ─── Panel: Education ────────────────────────────────────────────────────────
+// ── Education panel ──────────────────────────────────────────────────────────
 
 function EducationPanel() {
   return (
-    <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
-      <TypedPrompt command="cat education/index" />
-      <p className="text-xs font-bold tracking-widest mb-4" style={{ color: '#c8a040' }}>EDUCATION</p>
+    <div className="p-8 md:p-10 max-w-2xl mx-auto w-full">
+      <SectionLabel text="education" />
+      <h2
+        className="text-3xl mb-8"
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+      >
+        Education
+      </h2>
       <EntryList entries={education} />
     </div>
   )
 }
 
-// ─── Panel: Experience ───────────────────────────────────────────────────────
+// ── Experience panel ─────────────────────────────────────────────────────────
 
 function ExperiencePanel() {
   return (
-    <div className="p-8" style={{ maxWidth: '680px', margin: '0 auto' }}>
-      <TypedPrompt command="cat experience/index" />
-      <p className="text-xs font-bold tracking-widest mb-4" style={{ color: '#c8a040' }}>WORK EXPERIENCE</p>
+    <div className="p-8 md:p-10 max-w-2xl mx-auto w-full">
+      <SectionLabel text="experience" />
+      <h2
+        className="text-3xl mb-8"
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+      >
+        Work Experience
+      </h2>
       <EntryList entries={work} />
     </div>
   )
 }
 
-// ─── Panel: Contact ──────────────────────────────────────────────────────────
+// ── Contact panel ────────────────────────────────────────────────────────────
 
 const ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_KEY
-const MY_EMAIL = 'joshuacortes195@gmail.com'
+const MY_EMAIL   = 'joshuacortes195@gmail.com'
 
-const socials = [
+const SOCIALS = [
   {
     label: 'GitHub',
     href: 'https://github.com/joshuacortes195',
     icon: (
-      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05a9.36 9.36 0 0 1 5 0c1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .27.18.59.69.49A10.02 10.02 0 0 0 22 12.25C22 6.58 17.52 2 12 2z" />
       </svg>
     ),
@@ -400,7 +422,7 @@ const socials = [
     label: 'LinkedIn',
     href: 'https://www.linkedin.com/in/joshua-cortes157',
     icon: (
-      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 18.34V9.99H5.67v8.35h2.67zM7 8.67a1.55 1.55 0 1 0 0-3.1 1.55 1.55 0 0 0 0 3.1zm11.34 9.67v-4.58c0-2.45-1.31-3.59-3.06-3.59-1.41 0-2.04.78-2.39 1.32v-1.13h-2.67c.04.75 0 8.35 0 8.35h2.67v-4.66c0-.24.02-.48.09-.65.19-.48.63-.97 1.36-.97.96 0 1.34.73 1.34 1.8v4.48h2.65z" />
       </svg>
     ),
@@ -409,7 +431,7 @@ const socials = [
     label: 'Instagram',
     href: 'https://www.instagram.com/josh_cort__/',
     icon: (
-      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
@@ -418,25 +440,32 @@ const socials = [
   },
 ]
 
+const MailIcon = () => (
+  <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+    <polyline points="22,6 12,13 2,6" />
+  </svg>
+)
+
 function ContactPanel() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  const [name,    setName]    = useState('')
+  const [email,   setEmail]   = useState('')
   const [message, setMessage] = useState('')
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
-  const [copied, setCopied] = useState(false)
+  const [status,  setStatus]  = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [copied,  setCopied]  = useState(false)
 
   const canSubmit = name.trim() !== '' && email.trim() !== '' && message.trim() !== '' && status !== 'sending'
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setStatus('sending')
-    const formData = new FormData()
-    formData.append('name', name)
-    formData.append('email', email)
-    formData.append('message', message)
-    formData.append('access_key', ACCESS_KEY)
+    const fd = new FormData()
+    fd.append('name', name)
+    fd.append('email', email)
+    fd.append('message', message)
+    fd.append('access_key', ACCESS_KEY)
     try {
-      const res = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: formData })
+      const res  = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd })
       const data = await res.json()
       if (data.success) {
         setStatus('sent')
@@ -457,101 +486,171 @@ function ContactPanel() {
     } catch {}
   }
 
-  const socialBtn = {
-    background: '#161810',
-    border: '1px solid #2a2c24',
-    color: '#a07828' as string,
-    fontFamily: "'JetBrains Mono', monospace",
-  }
-
   return (
-    <div className="p-8" style={{ maxWidth: '560px', margin: '0 auto' }}>
-      <TypedPrompt command="./contact.sh" />
+    <div className="p-8 md:p-10 max-w-xl mx-auto w-full">
+      <SectionLabel text="contact" />
+      <h2
+        className="text-3xl mb-8"
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+      >
+        Get in Touch
+      </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <div>
-          <label className="block mb-1 text-xs" style={{ color: '#7a8560' }}>name &gt;</label>
+          <label
+            htmlFor="contact-name"
+            className="block text-sm mb-1.5"
+            style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+          >
+            Name
+          </label>
           <input
-            className="terminal-input"
+            id="contact-name"
+            className="form-input"
             value={name}
             onChange={e => setName(e.target.value)}
-            placeholder="your name"
+            placeholder="Your name"
+            autoComplete="name"
+            required
           />
         </div>
+
         <div>
-          <label className="block mb-1 text-xs" style={{ color: '#7a8560' }}>email &gt;</label>
+          <label
+            htmlFor="contact-email"
+            className="block text-sm mb-1.5"
+            style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+          >
+            Email
+          </label>
           <input
-            className="terminal-input"
+            id="contact-email"
+            className="form-input"
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             placeholder="your.email@example.com"
+            autoComplete="email"
+            required
           />
         </div>
+
         <div>
-          <label className="block mb-1 text-xs" style={{ color: '#7a8560' }}>message &gt;</label>
+          <label
+            htmlFor="contact-message"
+            className="block text-sm mb-1.5"
+            style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+          >
+            Message
+          </label>
           <textarea
-            className="terminal-input resize-none"
+            id="contact-message"
+            className="form-input resize-none"
             value={message}
             onChange={e => setMessage(e.target.value)}
             rows={5}
-            placeholder="your message..."
+            placeholder="Your message…"
+            required
           />
         </div>
 
         <button
           type="submit"
           disabled={!canSubmit}
-          className="w-full rounded py-2.5 text-sm font-bold transition-colors"
+          className="w-full rounded py-2.5 text-sm font-medium transition-colors duration-150"
           style={{
-            background: canSubmit ? '#1e2118' : '#161810',
-            border: `1px solid ${canSubmit ? '#e8b84b' : '#2a2c24'}`,
-            color: canSubmit ? '#f5cc60' : '#3a3f2e',
-            cursor: canSubmit ? 'pointer' : 'not-allowed',
-            fontFamily: "'JetBrains Mono', monospace",
+            background:   canSubmit ? 'var(--color-paper-hover)' : 'var(--color-paper)',
+            border:       `1px solid ${canSubmit ? 'var(--color-accent)' : 'var(--color-rule)'}`,
+            color:        canSubmit ? 'var(--color-accent)' : 'var(--color-ink-muted)',
+            cursor:       canSubmit ? 'pointer' : 'not-allowed',
+            fontFamily:   'var(--font-mono)',
           }}
         >
-          {status === 'sending' ? '[ sending... ]' : '[ send_message ]'}
+          {status === 'sending' ? 'Sending…' : 'Send message'}
         </button>
 
         {status === 'sent' && (
-          <p className="text-xs text-center" style={{ color: '#28c840' }}>✓ message sent successfully</p>
+          <p
+            role="status"
+            className="text-sm text-center"
+            style={{ color: 'var(--color-success)', fontFamily: 'var(--font-mono)' }}
+          >
+            Message sent — I'll get back to you soon.
+          </p>
         )}
         {status === 'error' && (
-          <p className="text-xs text-center" style={{ color: '#ff5f57' }}>
-            ✗ something went wrong — try again or email me directly
+          <p
+            role="alert"
+            className="text-sm text-center"
+            style={{ color: 'var(--color-error)', fontFamily: 'var(--font-mono)' }}
+          >
+            Something went wrong. Try again or email me directly.
           </p>
         )}
       </form>
 
-      <div className="mt-8" style={{ borderTop: '1px solid #2a2c24' }} />
-      <p className="mt-6 text-xs mb-4" style={{ color: '#7a8560' }}>connect &gt;</p>
+      <Rule className="mt-8 mb-6" />
 
-      <div className="flex flex-wrap gap-3">
+      <p
+        className="text-xs mb-4 uppercase tracking-widest"
+        style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+      >
+        Connect
+      </p>
+
+      <div className="flex flex-wrap gap-3" role="list">
         <button
           onClick={copyEmail}
-          className="flex items-center gap-2 px-3 py-2 rounded text-xs transition-colors"
-          style={socialBtn}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#e8b84b')}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = '#a07828')}
+          className="flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-150 cursor-pointer"
+          style={{
+            background: 'var(--color-paper)',
+            border:     '1px solid var(--color-rule)',
+            color:      'var(--color-ink-secondary)',
+            fontFamily: 'var(--font-mono)',
+          }}
+          onMouseEnter={e => {
+            const el = e.currentTarget as HTMLButtonElement
+            el.style.color = 'var(--color-accent)'
+            el.style.borderColor = 'var(--color-accent)'
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget as HTMLButtonElement
+            el.style.color = 'var(--color-ink-secondary)'
+            el.style.borderColor = 'var(--color-rule)'
+          }}
+          aria-label={copied ? 'Email address copied' : 'Copy email address'}
+          role="listitem"
         >
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-            <polyline points="22,6 12,13 2,6" />
-          </svg>
-          {copied ? 'copied!' : 'email'}
+          <MailIcon />
+          {copied ? 'Copied!' : 'Email'}
         </button>
 
-        {socials.map(({ label, href, icon }) => (
+        {SOCIALS.map(({ label, href, icon }) => (
           <a
             key={label}
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 rounded text-xs transition-colors"
-            style={socialBtn}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#e8b84b')}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = '#a07828')}
+            className="flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-150 cursor-pointer"
+            style={{
+              background:     'var(--color-paper)',
+              border:         '1px solid var(--color-rule)',
+              color:          'var(--color-ink-secondary)',
+              fontFamily:     'var(--font-mono)',
+              textDecoration: 'none',
+            }}
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLAnchorElement
+              el.style.color = 'var(--color-accent)'
+              el.style.borderColor = 'var(--color-accent)'
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLAnchorElement
+              el.style.color = 'var(--color-ink-secondary)'
+              el.style.borderColor = 'var(--color-rule)'
+            }}
+            role="listitem"
           >
             {icon}
             {label}
@@ -562,7 +661,7 @@ function ContactPanel() {
   )
 }
 
-// ─── Tab Dispatcher ──────────────────────────────────────────────────────────
+// ── Tab dispatcher ───────────────────────────────────────────────────────────
 
 function TabContent({ tab }: { tab: Tab }) {
   switch (tab) {
@@ -577,157 +676,259 @@ function TabContent({ tab }: { tab: Tab }) {
   }
 }
 
-// ─── App Shell ───────────────────────────────────────────────────────────────
+// ── Sidebar ──────────────────────────────────────────────────────────────────
 
-export default function App() {
-  const [active, setActive] = useState<Tab>('about')
+interface SidebarProps {
+  active: Tab
+  onSelect: (t: Tab) => void
+}
+
+function Sidebar({ active, onSelect }: SidebarProps) {
   const inAboutGroup = ABOUT_GROUP.has(active)
 
   return (
-    <div className="h-full flex p-3" style={{ background: '#090a07' }}>
-      <div
-        className="flex-1 flex flex-col overflow-hidden"
-        style={{
-          background: '#0d0f0c',
-          fontFamily: "'JetBrains Mono', monospace",
-          color: '#e8b84b',
-          border: '1px solid #3d3f2e',
-          borderRadius: '4px',
-          boxShadow: [
-            'inset 0 0 0 1px #1e2018',
-            '0 0 0 1px #1a1c12',
-            '0 0 0 3px #252820',
-            '0 0 50px rgba(0,0,0,0.95)',
-            '0 0 20px rgba(232,184,75,0.05)',
-          ].join(', '),
-        }}
-      >
-        {/* Title bar */}
-        <div
-          className="flex items-center gap-3 shrink-0 px-4 py-2.5"
-          style={{ background: '#161810', borderBottom: '1px solid #2a2c24' }}
+    <aside
+      className="hidden md:flex flex-col shrink-0 h-full overflow-y-auto"
+      style={{
+        width: '220px',
+        background: 'var(--color-paper)',
+        borderRight: '1px solid var(--color-rule)',
+      }}
+      aria-label="Site navigation"
+    >
+      {/* Identity */}
+      <div className="px-6 pt-8 pb-5">
+        <p
+          className="text-2xl leading-tight"
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic', fontWeight: 700 }}
         >
-          <div className="flex gap-1.5">
-            <div className="h-3 w-3 rounded-full" style={{ background: '#ff5f57' }} />
-            <div className="h-3 w-3 rounded-full" style={{ background: '#febc2e' }} />
-            <div className="h-3 w-3 rounded-full" style={{ background: '#28c840' }} />
-          </div>
-          <span className="flex-1 text-center text-xs tracking-wide" style={{ color: '#4a4f3a' }}>
-            joshua@portfolio: ~/portfolio
-          </span>
+          Joshua<br />Cortes
+        </p>
+        <p
+          className="mt-2 text-xs leading-snug"
+          style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+        >
+          Software Engineer<br />CS Student
+        </p>
+      </div>
+
+      <Rule className="mx-6" />
+
+      {/* Nav */}
+      <nav className="flex-1 px-3 py-5" aria-label="Sections">
+        {NAV.map(item => {
+          const isAbout     = item.id === 'about'
+          const isActive    = active === item.id
+          const isGroupActive = isAbout && inAboutGroup
+
+          return (
+            <div key={item.id}>
+              <button
+                onClick={() => onSelect(item.id)}
+                aria-current={isActive || isGroupActive ? 'page' : undefined}
+                className="w-full text-left px-3 py-2 text-sm rounded-sm transition-colors duration-150 cursor-pointer"
+                style={{
+                  fontFamily:  'var(--font-body)',
+                  color:       isActive || isGroupActive ? 'var(--color-accent)' : 'var(--color-ink-secondary)',
+                  background:  isActive ? 'var(--color-paper-hover)' : 'transparent',
+                  borderLeft:  isActive || isGroupActive ? '2px solid var(--color-accent)' : '2px solid transparent',
+                  fontWeight:  isActive || isGroupActive ? 600 : 400,
+                }}
+                onMouseEnter={e => {
+                  if (!isActive && !isGroupActive) {
+                    const el = e.currentTarget as HTMLButtonElement
+                    el.style.background = 'var(--color-paper-hover)'
+                    el.style.color = 'var(--color-ink)'
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isActive && !isGroupActive) {
+                    const el = e.currentTarget as HTMLButtonElement
+                    el.style.background = 'transparent'
+                    el.style.color = 'var(--color-ink-secondary)'
+                  }
+                }}
+              >
+                {item.label}
+              </button>
+
+              {/* About sub-items */}
+              {isAbout && inAboutGroup && (
+                <div className="ml-4 mt-1 mb-1 space-y-0.5">
+                  {ABOUT_SUBS.map(sub => {
+                    const isSubActive = active === sub.id
+                    return (
+                      <button
+                        key={sub.id}
+                        onClick={() => onSelect(sub.id)}
+                        aria-current={isSubActive ? 'page' : undefined}
+                        className="w-full text-left px-3 py-1.5 text-sm rounded-sm transition-colors duration-150 cursor-pointer"
+                        style={{
+                          fontFamily: 'var(--font-body)',
+                          fontSize:   '0.8125rem',
+                          color:      isSubActive ? 'var(--color-accent)' : 'var(--color-ink-muted)',
+                          background: isSubActive ? 'var(--color-paper-hover)' : 'transparent',
+                          borderLeft: isSubActive ? '2px solid var(--color-accent-mid)' : '2px solid transparent',
+                        }}
+                        onMouseEnter={e => {
+                          if (!isSubActive) {
+                            const el = e.currentTarget as HTMLButtonElement
+                            el.style.color = 'var(--color-ink-secondary)'
+                            el.style.background = 'var(--color-paper-hover)'
+                          }
+                        }}
+                        onMouseLeave={e => {
+                          if (!isSubActive) {
+                            const el = e.currentTarget as HTMLButtonElement
+                            el.style.color = 'var(--color-ink-muted)'
+                            el.style.background = 'transparent'
+                          }
+                        }}
+                      >
+                        {sub.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </nav>
+
+      {/* Footer */}
+      <div className="px-6 py-4">
+        <p
+          className="text-xs"
+          style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-rule)' }}
+        >
+          © 2025
+        </p>
+      </div>
+    </aside>
+  )
+}
+
+// ── Mobile top nav ───────────────────────────────────────────────────────────
+
+interface MobileNavProps {
+  active: Tab
+  onSelect: (t: Tab) => void
+}
+
+function MobileNav({ active, onSelect }: MobileNavProps) {
+  const inAboutGroup = ABOUT_GROUP.has(active)
+
+  return (
+    <div
+      className="md:hidden shrink-0"
+      style={{ background: 'var(--color-paper)', borderBottom: '1px solid var(--color-rule)' }}
+    >
+      {/* Identity row */}
+      <div className="px-5 pt-5 pb-3">
+        <p
+          className="text-xl leading-tight"
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic', fontWeight: 700 }}
+        >
+          Joshua Cortes
+        </p>
+        <p
+          className="text-xs mt-0.5"
+          style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+        >
+          Full-Stack Developer / Software Engineer
+        </p>
+      </div>
+
+      {/* Main nav */}
+      <nav aria-label="Sections" className="overflow-x-auto px-5 pb-0">
+        <div className="flex gap-1 min-w-max pb-0">
+          {NAV.map(item => {
+            const isActive    = active === item.id
+            const isGroupActive = item.id === 'about' && inAboutGroup
+            return (
+              <button
+                key={item.id}
+                onClick={() => onSelect(item.id)}
+                aria-current={isActive || isGroupActive ? 'page' : undefined}
+                className="px-4 py-2.5 text-sm whitespace-nowrap transition-colors duration-150 cursor-pointer"
+                style={{
+                  fontFamily:  'var(--font-body)',
+                  color:       isActive || isGroupActive ? 'var(--color-accent)' : 'var(--color-ink-muted)',
+                  borderBottom: isActive || isGroupActive ? '2px solid var(--color-accent)' : '2px solid transparent',
+                  background:  'transparent',
+                  fontWeight:  isActive || isGroupActive ? 600 : 400,
+                }}
+              >
+                {item.label}
+              </button>
+            )
+          })}
         </div>
+      </nav>
 
-        {/* Body */}
-        <div className="flex flex-1 overflow-hidden">
+      {/* About sub-nav */}
+      {inAboutGroup && (
+        <nav aria-label="About sections" className="overflow-x-auto px-5 pb-2 pt-1" style={{ background: 'var(--color-canvas)', borderTop: '1px solid var(--color-rule-subtle)' }}>
+          <div className="flex gap-1 min-w-max">
+            {ABOUT_SUBS.map(sub => {
+              const isSubActive = active === sub.id
+              return (
+                <button
+                  key={sub.id}
+                  onClick={() => onSelect(sub.id)}
+                  aria-current={isSubActive ? 'page' : undefined}
+                  className="px-3 py-1.5 text-xs whitespace-nowrap transition-colors duration-150 cursor-pointer rounded-sm"
+                  style={{
+                    fontFamily:  'var(--font-mono)',
+                    color:       isSubActive ? 'var(--color-accent)' : 'var(--color-ink-muted)',
+                    background:  isSubActive ? 'var(--color-accent-light)' : 'transparent',
+                  }}
+                >
+                  {sub.label}
+                </button>
+              )
+            })}
+          </div>
+        </nav>
+      )}
+    </div>
+  )
+}
 
-          {/* Sidebar */}
-          <div
-            className="w-52 shrink-0 flex flex-col overflow-y-auto"
-            style={{ borderRight: '1px solid #2a2c24' }}
+// ── App shell ────────────────────────────────────────────────────────────────
+
+export default function App() {
+  const [active, setActive] = useState<Tab>('about')
+
+  return (
+    <>
+      {/* Skip to main content link for keyboard users */}
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
+
+      <div
+        className="flex flex-col md:flex-row h-full"
+        style={{ background: 'var(--color-canvas)' }}
+      >
+        {/* Desktop sidebar */}
+        <Sidebar active={active} onSelect={setActive} />
+
+        {/* Mobile top nav + content */}
+        <div className="flex flex-col flex-1 min-h-0 md:h-full">
+          <MobileNav active={active} onSelect={setActive} />
+
+          <main
+            id="main-content"
+            className="flex-1 overflow-y-auto"
+            tabIndex={-1}
+            style={{ background: 'var(--color-canvas)' }}
           >
-            {/* Name at top of file explorer */}
-            <div className="px-4 pt-4 pb-2">
-              <p className="text-sm font-bold" style={{ color: '#f5cc60' }}>Joshua Cortes</p>
-              <div className="mt-1.5" style={{ borderBottom: '1px solid #2a2c24' }} />
-            </div>
-
-            <p className="px-4 pt-2 pb-1 text-xs" style={{ color: '#4a4f3a' }}>~/portfolio</p>
-
-            <nav className="flex-1">
-              {NAV.map((item, i) => {
-                const isLast = i === NAV.length - 1
-                const prefix = isLast ? '└── ' : '├── '
-                const isAboutItem = item.id === 'about'
-                const isActive = active === item.id
-                const isGroupActive = isAboutItem && inAboutGroup
-
-                return (
-                  <div key={item.id}>
-                    <button
-                      onClick={() => setActive(item.id)}
-                      className="w-full text-left px-4 py-1.5 text-sm transition-colors"
-                      style={{
-                        color: isActive || isGroupActive ? '#f5cc60' : '#7a8560',
-                        background: isActive ? '#1e2118' : 'transparent',
-                        fontFamily: "'JetBrains Mono', monospace",
-                      }}
-                      onMouseEnter={e => {
-                        if (!isActive) {
-                          (e.currentTarget as HTMLButtonElement).style.color = '#e8b84b'
-                          ;(e.currentTarget as HTMLButtonElement).style.background = '#191b17'
-                        }
-                      }}
-                      onMouseLeave={e => {
-                        if (!isActive) {
-                          (e.currentTarget as HTMLButtonElement).style.color =
-                            isGroupActive ? '#f5cc60' : '#7a8560'
-                          ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                        }
-                      }}
-                    >
-                      <span style={{ color: '#2e3228' }}>{prefix}</span>
-                      {item.label}
-                    </button>
-
-                    {/* Sub-items under about.txt */}
-                    {isAboutItem && inAboutGroup && (
-                      <div>
-                        {ABOUT_SUBS.map((sub, si) => {
-                          const isSubLast = si === ABOUT_SUBS.length - 1
-                          const subPrefix = isSubLast ? '    └── ' : '    ├── '
-                          const isSubActive = active === sub.id
-                          return (
-                            <button
-                              key={sub.id}
-                              onClick={() => setActive(sub.id)}
-                              className="w-full text-left px-4 py-1 text-xs transition-colors"
-                              style={{
-                                color: isSubActive ? '#f5cc60' : '#4a5038',
-                                background: isSubActive ? '#1a1c18' : 'transparent',
-                                fontFamily: "'JetBrains Mono', monospace",
-                              }}
-                              onMouseEnter={e => {
-                                if (!isSubActive) {
-                                  (e.currentTarget as HTMLButtonElement).style.color = '#c8a040'
-                                  ;(e.currentTarget as HTMLButtonElement).style.background = '#181a16'
-                                }
-                              }}
-                              onMouseLeave={e => {
-                                if (!isSubActive) {
-                                  (e.currentTarget as HTMLButtonElement).style.color = '#4a5038'
-                                  ;(e.currentTarget as HTMLButtonElement).style.background = 'transparent'
-                                }
-                              }}
-                            >
-                              <span style={{ color: '#1e2118' }}>{subPrefix}</span>
-                              {sub.label}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </nav>
-
-            <div className="px-4 py-3 text-xs" style={{ color: '#3a3f2e' }}>
-              <span style={{ color: '#7a8560' }}>$</span>
-              <span className="ml-1 animate-pulse">█</span>
-            </div>
-          </div>
-
-          {/* Content panel with scrolling wave art on sides */}
-          <div className="flex-1 overflow-hidden flex">
-            <WaveSidePanel side="left" />
-            <div className="flex-1 overflow-y-auto">
-              <TabContent tab={active} />
-            </div>
-            <WaveSidePanel side="right" />
-          </div>
-
+            <TabContent tab={active} />
+          </main>
         </div>
       </div>
-    </div>
+    </>
   )
 }
