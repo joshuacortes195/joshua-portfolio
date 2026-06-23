@@ -163,11 +163,17 @@ function MasonryGallery({
       className="sm:[column-count:3] md:[column-count:4]"
     >
       {photos.map((src, i) => (
-        <div key={src} style={{ breakInside: 'avoid', marginBottom: '8px' }}>
+        <div key={src} style={{ breakInside: 'avoid', marginBottom: '10px' }}>
           <button
             onClick={() => onOpen(i)}
-            className="block w-full cursor-pointer overflow-hidden rounded-sm"
-            style={{ border: '1px solid var(--color-rule)' }}
+            className="block w-full cursor-pointer transition-transform duration-200 hover:scale-[1.015]"
+            style={{
+              background:  '#FFFFFF',
+              padding:     '5px',
+              border:      '2px solid #111111',
+              boxShadow:   '3px 4px 14px rgba(0,0,0,0.18)',
+              outline:     'none',
+            }}
             aria-label={`${label} photo ${i + 1}`}
           >
             <img
@@ -175,7 +181,7 @@ function MasonryGallery({
               alt={`${label} — photo ${i + 1}`}
               loading="lazy"
               decoding="async"
-              className="w-full block transition-opacity duration-200 hover:opacity-85"
+              className="w-full block"
               style={{ display: 'block' }}
             />
           </button>
@@ -279,17 +285,24 @@ function PhotographyPanel() {
 
   return (
     <div className="p-8 md:p-10 max-w-5xl mx-auto w-full">
-      <SectionLabel text="about / photography" />
+      {/* Vintage-scoped section label */}
+      <p
+        className="text-xs tracking-widest uppercase mb-5"
+        style={{ fontFamily: 'var(--font-mono)', color: '#8B7A65' }}
+        aria-hidden="true"
+      >
+        — about / photography —
+      </p>
 
       <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
         <h2
           className="text-3xl"
-          style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
+          style={{ fontFamily: 'var(--font-display)', color: '#1C1812' }}
         >
           Photography
         </h2>
 
-        {/* Internal tab bar */}
+        {/* Vintage tab bar */}
         <div className="flex gap-1" role="tablist" aria-label="Photo categories">
           {PHOTO_TABS.map(t => {
             const isActive = photoTab === t.id
@@ -299,12 +312,12 @@ function PhotographyPanel() {
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => { setPhotoTab(t.id); setLightboxIdx(null) }}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm rounded-sm transition-colors duration-150 cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2 text-sm transition-colors duration-150 cursor-pointer"
                 style={{
-                  fontFamily:   'var(--font-mono)',
-                  background:   isActive ? 'var(--color-accent-light)' : 'var(--color-paper)',
-                  border:       `1px solid ${isActive ? 'var(--color-accent)' : 'var(--color-rule)'}`,
-                  color:        isActive ? 'var(--color-accent)' : 'var(--color-ink-muted)',
+                  fontFamily: 'var(--font-mono)',
+                  background: isActive ? '#1C1812' : 'transparent',
+                  border:     `1px solid ${isActive ? '#1C1812' : '#B8A88A'}`,
+                  color:      isActive ? '#F2EBD9' : '#7A6A55',
                 }}
               >
                 {t.label}
@@ -1099,7 +1112,10 @@ export default function App() {
             id="main-content"
             className="flex-1 overflow-y-auto"
             tabIndex={-1}
-            style={{ background: 'var(--color-canvas)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+            style={{
+              background: active === 'photography' ? '#F2EBD9' : 'var(--color-canvas)',
+              paddingBottom: 'env(safe-area-inset-bottom)',
+            }}
           >
             <TabContent tab={active} />
           </main>
