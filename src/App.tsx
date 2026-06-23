@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { projects } from './data/projects'
 import { education, work, type TimelineEntry } from './data/experience'
 import { generalPhotos, animalPhotos } from './data/photos'
+import AnimePanel from './components/AnimePanel'
+import VideoGamesPanel from './components/VideoGamesPanel'
 
 // ── Types & constants ────────────────────────────────────────────────────────
 
@@ -350,61 +352,11 @@ function PhotographyPanel() {
 
 // ── Anime panel ──────────────────────────────────────────────────────────────
 
-const ANIME_LIST = [
-  'Attack on Titan',
-  'Fullmetal Alchemist: Brotherhood',
-  'Demon Slayer',
-  'Jujutsu Kaisen',
-  'Vinland Saga',
-]
-
-function AnimePanel() {
-  return (
-    <div className="p-8 md:p-10 max-w-2xl mx-auto w-full">
-      <SectionLabel text="about / anime" />
-      <h2
-        className="text-3xl mb-6"
-        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
-      >
-        Anime
-      </h2>
-      <ul className="space-y-2" style={{ fontFamily: 'var(--font-body)', color: 'var(--color-ink)' }}>
-        {ANIME_LIST.map(title => (
-          <li key={title} className="flex items-center gap-3 text-base">
-            <span style={{ color: 'var(--color-rule)', fontFamily: 'var(--font-mono)' }}>—</span>
-            {title}
-          </li>
-        ))}
-        <li
-          className="text-sm mt-3"
-          style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-mono)' }}
-        >
-          more coming soon
-        </li>
-      </ul>
-    </div>
-  )
-}
+// AnimePanel is imported from ./components/AnimePanel
 
 // ── Video games panel ────────────────────────────────────────────────────────
 
-function VideoGamesPanel() {
-  return (
-    <div className="p-8 md:p-10 max-w-2xl mx-auto w-full">
-      <SectionLabel text="about / video games" />
-      <h2
-        className="text-3xl mb-6"
-        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
-      >
-        Video Games
-      </h2>
-      <p className="text-base" style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-body)' }}>
-        Library coming soon.{' '}
-        <span className="cursor-blink" style={{ color: 'var(--color-accent-mid)' }} aria-hidden="true">|</span>
-      </p>
-    </div>
-  )
-}
+// VideoGamesPanel is imported from ./components/VideoGamesPanel
 
 // ── Projects panel ───────────────────────────────────────────────────────────
 
@@ -1110,11 +1062,11 @@ export default function App() {
 
           <main
             id="main-content"
-            className="flex-1 overflow-y-auto"
+            className={`flex-1 ${(active === 'anime' || active === 'video-games') ? 'overflow-hidden' : 'overflow-y-auto'}`}
             tabIndex={-1}
             style={{
               background: active === 'photography' ? '#F2EBD9' : 'var(--color-canvas)',
-              paddingBottom: 'env(safe-area-inset-bottom)',
+              paddingBottom: (active === 'anime' || active === 'video-games') ? 0 : 'env(safe-area-inset-bottom)',
             }}
           >
             <TabContent tab={active} />
