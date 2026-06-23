@@ -318,6 +318,18 @@ export const animeList: AnimeEntry[] = [
     textColor: '#fff',
   },
   {
+    id: 'super-cube',
+    title: 'Super Cube',
+    cover:   '/anime/super-cube/cover.jpg',
+    banner:  null,
+    gallery: [],
+    genres: ['Action', 'Adventure', 'Fantasy'],
+    desc: "Wang Xiaoxiu obtains a mysterious space system called the Superpower Cube from a high-latitude cosmic civilization, unlocking abilities that set him on a path far beyond ordinary humanity.",
+    animation: 'aura-burst',
+    themeColor: '#0288D1',
+    textColor: '#fff',
+  },
+  {
     id: 'my-hero-academia',
     title: 'My Hero Academia',
     cover:   '/anime/my-hero-academia/cover.jpg',
