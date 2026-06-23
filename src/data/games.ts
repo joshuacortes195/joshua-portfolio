@@ -45,7 +45,7 @@ export const gameList: GameEntry[] = [
   {
     id: 'pokemon',
     title: 'Pokémon Gen I – VII',
-    banner: null,
+    banner: '/games/pokemon/banner.jpg',
     themeColor: '#FFCB05',
   },
   {
@@ -57,13 +57,13 @@ export const gameList: GameEntry[] = [
   {
     id: 'super-mario-bros',
     title: 'Super Mario Bros',
-    banner: null,
+    banner: '/games/super-mario-bros/banner.jpg',
     themeColor: '#E04000',
   },
   {
     id: 'super-mario-galaxy',
     title: 'Super Mario Galaxy',
-    banner: null,
+    banner: '/games/super-mario-galaxy/banner.jpg',
     themeColor: '#1A237E',
   },
   {
@@ -89,5 +89,11 @@ export const gameList: GameEntry[] = [
     title: 'Super Smash Bros',
     banner: '/games/super-smash-bros/banner.jpg',
     themeColor: '#E50000',
+  },
+  {
+    id: 'warframe',
+    title: 'Warframe',
+    banner: '/games/warframe/banner.jpg',
+    themeColor: '#B8860B',
   },
 ]

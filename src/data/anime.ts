@@ -117,7 +117,7 @@ export const animeList: AnimeEntry[] = [
     id: 'parasyte',
     title: 'Parasyte',
     cover:   '/anime/parasyte/cover.jpg',
-    banner:  '/anime/parasyte/banner.jpg',
+    banner:  null,
     gallery: [
       '/anime/parasyte/gallery-1.jpg',
       '/anime/parasyte/gallery-2.jpg',
@@ -185,7 +185,7 @@ export const animeList: AnimeEntry[] = [
     id: 'vinland-saga',
     title: 'Vinland Saga',
     cover:   '/anime/vinland-saga/cover.jpg',
-    banner:  '/anime/vinland-saga/banner.jpg',
+    banner:  null,
     gallery: [
       '/anime/vinland-saga/gallery-1.jpg',
       '/anime/vinland-saga/gallery-2.jpg',
@@ -219,7 +219,7 @@ export const animeList: AnimeEntry[] = [
     id: 'hells-paradise',
     title: "Hell's Paradise",
     cover:   '/anime/hells-paradise/cover.jpg',
-    banner:  '/anime/hells-paradise/banner.jpg',
+    banner:  null,
     gallery: [
       '/anime/hells-paradise/gallery-1.jpg',
       '/anime/hells-paradise/gallery-2.jpg',
@@ -287,7 +287,7 @@ export const animeList: AnimeEntry[] = [
     id: 'blue-eye-samurai',
     title: 'Blue Eye Samurai',
     cover:   null,
-    banner:  null,
+    banner:  '/anime/blue-eye-samurai/banner.jpg',
     gallery: [
       '/anime/blue-eye-samurai/gallery-1.jpg',
       '/anime/blue-eye-samurai/gallery-2.jpg',
