@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { projects } from './data/projects'
 import { education, work, type TimelineEntry } from './data/experience'
+import { albums } from './data/photos'
 
 // ── Types & constants ────────────────────────────────────────────────────────
 
@@ -143,19 +144,142 @@ function AboutPanel() {
 // ── Photography panel ────────────────────────────────────────────────────────
 
 function PhotographyPanel() {
+  const [lightbox, setLightbox] = useState<{ albumId: string; index: number } | null>(null)
+
+  function openLightbox(albumId: string, index: number) {
+    setLightbox({ albumId, index })
+  }
+
+  function closeLightbox() {
+    setLightbox(null)
+  }
+
+  function stepLightbox(dir: 1 | -1) {
+    if (!lightbox) return
+    const album = albums.find(a => a.id === lightbox.albumId)
+    if (!album) return
+    const next = (lightbox.index + dir + album.photos.length) % album.photos.length
+    setLightbox({ albumId: lightbox.albumId, index: next })
+  }
+
+  const lightboxAlbum = lightbox ? albums.find(a => a.id === lightbox.albumId) : null
+  const lightboxSrc   = lightboxAlbum ? lightboxAlbum.photos[lightbox!.index] : null
+
   return (
-    <div className="p-8 md:p-10 max-w-2xl mx-auto w-full">
+    <div className="p-8 md:p-10 max-w-5xl mx-auto w-full">
       <SectionLabel text="about / photography" />
       <h2
-        className="text-3xl mb-6"
+        className="text-3xl mb-10"
         style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
       >
-        Photography &amp; Videography
+        Photography
       </h2>
-      <p className="text-base" style={{ color: 'var(--color-ink-muted)', fontFamily: 'var(--font-body)' }}>
-        Photos &amp; videos coming soon.{' '}
-        <span className="cursor-blink" style={{ color: 'var(--color-accent-mid)' }} aria-hidden="true">|</span>
-      </p>
+
+      <div className="space-y-12">
+        {albums.map(album => (
+          <section key={album.id}>
+            <div className="flex items-center gap-4 mb-4">
+              <h3
+                className="text-lg font-semibold"
+                style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
+              >
+                {album.title}
+              </h3>
+              <span
+                className="text-xs"
+                style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+              >
+                {album.photos.length} photos
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {album.photos.map((src, i) => (
+                <button
+                  key={src}
+                  onClick={() => openLightbox(album.id, i)}
+                  className="relative aspect-square overflow-hidden rounded-sm cursor-pointer"
+                  style={{ border: '1px solid var(--color-rule)' }}
+                  aria-label={`Open ${album.title} photo ${i + 1}`}
+                >
+                  <img
+                    src={src}
+                    alt={`${album.title} — photo ${i + 1}`}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                </button>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      {/* Lightbox */}
+      {lightbox && lightboxSrc && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Photo lightbox"
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.92)' }}
+          onClick={closeLightbox}
+        >
+          {/* Close */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 flex items-center justify-center w-11 h-11 rounded-full cursor-pointer"
+            style={{ background: 'var(--color-paper)', color: 'var(--color-ink-secondary)' }}
+            aria-label="Close lightbox"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+
+          {/* Prev */}
+          <button
+            onClick={e => { e.stopPropagation(); stepLightbox(-1) }}
+            className="absolute left-3 flex items-center justify-center w-11 h-11 rounded-full cursor-pointer"
+            style={{ background: 'var(--color-paper)', color: 'var(--color-ink-secondary)' }}
+            aria-label="Previous photo"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+
+          {/* Image */}
+          <img
+            src={lightboxSrc}
+            alt={lightboxAlbum ? `${lightboxAlbum.title} — photo ${lightbox.index + 1}` : ''}
+            className="max-h-[90vh] max-w-[90vw] object-contain rounded-sm"
+            style={{ boxShadow: '0 0 60px rgba(0,0,0,0.8)' }}
+            onClick={e => e.stopPropagation()}
+          />
+
+          {/* Next */}
+          <button
+            onClick={e => { e.stopPropagation(); stepLightbox(1) }}
+            className="absolute right-3 flex items-center justify-center w-11 h-11 rounded-full cursor-pointer"
+            style={{ background: 'var(--color-paper)', color: 'var(--color-ink-secondary)' }}
+            aria-label="Next photo"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+
+          {/* Counter */}
+          <p
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs"
+            style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+          >
+            {lightbox.index + 1} / {lightboxAlbum?.photos.length}
+          </p>
+        </div>
+      )}
     </div>
   )
 }
