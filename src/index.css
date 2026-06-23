@@ -2,34 +2,34 @@
 
 @theme {
   /* ── Font families ─────────────────────────────────── */
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-body: 'Source Serif 4', Georgia, serif;
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   /* ── Color tokens — all components must use these ─── */
 
   /* Surfaces */
-  --color-canvas:       #FDFAF4;
-  --color-paper:        #F8F3E8;
-  --color-paper-hover:  #F1EAD4;
+  --color-canvas:       #0D1117;
+  --color-paper:        #161B22;
+  --color-paper-hover:  #1C2128;
 
   /* Borders */
-  --color-rule:         #DDD4C0;
-  --color-rule-subtle:  #EDE6D8;
+  --color-rule:         #30363D;
+  --color-rule-subtle:  #21262D;
 
-  /* Text — warm ink scale */
-  --color-ink:           #1C1811;   /* ≈17:1 on canvas — primary */
-  --color-ink-secondary: #5C4A2A;   /* ≈7:1  — headings, labels */
-  --color-ink-muted:     #7A6A55;   /* ≈4.7:1 — metadata, captions */
+  /* Text */
+  --color-ink:           #E6EDF3;   /* primary */
+  --color-ink-secondary: #CDD9E5;   /* headings, labels */
+  --color-ink-muted:     #768390;   /* metadata, captions */
 
-  /* Accent — deep ochre / warm amber */
-  --color-accent:       #6B4E1A;   /* ≈7.3:1 on canvas — links, active */
-  --color-accent-mid:   #B87D2A;   /* ≈4.5:1 — decorative, role text */
-  --color-accent-light: #F4DFA0;   /* light wash — tag backgrounds */
+  /* Accent — electric blue */
+  --color-accent:       #58A6FF;   /* links, active */
+  --color-accent-mid:   #388BFD;   /* decorative, role text */
+  --color-accent-light: #0D2044;   /* tag backgrounds */
 
   /* Semantic */
-  --color-success:      #2F6B3A;
-  --color-error:        #8B1A1A;
+  --color-success:      #3FB950;
+  --color-error:        #F85149;
 }
 
 /* ── Base ────────────────────────────────────────────── */
@@ -37,6 +37,8 @@
 html, body, #root {
   height: 100%;
   background-color: var(--color-canvas);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -44,6 +46,12 @@ body {
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Touch ───────────────────────────────────────────── */
+
+button, a, input, textarea, select {
+  touch-action: manipulation;
 }
 
 /* ── Accessibility ───────────────────────────────────── */
@@ -93,6 +101,7 @@ body {
 
 .form-input {
   width: 100%;
+  min-height: 44px;
   background: var(--color-canvas);
   border: 1px solid var(--color-rule);
   color: var(--color-ink);

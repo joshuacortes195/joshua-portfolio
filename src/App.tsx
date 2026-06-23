@@ -71,7 +71,7 @@ function AboutPanel() {
 
       <h1
         className="text-4xl md:text-5xl leading-tight mb-2"
-        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic', fontWeight: 700 }}
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontWeight: 700 }}
       >
         Joshua Cortes
       </h1>
@@ -86,7 +86,7 @@ function AboutPanel() {
       <a
         href="/Joshua_Cortes_Resume.pdf"
         download="Joshua_Cortes_Resume.pdf"
-        className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded transition-colors duration-150 cursor-pointer"
+        className="inline-flex items-center gap-2 px-4 py-2.5 text-sm rounded transition-colors duration-150 cursor-pointer"
         style={{
           background: 'var(--color-paper)',
           border: '1px solid var(--color-rule)',
@@ -148,7 +148,7 @@ function PhotographyPanel() {
       <SectionLabel text="about / photography" />
       <h2
         className="text-3xl mb-6"
-        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
       >
         Photography &amp; Videography
       </h2>
@@ -176,7 +176,7 @@ function AnimePanel() {
       <SectionLabel text="about / anime" />
       <h2
         className="text-3xl mb-6"
-        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
       >
         Anime
       </h2>
@@ -206,7 +206,7 @@ function VideoGamesPanel() {
       <SectionLabel text="about / video games" />
       <h2
         className="text-3xl mb-6"
-        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
       >
         Video Games
       </h2>
@@ -234,7 +234,7 @@ function ProjectsPanel() {
       <SectionLabel text="projects" />
       <h2
         className="text-3xl mb-8"
-        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
       >
         Projects
       </h2>
@@ -377,7 +377,7 @@ function EducationPanel() {
       <SectionLabel text="education" />
       <h2
         className="text-3xl mb-8"
-        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
       >
         Education
       </h2>
@@ -394,7 +394,7 @@ function ExperiencePanel() {
       <SectionLabel text="experience" />
       <h2
         className="text-3xl mb-8"
-        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
       >
         Work Experience
       </h2>
@@ -491,7 +491,7 @@ function ContactPanel() {
       <SectionLabel text="contact" />
       <h2
         className="text-3xl mb-8"
-        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic' }}
+        style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)' }}
       >
         Get in Touch
       </h2>
@@ -558,7 +558,7 @@ function ContactPanel() {
         <button
           type="submit"
           disabled={!canSubmit}
-          className="w-full rounded py-2.5 text-sm font-medium transition-colors duration-150"
+          className="w-full rounded py-3 text-sm font-medium transition-colors duration-150"
           style={{
             background:   canSubmit ? 'var(--color-paper-hover)' : 'var(--color-paper)',
             border:       `1px solid ${canSubmit ? 'var(--color-accent)' : 'var(--color-rule)'}`,
@@ -602,7 +602,7 @@ function ContactPanel() {
       <div className="flex flex-wrap gap-3" role="list">
         <button
           onClick={copyEmail}
-          className="flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-150 cursor-pointer"
+          className="flex items-center gap-2 px-3 py-2.5 rounded text-sm transition-colors duration-150 cursor-pointer"
           style={{
             background: 'var(--color-paper)',
             border:     '1px solid var(--color-rule)',
@@ -632,7 +632,7 @@ function ContactPanel() {
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors duration-150 cursor-pointer"
+            className="flex items-center gap-2 px-3 py-2.5 rounded text-sm transition-colors duration-150 cursor-pointer"
             style={{
               background:     'var(--color-paper)',
               border:         '1px solid var(--color-rule)',
@@ -693,6 +693,7 @@ function Sidebar({ active, onSelect }: SidebarProps) {
         width: '220px',
         background: 'var(--color-paper)',
         borderRight: '1px solid var(--color-rule)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
       }}
       aria-label="Site navigation"
     >
@@ -700,7 +701,7 @@ function Sidebar({ active, onSelect }: SidebarProps) {
       <div className="px-6 pt-8 pb-5">
         <p
           className="text-2xl leading-tight"
-          style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic', fontWeight: 700 }}
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontWeight: 700 }}
         >
           Joshua<br />Cortes
         </p>
@@ -726,7 +727,7 @@ function Sidebar({ active, onSelect }: SidebarProps) {
               <button
                 onClick={() => onSelect(item.id)}
                 aria-current={isActive || isGroupActive ? 'page' : undefined}
-                className="w-full text-left px-3 py-2 text-sm rounded-sm transition-colors duration-150 cursor-pointer"
+                className="w-full text-left px-3 py-3 text-sm rounded-sm transition-colors duration-150 cursor-pointer"
                 style={{
                   fontFamily:  'var(--font-body)',
                   color:       isActive || isGroupActive ? 'var(--color-accent)' : 'var(--color-ink-secondary)',
@@ -762,7 +763,7 @@ function Sidebar({ active, onSelect }: SidebarProps) {
                         key={sub.id}
                         onClick={() => onSelect(sub.id)}
                         aria-current={isSubActive ? 'page' : undefined}
-                        className="w-full text-left px-3 py-1.5 text-sm rounded-sm transition-colors duration-150 cursor-pointer"
+                        className="w-full text-left px-3 py-2 text-sm rounded-sm transition-colors duration-150 cursor-pointer"
                         style={{
                           fontFamily: 'var(--font-body)',
                           fontSize:   '0.8125rem',
@@ -828,7 +829,7 @@ function MobileNav({ active, onSelect }: MobileNavProps) {
       <div className="px-5 pt-5 pb-3">
         <p
           className="text-xl leading-tight"
-          style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontStyle: 'italic', fontWeight: 700 }}
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--color-ink-secondary)', fontWeight: 700 }}
         >
           Joshua Cortes
         </p>
@@ -851,7 +852,7 @@ function MobileNav({ active, onSelect }: MobileNavProps) {
                 key={item.id}
                 onClick={() => onSelect(item.id)}
                 aria-current={isActive || isGroupActive ? 'page' : undefined}
-                className="px-4 py-2.5 text-sm whitespace-nowrap transition-colors duration-150 cursor-pointer"
+                className="px-4 py-3 text-sm whitespace-nowrap transition-colors duration-150 cursor-pointer"
                 style={{
                   fontFamily:  'var(--font-body)',
                   color:       isActive || isGroupActive ? 'var(--color-accent)' : 'var(--color-ink-muted)',
@@ -878,7 +879,7 @@ function MobileNav({ active, onSelect }: MobileNavProps) {
                   key={sub.id}
                   onClick={() => onSelect(sub.id)}
                   aria-current={isSubActive ? 'page' : undefined}
-                  className="px-3 py-1.5 text-xs whitespace-nowrap transition-colors duration-150 cursor-pointer rounded-sm"
+                  className="px-3 py-2 text-xs whitespace-nowrap transition-colors duration-150 cursor-pointer rounded-sm"
                   style={{
                     fontFamily:  'var(--font-mono)',
                     color:       isSubActive ? 'var(--color-accent)' : 'var(--color-ink-muted)',
@@ -923,7 +924,7 @@ export default function App() {
             id="main-content"
             className="flex-1 overflow-y-auto"
             tabIndex={-1}
-            style={{ background: 'var(--color-canvas)' }}
+            style={{ background: 'var(--color-canvas)', paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             <TabContent tab={active} />
           </main>
