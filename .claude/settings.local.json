@@ -2,7 +2,22 @@
   "permissions": {
     "allow": [
       "Bash(npm run *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Read(//Users/joshuacortes/.claude/plugins/cache/ui-ux-pro-max-skill/ui-ux-pro-max/2.5.0/.claude/skills/ui-ux-pro-max/**)",
+      "Bash(python3 scripts/search.py \"personal portfolio minimal vintage retro warm cream professional readable\" --design-system -p \"Joshua Portfolio\" -f markdown)",
+      "Bash(python3 scripts/search.py \"warm cream vintage retro earthy muted ink\" --domain color -n 5)",
+      "Bash(python3 scripts/search.py \"vintage serif editorial professional readable\" --domain typography -n 3)",
+      "Skill(run)",
+      "Bash(curl -s http://localhost:5174)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --screenshot=/tmp/portfolio-desktop.png --window-size=1440,900 --hide-scrollbars http://localhost:5174)",
+      "Bash(echo \"exit: $?\")",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --screenshot=/tmp/portfolio-mobile.png --window-size=390,844 --hide-scrollbars http://localhost:5174)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --window-size=1440,900 --hide-scrollbars --run-all-compositor-stages-before-draw --screenshot=/tmp/portfolio-projects.png http://localhost:5174 --virtual-time-budget=2000)",
+      "Bash(npx --yes playwright@latest install chromium --with-deps)",
+      "Read(//Users/joshuacortes/.npm/_npx/705bc6b22212b352/**)",
+      "Read(//Users/joshuacortes/.npm/_npx/e41f203b7505f1fb/**)",
+      "Read(//Users/joshuacortes/.npm/_npx/**)",
+      "Bash(pkill -f \"vite --port 5174\")"
     ]
   }
 }
