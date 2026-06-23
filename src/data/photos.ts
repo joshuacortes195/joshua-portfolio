@@ -18,7 +18,6 @@ export const generalPhotos: string[] = [
   '/photos/hawaii/IMG_8862.jpg',
   // Gma Bday
   '/photos/gma-bday/DSC01361.jpg',
-  '/photos/gma-bday/DSC01368.jpg',
   '/photos/gma-bday/DSC01369.jpg',
   '/photos/gma-bday/DSC01378.jpg',
   '/photos/gma-bday/DSC01384.jpg',
