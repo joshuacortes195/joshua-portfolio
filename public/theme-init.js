@@ -2,7 +2,7 @@
 // flash of the wrong theme. Kept as an external file for CSP (script-src 'self').
 try {
   var t = localStorage.getItem('theme')
-  if (t !== 'light' && t !== 'dark' && t !== 'one-piece') {
+  if (t !== 'light' && t !== 'dark') {
     t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
   }
   document.documentElement.dataset.theme = t
