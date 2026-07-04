@@ -17,7 +17,7 @@ type Tab =
   | 'experience'
   | 'contact'
 
-type Theme = 'dark' | 'light' | 'one-piece'
+type Theme = 'dark' | 'light'
 
 const ABOUT_GROUP = new Set<Tab>(['about', 'photography', 'anime', 'video-games'])
 
@@ -54,12 +54,11 @@ const TAB_TITLES: Record<Tab, string> = {
 // ── Theme ────────────────────────────────────────────────────────────────────
 // Dark is the site default; a stored choice wins, otherwise follow the OS.
 
-const THEMES: Theme[] = ['dark', 'light', 'one-piece']
+const THEMES: Theme[] = ['dark', 'light']
 
 const THEME_META: Record<Theme, { label: string; metaColor: string }> = {
-  'dark':      { label: 'Dark',      metaColor: '#0D1117' },
-  'light':     { label: 'Light',     metaColor: '#F6F8FA' },
-  'one-piece': { label: 'One Piece', metaColor: '#081A2B' },
+  'dark':  { label: 'Dark',  metaColor: '#0D1117' },
+  'light': { label: 'Light', metaColor: '#F6F8FA' },
 }
 
 function initialTheme(): Theme {
@@ -85,21 +84,9 @@ function MoonIcon() {
   )
 }
 
-// Straw hat — the One Piece theme icon
-function StrawHatIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M6 14v-2a6 6 0 0 1 12 0v2" />
-      <path d="M2 14h20" />
-      <path d="M6 11.5h12" strokeWidth="1.2" />
-    </svg>
-  )
-}
-
 const THEME_ICONS: Record<Theme, () => React.ReactElement> = {
   'dark': MoonIcon,
   'light': SunIcon,
-  'one-piece': StrawHatIcon,
 }
 
 function ThemePicker({
@@ -180,33 +167,6 @@ function ThemePicker({
           })}
         </div>
       )}
-    </div>
-  )
-}
-
-// ── One Piece tab transitions ────────────────────────────────────────────────
-// When the One Piece theme is active, switching tabs fires a rotating
-// character effect: Luffy (Gear 5), Zoro (Santoryu), Law (Room).
-
-type OnePieceFx = 'luffy' | 'zoro' | 'law'
-const OP_FX_ORDER: OnePieceFx[] = ['luffy', 'zoro', 'law']
-const OP_FX_LABELS: Record<OnePieceFx, string> = {
-  luffy: 'GEAR 5',
-  zoro:  'SANTORYU',
-  law:   'ROOM',
-}
-
-function OnePieceTransition({ fx }: { fx: OnePieceFx }) {
-  return (
-    <div className={`op-fx op-fx-${fx}`} aria-hidden="true">
-      {fx === 'zoro' && (
-        <>
-          <span className="op-slash" style={{ '--r': '-18deg', '--d': '0ms' } as React.CSSProperties} />
-          <span className="op-slash" style={{ '--r': '11deg',  '--d': '90ms' } as React.CSSProperties} />
-          <span className="op-slash" style={{ '--r': '-52deg', '--d': '180ms' } as React.CSSProperties} />
-        </>
-      )}
-      <span className="op-fx-label">{OP_FX_LABELS[fx]}</span>
     </div>
   )
 }
@@ -1354,10 +1314,8 @@ function MobileNav({ active, onSelect, theme, onSelectTheme }: MobileNavProps) {
 export default function App() {
   const [active, setActive] = useState<Tab>(tabFromHash)
   const [theme, setTheme] = useState<Theme>(initialTheme)
-  const [fx, setFx] = useState<OnePieceFx | null>(null)
   const mainRef = useRef<HTMLElement>(null)
   const prevTab = useRef<Tab>(active)
-  const fxIndex = useRef(0)
 
   // Apply theme to <html>, persist it, and keep the browser UI color in sync
   useEffect(() => {
@@ -1367,13 +1325,6 @@ export default function App() {
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute('content', THEME_META[theme].metaColor)
   }, [theme])
-
-  // Unmount the transition overlay once its animation has played out
-  useEffect(() => {
-    if (fx === null) return
-    const timer = setTimeout(() => setFx(null), 750)
-    return () => clearTimeout(timer)
-  }, [fx])
 
   // Back/forward buttons and hand-typed hashes drive the active tab
   useEffect(() => {
@@ -1395,10 +1346,6 @@ export default function App() {
 
   function selectTab(tab: Tab) {
     if (tab === active) return
-    if (theme === 'one-piece' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setFx(OP_FX_ORDER[fxIndex.current % OP_FX_ORDER.length])
-      fxIndex.current += 1
-    }
     window.location.hash = tab
   }
 
@@ -1432,9 +1379,6 @@ export default function App() {
           >
             <TabContent tab={active} />
           </main>
-
-          {/* One Piece theme: character-power tab transition */}
-          {fx !== null && <OnePieceTransition fx={fx} />}
         </div>
       </div>
     </>
