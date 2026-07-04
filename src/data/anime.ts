@@ -117,7 +117,7 @@ export const animeList: AnimeEntry[] = [
     id: 'parasyte',
     title: 'Parasyte',
     cover:   '/anime/parasyte/cover.jpg',
-    banner:  null,
+    banner:  '/anime/parasyte/banner.jpg',
     gallery: [
       '/anime/parasyte/gallery-1.jpg',
       '/anime/parasyte/gallery-2.jpg',
@@ -185,7 +185,7 @@ export const animeList: AnimeEntry[] = [
     id: 'vinland-saga',
     title: 'Vinland Saga',
     cover:   '/anime/vinland-saga/cover.jpg',
-    banner:  null,
+    banner:  '/anime/vinland-saga/banner.jpg',
     gallery: [
       '/anime/vinland-saga/gallery-1.jpg',
       '/anime/vinland-saga/gallery-2.jpg',
@@ -321,7 +321,7 @@ export const animeList: AnimeEntry[] = [
     id: 'super-cube',
     title: 'Super Cube',
     cover:   '/anime/super-cube/cover.jpg',
-    banner:  null,
+    banner:  '/anime/super-cube/banner.jpg',
     gallery: [],
     genres: ['Action', 'Adventure', 'Fantasy'],
     desc: "Wang Xiaoxiu obtains a mysterious space system called the Superpower Cube from a high-latitude cosmic civilization, unlocking abilities that set him on a path far beyond ordinary humanity.",
