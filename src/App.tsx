@@ -89,85 +89,26 @@ const THEME_ICONS: Record<Theme, () => React.ReactElement> = {
   'light': SunIcon,
 }
 
-function ThemePicker({
+function ThemeToggle({
   theme,
   onSelect,
-  direction,
 }: {
   theme: Theme
   onSelect: (t: Theme) => void
-  direction: 'up' | 'down'
 }) {
-  const [open, setOpen] = useState(false)
-  const rootRef = useRef<HTMLDivElement>(null)
+  const next: Theme = theme === 'dark' ? 'light' : 'dark'
   const CurrentIcon = THEME_ICONS[theme]
 
-  useEffect(() => {
-    if (!open) return
-    function onDocClick(e: MouseEvent) {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
-    }
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('mousedown', onDocClick)
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('mousedown', onDocClick)
-      document.removeEventListener('keydown', onKeyDown)
-    }
-  }, [open])
-
   return (
-    <div ref={rootRef} className="relative">
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="chip flex items-center justify-center rounded cursor-pointer"
-        style={{ width: '44px', height: '44px' }}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-label={`Theme: ${THEME_META[theme].label}. Change theme`}
-        title="Theme"
-      >
-        <CurrentIcon />
-      </button>
-
-      {open && (
-        <div
-          role="menu"
-          aria-label="Themes"
-          className={`absolute z-30 rounded p-1 min-w-36 ${direction === 'up' ? 'bottom-full mb-2 left-0' : 'top-full mt-2 right-0'}`}
-          style={{
-            background: 'var(--color-paper)',
-            border: '1px solid var(--color-rule)',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
-          }}
-        >
-          {THEMES.map(t => {
-            const Icon = THEME_ICONS[t]
-            const isActive = t === theme
-            return (
-              <button
-                key={t}
-                role="menuitemradio"
-                aria-checked={isActive}
-                onClick={() => { onSelect(t); setOpen(false) }}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-sm text-left cursor-pointer"
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  color: isActive ? 'var(--color-accent)' : 'var(--color-ink)',
-                  background: isActive ? 'var(--color-paper-hover)' : 'transparent',
-                  fontWeight: isActive ? 600 : 400,
-                }}
-              >
-                <Icon />
-                {THEME_META[t].label}
-              </button>
-            )
-          })}
-        </div>
-      )}
-    </div>
+    <button
+      onClick={() => onSelect(next)}
+      className="chip flex items-center justify-center rounded cursor-pointer"
+      style={{ width: '44px', height: '44px' }}
+      aria-label={`Switch to ${THEME_META[next].label.toLowerCase()} theme`}
+      title={`Switch to ${THEME_META[next].label.toLowerCase()} theme`}
+    >
+      <CurrentIcon />
+    </button>
   )
 }
 
@@ -1205,7 +1146,7 @@ function Sidebar({ active, onSelect, theme, onSelectTheme }: SidebarProps) {
         >
           © 2025
         </p>
-        <ThemePicker theme={theme} onSelect={onSelectTheme} direction="up" />
+        <ThemeToggle theme={theme} onSelect={onSelectTheme} />
       </div>
     </aside>
   )
@@ -1250,7 +1191,7 @@ function MobileNav({ active, onSelect, theme, onSelectTheme }: MobileNavProps) {
             Full-Stack Developer / Software Engineer
           </p>
         </div>
-        <ThemePicker theme={theme} onSelect={onSelectTheme} direction="down" />
+        <ThemeToggle theme={theme} onSelect={onSelectTheme} />
       </div>
 
       {/* Main nav */}
