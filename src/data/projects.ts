@@ -20,6 +20,24 @@ export const projects: Project[] = [
     image: '/projects/asteroids.jpg',
   },
   {
+    title: 'Stock Movement Predictor',
+    role: 'Full-Stack Developer',
+    tags: ['Python', 'Machine Learning', 'scikit-learn', 'React', 'REST API'],
+    description:
+      'Machine-learning web app that predicts next-day, next-week, and next-month stock direction for any ticker. A gradient-boosting model trained on 24 engineered features (momentum, volatility, RSI, VIX) is served through a REST API, with user accounts and a personal watchlist.',
+    link: 'https://stock-predictor-o9e2.onrender.com/',
+    image: '/projects/stock-predictor.jpg',
+  },
+  {
+    title: 'Photography Portfolio — afterimage.thirds',
+    role: 'Full-Stack Developer',
+    tags: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Google Drive API'],
+    description:
+      'Portfolio site for afterimage.thirds, a three-photographer collective. Server-rendered galleries pull photos straight from Google Drive through a custom image API, so new work goes live without a redeploy.',
+    link: 'https://afterimagethirds.netlify.app/',
+    image: '/projects/photography.jpg',
+  },
+  {
     title: 'Bible App',
     role: 'Full-Stack Developer',
     tags: ['React', 'TypeScript', 'Tailwind CSS', 'SQL', 'ESV API'],
