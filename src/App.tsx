@@ -618,12 +618,12 @@ function ProjectsPanel() {
                   href={project.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="link-accent inline-flex items-center gap-2 text-sm mt-4 py-1 cursor-pointer"
+                  className="chip-accent inline-flex items-center gap-2 px-4 py-2.5 text-sm rounded mt-4 cursor-pointer"
                   style={{ fontFamily: 'var(--font-mono)', textDecoration: 'none' }}
-                  aria-label={`View ${project.title} project (opens in new tab)`}
+                  aria-label={`${project.cta ?? 'Check out'} ${project.title} (opens in new tab)`}
                 >
                   <ExternalLinkIcon />
-                  View project
+                  {project.cta ?? 'Check it out'}
                 </a>
               )}
             </div>
