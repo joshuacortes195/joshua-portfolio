@@ -1,3 +1,5 @@
+import { Rocket, TrendingUp, Camera, BookOpen, LayoutGrid, Ghost, Bot, type LucideIcon } from 'lucide-react'
+
 export type Project = {
   title: string
   role: string
@@ -5,8 +7,8 @@ export type Project = {
   description: string
   /** Live demo URL — omit for projects without a public deployment */
   link?: string
-  /** Screenshot under public/projects — 960x600 (16:10) */
-  image?: string
+  /** Card icon */
+  icon: LucideIcon
 }
 
 export const projects: Project[] = [
@@ -17,7 +19,7 @@ export const projects: Project[] = [
     description:
       'Multiplayer space-shooter with three game modes (Single-Player, Competitive, Co-op). Architected a multi-threaded engine with 9 concurrent threads managing collision detection, physics-based movement, player input, and enemy AI.',
     link: 'https://asteroid-game01.netlify.app/',
-    image: '/projects/asteroids.jpg',
+    icon: Rocket,
   },
   {
     title: 'Stock Movement Predictor',
@@ -26,7 +28,7 @@ export const projects: Project[] = [
     description:
       'Machine-learning web app that predicts next-day, next-week, and next-month stock direction for any ticker. A gradient-boosting model trained on 24 engineered features (momentum, volatility, RSI, VIX) is served through a REST API, with user accounts and a personal watchlist.',
     link: 'https://stock-predictor-o9e2.onrender.com/',
-    image: '/projects/stock-predictor.jpg',
+    icon: TrendingUp,
   },
   {
     title: 'Photography Portfolio — afterimage.thirds',
@@ -35,7 +37,7 @@ export const projects: Project[] = [
     description:
       'Portfolio site for afterimage.thirds, a three-photographer collective. Server-rendered galleries pull photos straight from Google Drive through a custom image API, so new work goes live without a redeploy.',
     link: 'https://afterimagethirds.netlify.app/',
-    image: '/projects/photography.jpg',
+    icon: Camera,
   },
   {
     title: 'Bible App',
@@ -44,7 +46,7 @@ export const projects: Project[] = [
     description:
       'Full-stack cross-platform Bible app with user authentication, verse highlighting, note-taking, and daily-streak tracking, backed by a SQL database. Integrates the ESV translation API and deploys to desktop, iOS, and Android from a single shared codebase.',
     link: 'https://bibleapp.lovable.app/',
-    image: '/projects/bible.jpg',
+    icon: BookOpen,
   },
   {
     title: 'Wordle Game Clone',
@@ -53,7 +55,7 @@ export const projects: Project[] = [
     description:
       'Browser Wordle clone with theme switching, custom word-list upload, and an on-screen keyboard — faithful game logic across 5,700+ words.',
     link: 'https://wordle-clone.lovable.app/',
-    image: '/projects/wordle.jpg',
+    icon: LayoutGrid,
   },
   {
     title: 'Pacman AI',
@@ -61,6 +63,7 @@ export const projects: Project[] = [
     tags: ['Python', 'AI', 'Search Algorithms'],
     description:
       'Implemented DFS, BFS, UCS, and A* search algorithms to autonomously navigate complex mazes, reducing state-space exploration from 620 to 14 nodes while preserving solution optimality.',
+    icon: Ghost,
   },
   {
     title: 'Acquisition Robot',
@@ -68,5 +71,6 @@ export const projects: Project[] = [
     tags: ['EV3 Mindstorms', 'AutoCAD', 'SolidWorks'],
     description:
       'Button-controlled robotic arm that retrieves and transfers objects, with custom components designed in AutoCAD and SolidWorks from LEGO, 3D-printed, and acrylic materials. Diagnosed retrieval failures as a mechanical grip limitation and redesigned the scoop, raising success rate to 99% across 100+ test cycles.',
+    icon: Bot,
   },
 ]

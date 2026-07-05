@@ -551,7 +551,7 @@ function ProjectsPanel() {
       </h2>
 
       <div className="space-y-5">
-        {projects.map((project, i) => (
+        {projects.map(project => (
           <article
             key={project.title}
             className="rounded-sm overflow-hidden transition-colors duration-150"
@@ -560,36 +560,19 @@ function ProjectsPanel() {
               border: '1px solid var(--color-rule)',
             }}
           >
-            {project.image && (
-              <a
-                href={project.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Open ${project.title} live demo (opens in new tab)`}
-                className="block cursor-pointer"
-                style={{ borderBottom: '1px solid var(--color-rule)' }}
-              >
-                <img
-                  src={project.image}
-                  alt={`Screenshot of ${project.title}`}
-                  width={960}
-                  height={600}
-                  loading={i < 1 ? 'eager' : 'lazy'}
-                  decoding="async"
-                  className="w-full block transition-opacity duration-200 hover:opacity-90"
-                  style={{ aspectRatio: '960 / 600', height: 'auto', objectFit: 'cover' }}
-                />
-              </a>
-            )}
-
             <div className="p-5">
-              <div className="flex items-baseline justify-between gap-3 flex-wrap mb-3">
-                <div className="flex items-baseline gap-3">
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+                <div className="flex items-center gap-3">
                   <span
-                    className="text-xs shrink-0"
-                    style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+                    className="flex items-center justify-center h-10 w-10 rounded-sm shrink-0"
+                    style={{
+                      background: 'var(--color-accent-light)',
+                      color: 'var(--color-accent)',
+                      border: '1px solid var(--color-rule)',
+                    }}
+                    aria-hidden="true"
                   >
-                    {String(i + 1).padStart(2, '0')}
+                    <project.icon className="h-5 w-5" strokeWidth={1.75} />
                   </span>
                   <h3
                     className="text-lg font-semibold"
