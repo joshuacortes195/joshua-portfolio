@@ -7,6 +7,8 @@ export type Project = {
   description: string
   /** Live demo URL — omit for projects without a public deployment */
   link?: string
+  /** Call-to-action label for the live-demo button */
+  cta?: string
   /** Card icon */
   icon: LucideIcon
 }
@@ -19,6 +21,7 @@ export const projects: Project[] = [
     description:
       'Multiplayer space-shooter with three game modes (Single-Player, Competitive, Co-op). Architected a multi-threaded engine with 9 concurrent threads managing collision detection, physics-based movement, player input, and enemy AI.',
     link: 'https://asteroid-game01.netlify.app/',
+    cta: 'Play the game',
     icon: Rocket,
   },
   {
@@ -28,6 +31,7 @@ export const projects: Project[] = [
     description:
       'Machine-learning web app that predicts next-day, next-week, and next-month stock direction for any ticker. A gradient-boosting model trained on 24 engineered features (momentum, volatility, RSI, VIX) is served through a REST API, with user accounts and a personal watchlist.',
     link: 'https://stock-predictor-o9e2.onrender.com/',
+    cta: 'Try the app',
     icon: TrendingUp,
   },
   {
@@ -37,6 +41,7 @@ export const projects: Project[] = [
     description:
       'Portfolio site for afterimage.thirds, a three-photographer collective. Server-rendered galleries pull photos straight from Google Drive through a custom image API, so new work goes live without a redeploy.',
     link: 'https://afterimagethirds.netlify.app/',
+    cta: 'View the site',
     icon: Camera,
   },
   {
@@ -46,6 +51,7 @@ export const projects: Project[] = [
     description:
       'Full-stack cross-platform Bible app with user authentication, verse highlighting, note-taking, and daily-streak tracking, backed by a SQL database. Integrates the ESV translation API and deploys to desktop, iOS, and Android from a single shared codebase.',
     link: 'https://bibleapp.lovable.app/',
+    cta: 'Try the app',
     icon: BookOpen,
   },
   {
@@ -55,6 +61,7 @@ export const projects: Project[] = [
     description:
       'Browser Wordle clone with theme switching, custom word-list upload, and an on-screen keyboard — faithful game logic across 5,700+ words.',
     link: 'https://wordle-clone.lovable.app/',
+    cta: 'Play the game',
     icon: LayoutGrid,
   },
   {
