@@ -19,7 +19,7 @@ export const projects: Project[] = [
     role: 'Full-Stack Developer',
     tags: ['Java', 'OOP', 'Multithreading', 'Game Development'],
     description:
-      'Multiplayer space-shooter with three game modes (Single-Player, Competitive, Co-op). Architected a multi-threaded engine with 9 concurrent threads managing collision detection, physics-based movement, player input, and enemy AI.',
+      'Multiplayer space-shooter with three game modes, built on a custom engine that runs collision detection, physics, player input, and enemy AI across 9 concurrent threads.',
     link: 'https://asteroid-game01.netlify.app/',
     cta: 'Play the game',
     icon: Rocket,
@@ -29,7 +29,7 @@ export const projects: Project[] = [
     role: 'Full-Stack Developer',
     tags: ['Python', 'Machine Learning', 'scikit-learn', 'React', 'REST API'],
     description:
-      'Machine-learning web app that predicts next-day, next-week, and next-month stock direction for any ticker. A gradient-boosting model trained on 24 engineered features (momentum, volatility, RSI, VIX) is served through a REST API, with user accounts and a personal watchlist.',
+      'Machine-learning web app that predicts next-day, next-week, and next-month stock direction for any ticker using a gradient-boosting model trained on 24 engineered features, with user accounts and a personal watchlist.',
     link: 'https://stock-predictor-o9e2.onrender.com/',
     cta: 'Try the app',
     icon: TrendingUp,
@@ -39,7 +39,7 @@ export const projects: Project[] = [
     role: 'Full-Stack Developer',
     tags: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Google Drive API'],
     description:
-      'Portfolio site for afterimage.thirds, a three-photographer collective. Server-rendered galleries pull photos straight from Google Drive through a custom image API, so new work goes live without a redeploy.',
+      'Portfolio site for a three-photographer collective whose server-rendered galleries pull photos straight from Google Drive through a custom image API, so new work goes live without a redeploy.',
     link: 'https://afterimagethirds.netlify.app/',
     cta: 'View the site',
     icon: Camera,
@@ -49,7 +49,7 @@ export const projects: Project[] = [
     role: 'Full-Stack Developer',
     tags: ['React', 'TypeScript', 'Tailwind CSS', 'SQL', 'ESV API'],
     description:
-      'Full-stack cross-platform Bible app with user authentication, verse highlighting, note-taking, and daily-streak tracking, backed by a SQL database. Integrates the ESV translation API and deploys to desktop, iOS, and Android from a single shared codebase.',
+      'Cross-platform Bible app with authentication, verse highlighting, note-taking, and daily-streak tracking that ships to desktop, iOS, and Android from a single codebase.',
     link: 'https://bibleapp.lovable.app/',
     cta: 'Try the app',
     icon: BookOpen,
@@ -59,7 +59,7 @@ export const projects: Project[] = [
     role: 'Full-Stack Developer',
     tags: ['JavaScript', 'HTML', 'CSS'],
     description:
-      'Browser Wordle clone with theme switching, custom word-list upload, and an on-screen keyboard — faithful game logic across 5,700+ words.',
+      'Browser Wordle clone with faithful game logic across 5,700+ words, plus theme switching, custom word-list upload, and an on-screen keyboard.',
     link: 'https://wordle-clone.lovable.app/',
     cta: 'Play the game',
     icon: LayoutGrid,
@@ -69,7 +69,7 @@ export const projects: Project[] = [
     role: 'AI Developer',
     tags: ['Python', 'AI', 'Search Algorithms'],
     description:
-      'Implemented DFS, BFS, UCS, and A* search algorithms to autonomously navigate complex mazes, reducing state-space exploration from 620 to 14 nodes while preserving solution optimality.',
+      'Autonomous maze navigation with DFS, BFS, UCS, and A* search, cutting state-space exploration from 620 nodes to 14 while preserving solution optimality.',
     icon: Ghost,
   },
   {
@@ -77,7 +77,7 @@ export const projects: Project[] = [
     role: 'Robotics Engineer',
     tags: ['EV3 Mindstorms', 'AutoCAD', 'SolidWorks'],
     description:
-      'Button-controlled robotic arm that retrieves and transfers objects, with custom components designed in AutoCAD and SolidWorks from LEGO, 3D-printed, and acrylic materials. Diagnosed retrieval failures as a mechanical grip limitation and redesigned the scoop, raising success rate to 99% across 100+ test cycles.',
+      'Button-controlled robotic arm with custom AutoCAD/SolidWorks-designed components, redesigned after failure analysis to a 99% retrieval success rate across 100+ test cycles.',
     icon: Bot,
   },
 ]
