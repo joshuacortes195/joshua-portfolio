@@ -9,6 +9,8 @@ export type Project = {
   link?: string
   /** Call-to-action label for the live-demo button */
   cta?: string
+  /** True when the demo needs a keyboard/mouse and won't work on phones */
+  desktopOnly?: boolean
   /** Card icon */
   icon: LucideIcon
 }
@@ -22,6 +24,7 @@ export const projects: Project[] = [
       'Multiplayer space-shooter with three game modes, built on a custom engine that runs collision detection, physics, player input, and enemy AI across 9 concurrent threads.',
     link: 'https://asteroid-game01.netlify.app/',
     cta: 'Play the game',
+    desktopOnly: true,
     icon: Rocket,
   },
   {
