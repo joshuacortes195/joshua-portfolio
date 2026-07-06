@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Monitor } from 'lucide-react'
 import { projects } from './data/projects'
 import { education, work, type TimelineEntry } from './data/experience'
 import { generalPhotos, animalPhotos, type Photo } from './data/photos'
@@ -614,17 +615,28 @@ function ProjectsPanel() {
               </div>
 
               {project.link && (
-                <a
-                  href={project.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="chip-accent inline-flex items-center gap-2 px-4 py-2.5 text-sm rounded mt-4 cursor-pointer"
-                  style={{ fontFamily: 'var(--font-mono)', textDecoration: 'none' }}
-                  aria-label={`${project.cta ?? 'Check out'} ${project.title} (opens in new tab)`}
-                >
-                  <ExternalLinkIcon />
-                  {project.cta ?? 'Check it out'}
-                </a>
+                <div className="flex items-center gap-4 flex-wrap mt-4">
+                  <a
+                    href={project.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="chip-accent inline-flex items-center gap-2 px-4 py-2.5 text-sm rounded cursor-pointer"
+                    style={{ fontFamily: 'var(--font-mono)', textDecoration: 'none' }}
+                    aria-label={`${project.cta ?? 'Check out'} ${project.title} (opens in new tab)`}
+                  >
+                    <ExternalLinkIcon />
+                    {project.cta ?? 'Check it out'}
+                  </a>
+                  {project.desktopOnly && (
+                    <span
+                      className="inline-flex items-center gap-1.5 text-xs"
+                      style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-ink-muted)' }}
+                    >
+                      <Monitor className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      Desktop only — needs a keyboard
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           </article>
