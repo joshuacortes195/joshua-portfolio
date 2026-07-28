@@ -1,4 +1,4 @@
-import { Rocket, TrendingUp, Camera, BookOpen, LayoutGrid, Ghost, Bot, type LucideIcon } from 'lucide-react'
+import { Bird, Rocket, TrendingUp, Camera, BookOpen, LayoutGrid, Ghost, Bot, type LucideIcon } from 'lucide-react'
 
 export type Project = {
   title: string
@@ -16,6 +16,16 @@ export type Project = {
 }
 
 export const projects: Project[] = [
+  {
+    title: 'Bird Identifier',
+    role: 'Machine Learning Engineer',
+    tags: ['PyTorch', 'Deep Learning', 'ONNX', 'FastAPI', 'React', 'TypeScript'],
+    description:
+      'Fine-grained species classifier that names any of 555 North American birds from a single photo, serving a ConvNeXt V2 model as a quantized ONNX graph behind a FastAPI endpoint and returning ranked predictions with a Grad-CAM heatmap of what the model actually looked at.',
+    link: 'https://bird-identifier-zeta.vercel.app/',
+    cta: 'Try the app',
+    icon: Bird,
+  },
   {
     title: 'Asteroids Game',
     role: 'Full-Stack Developer',
