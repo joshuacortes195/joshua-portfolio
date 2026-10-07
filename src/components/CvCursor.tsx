@@ -5,19 +5,37 @@ import { gsap, useGSAP, finePointer, reducedMotion } from '../lib/motion'
 const RING = 36
 // breathing room between the box and the thing it wraps
 const PAD = 6
+// the things the cursor can detect
+const TARGETS = '[data-cursor], a, button'
+// how far a finger can drift and still count as a tap, in pixels
+const TAP_SLOP = 10
+// how long a tap's detection box stays up, in seconds
+const TAP_HOLD = 1.1
 
 export default function CvCursor() {
-  // only on desktop with a real mouse
-  const [enabled] = useState(finePointer)
-  // reduced motion gets the dot only, no ring or box
-  const [dotOnly] = useState(reducedMotion)
+  // real mouse gets the full cursor, touch screens get a detection box on tap
+  const [mouse] = useState(finePointer)
+  // reduced motion gets the dot only on desktop, and no lock-on animation on phones
+  const [calm] = useState(reducedMotion)
   const dot = useRef<HTMLDivElement>(null)
   const box = useRef<HTMLDivElement>(null)
   const tag = useRef<HTMLSpanElement>(null)
   const score = useRef<HTMLSpanElement>(null)
 
+  // writes the label for a detection, like "link 0.52"
+  function label(target: HTMLElement) {
+    if (!tag.current || !score.current) return
+    // new made-up confidence for every detection, from 0.01 to 0.99
+    const confidence = gsap.utils.random(0.01, 0.99, 0.01)
+    tag.current.textContent = target.dataset.cursor ?? 'link'
+    score.current.textContent = confidence.toFixed(2)
+    // low scores are red, high scores are green, yellow in between
+    score.current.style.color = `hsl(${Math.round(confidence * 120)} 85% 58%)`
+  }
+
+  // desktop: dot under the mouse, ring that snaps into a box around things
   useGSAP(() => {
-    if (!enabled || !dot.current) return
+    if (!mouse || !dot.current) return
 
     // hides the normal arrow while our cursor is running
     document.documentElement.classList.add('cv-cursor')
@@ -41,18 +59,11 @@ export default function CvCursor() {
     // finds what the mouse is over and switches between ring and box
     function detect() {
       const under = document.elementFromPoint(mouseX, mouseY)
-      const next = under?.closest<HTMLElement>('[data-cursor], a, button') ?? null
+      const next = under?.closest<HTMLElement>(TARGETS) ?? null
       if (next === target) return
       target = next
       boxEl?.classList.toggle('is-locked', Boolean(target))
-      if (target && tag.current && score.current) {
-        // new made-up confidence for every detection, from 0.01 to 0.99
-        const confidence = gsap.utils.random(0.01, 0.99, 0.01)
-        tag.current.textContent = target.dataset.cursor ?? 'link'
-        score.current.textContent = confidence.toFixed(2)
-        // low scores are red, high scores are green, yellow in between
-        score.current.style.color = `hsl(${Math.round(confidence * 120)} 85% 58%)`
-      }
+      if (target) label(target)
     }
 
     // sends the ring to the mouse, or snaps the box around the target
@@ -102,7 +113,7 @@ export default function CvCursor() {
       seen = false
     }
 
-    // keeps the box glued to things that move on their own, like the ring cards
+    // keeps the box glued to things that move on their own, like the wheel cards
     function follow() {
       if (target) place()
     }
@@ -121,12 +132,87 @@ export default function CvCursor() {
     }
   })
 
-  if (!enabled) return null
+  // phones: tapping something draws the detection box around it for a moment
+  useGSAP(() => {
+    const boxEl = box.current
+    if (mouse || !boxEl) return
+
+    let target: HTMLElement | null = null
+    let startX = 0
+    let startY = 0
+    let hide: gsap.core.Tween | null = null
+    // gap around the target, starts wide and tightens so the box locks on
+    const gap = { pad: PAD }
+
+    // takes the box away
+    function clear() {
+      target = null
+      hide?.kill()
+      boxEl!.classList.remove('is-locked')
+      gsap.set(boxEl, { autoAlpha: 0 })
+    }
+
+    // remembers where the finger went down
+    function onDown(e: PointerEvent) {
+      if (e.pointerType === 'mouse') return
+      startX = e.clientX
+      startY = e.clientY
+    }
+
+    // finger lifted: if it was a tap on something, box it
+    function onUp(e: PointerEvent) {
+      if (e.pointerType === 'mouse') return
+      // swipes and scrolls don't count
+      if (Math.hypot(e.clientX - startX, e.clientY - startY) > TAP_SLOP) return
+      const next = (e.target as Element | null)?.closest?.<HTMLElement>(TARGETS) ?? null
+      if (!next) {
+        clear()
+        return
+      }
+      target = next
+      label(next)
+      boxEl!.classList.add('is-locked')
+      gsap.set(boxEl, { autoAlpha: 1 })
+      if (calm) gap.pad = PAD
+      else gsap.fromTo(gap, { pad: PAD * 4 }, { pad: PAD, duration: 0.3, ease: 'power3.out' })
+      follow()
+      // goes away on its own after a moment
+      hide?.kill()
+      hide = gsap.delayedCall(TAP_HOLD, clear)
+    }
+
+    // keeps the box on the target while the page scrolls or the card moves
+    function follow() {
+      if (!target) return
+      if (!target.isConnected) {
+        clear()
+        return
+      }
+      const r = target.getBoundingClientRect()
+      gsap.set(boxEl, {
+        x: r.left - gap.pad,
+        y: r.top - gap.pad,
+        width: r.width + gap.pad * 2,
+        height: r.height + gap.pad * 2,
+      })
+    }
+
+    window.addEventListener('pointerdown', onDown, { passive: true })
+    window.addEventListener('pointerup', onUp, { passive: true })
+    gsap.ticker.add(follow)
+
+    return () => {
+      window.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('pointerup', onUp)
+      gsap.ticker.remove(follow)
+      hide?.kill()
+    }
+  })
 
   return (
     <div aria-hidden="true">
       {/* ring that turns into a detection box */}
-      {!dotOnly && (
+      {(!mouse || !calm) && (
         <div ref={box} className="cv-box">
           <span className="cv-corner cv-tl" />
           <span className="cv-corner cv-tr" />
@@ -139,7 +225,7 @@ export default function CvCursor() {
       )}
 
       {/* the small dot right under the mouse */}
-      <div ref={dot} className="cv-dot" />
+      {mouse && <div ref={dot} className="cv-dot" />}
     </div>
   )
 }

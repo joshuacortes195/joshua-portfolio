@@ -181,35 +181,81 @@ button, a, input, textarea {
     color: var(--ink);
   }
 
-  /* project cards: on desktop each one gets its own width, nudge and gap */
+  /* project wheel: sideways strip that snaps one card to the middle */
+  .wheel {
+    --card: min(90vw, 44rem);
+    position: relative;
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    /* side padding lets the first and last card reach the middle, the rest is room for the shadow */
+    padding: 2rem calc(50% - var(--card) / 2) 4.5rem;
+  }
   @media (min-width: 768px) {
-    .scatter {
-      width: var(--w);
-      margin-left: var(--x);
-      margin-top: var(--gap);
+    .wheel {
+      gap: 2rem;
     }
   }
 
-  /* project cards: slight tilt, smaller on phones */
-  .scatter {
-    rotate: calc(var(--tilt) * 0.5);
+  /* project wheel: one card's spot on the strip */
+  .wheel-slot {
+    flex: 0 0 var(--card);
+    scroll-snap-align: center;
   }
-  @media (min-width: 768px) {
-    .scatter {
-      rotate: var(--tilt);
-    }
+  .wheel-slot > div {
+    will-change: transform;
   }
 
-  /* menu: the screen on its own, no monitor case around it */
+  /* project cards: dark screen with scanlines for projects without a clip */
+  .blank-screen {
+    background:
+      repeating-linear-gradient(to bottom, transparent 0 2px, rgb(255 255 255 / 0.05) 2px 3px),
+      var(--ink);
+  }
+
+  /* experience: the full breakdown, slides open and shut */
+  .more {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.45s ease;
+  }
+  .more.is-open {
+    grid-template-rows: 1fr;
+  }
+  .more > * {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* menu: the beige computer case, with a dark outline so it stands off the page */
+  .menu-case {
+    border: 2px solid var(--ink);
+    box-shadow:
+      inset 0 -6px 0 var(--case-shade),
+      inset 0 2px 0 #F4EFE3,
+      0 1.5rem 2.5rem -1rem rgb(13 13 13 / 0.45);
+  }
+
+  /* menu: the screen grows with its choices instead of staying 4:3 */
   .monitor-screen.menu-screen {
     display: block;
     aspect-ratio: auto;
-    max-height: calc(100svh - 5.5rem);
+    max-height: calc(100svh - 9.5rem);
     overflow-y: auto;
-    padding: 1.25rem 1.375rem;
-    border-radius: 1.5rem;
-    box-shadow: none;
+    padding: 1.125rem 1.25rem;
     font-size: 0.875rem;
+  }
+
+  /* menu: bright flash when the screen powers on */
+  .crt-flash {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: var(--accent-soft);
+    opacity: 0;
+    pointer-events: none;
   }
 
   /* menu: one clickable choice on the screen */
@@ -261,7 +307,7 @@ button, a, input, textarea {
     font-size: 0.75rem;
   }
 
-  /* hides the scrollbar on the work strip */
+  /* hides the scrollbar on the project wheel and the menu */
   .no-scrollbar {
     scrollbar-width: none;
   }
@@ -384,25 +430,37 @@ button, a, input, textarea {
     box-shadow: none;
   }
 
-  /* cursor background: round window that follows the mouse, soft at the edges */
-  .cursor-spot {
+  /* cursor background: layer behind the page that holds the trail and fades it in and out */
+  .cursor-trail {
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
     z-index: -10;
     overflow: hidden;
-    border-radius: 999px;
     opacity: 0;
     pointer-events: none;
-    will-change: transform, opacity;
+  }
+
+  /* cursor background: one round window of the trail, soft at the edges */
+  .cursor-spot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    border-radius: 999px;
+    will-change: transform;
     mask-image: radial-gradient(closest-side, #000 45%, transparent);
   }
 
-  /* cursor background: the grid seen through the window, thin lines plus a heavier one every fifth */
+  /* cursor background: the big sheet of grid seen through the window */
   .cursor-spot-grid {
     width: 100vw;
     height: 100vh;
     will-change: transform;
+  }
+
+  /* thin lines plus a heavier one every fifth, --gx and --gy slide it so separate pieces still line up */
+  .grid-paper {
+    --shift: calc(0px - var(--gx, 0px)) calc(0px - var(--gy, 0px));
     background-color: var(--mute);
     background-image:
       radial-gradient(circle, var(--accent) 3px, transparent 3.5px),
@@ -411,7 +469,41 @@ button, a, input, textarea {
       linear-gradient(to right, #C9C9C4 1px, transparent 1px),
       linear-gradient(to bottom, #C9C9C4 1px, transparent 1px);
     background-size: 200px 200px, 200px 200px, 200px 200px, 40px 40px, 40px 40px;
-    background-position: -100px -100px, 0 0, 0 0, 0 0, 0 0;
+    background-position:
+      calc(-100px - var(--gx, 0px)) calc(-100px - var(--gy, 0px)),
+      var(--shift), var(--shift), var(--shift), var(--shift);
+  }
+
+  /* click ripples: layer behind the page that holds the rings */
+  .ripples {
+    position: fixed;
+    inset: 0;
+    z-index: -10;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* click ripples: one ring, see-through in the middle and soft on both edges */
+  .ripple {
+    position: absolute;
+    border-radius: 999px;
+    mask-image: radial-gradient(closest-side, transparent 42%, #000 74%, transparent);
+  }
+
+  /* cutouts: layer behind the page that holds them all */
+  .cutouts {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -10;
+    width: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  /* cutouts: one small window, its uneven shape comes from a mask set per cutout */
+  .cutout {
+    position: absolute;
   }
 
   /* cursor: the small dot */
@@ -485,11 +577,6 @@ button, a, input, textarea {
   .cv-box.is-locked .cv-tag {
     opacity: 1;
   }
-}
-
-/* the terminal input shows a text caret, so it skips the focus ring */
-.monitor-screen input:focus-visible {
-  outline: none;
 }
 
 /* hides the normal arrow while the custom cursor is on */

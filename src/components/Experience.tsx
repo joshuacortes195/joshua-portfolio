@@ -1,4 +1,58 @@
-import { jobs, education } from '../data/experience'
+import { useId, useState } from 'react'
+import { jobs, education, type Job } from '../data/experience'
+import { ScrollTrigger } from '../lib/motion'
+
+// one job row: short summary up front, full breakdown behind read more
+function JobRow({ job }: { job: Job }) {
+  const [open, setOpen] = useState(false)
+  const detailsId = useId()
+
+  return (
+    <article data-reveal className="grid gap-x-8 gap-y-4 md:grid-cols-12 border-t border-ink py-8">
+      <div className="md:col-span-4">
+        <h3 className="text-2xl md:text-3xl font-semibold tracking-tight leading-tight">{job.role}</h3>
+        <p className="mt-1 text-lg">{job.company}</p>
+        <p className="meta mt-3 text-ink-soft">
+          {job.dates}
+          <br />
+          {job.location}
+        </p>
+      </div>
+
+      <div className="md:col-span-8 max-w-[72ch]">
+        {/* the short version */}
+        <p className="text-base md:text-lg leading-snug">{job.summary}</p>
+
+        {/* the full breakdown, slides open, page animations re-measure once it's done */}
+        <div
+          id={detailsId}
+          inert={!open}
+          onTransitionEnd={() => ScrollTrigger.refresh()}
+          className={`more ${open ? 'is-open' : ''}`}
+        >
+          <ul className="space-y-4 text-base md:text-lg leading-snug">
+            {job.bullets.map(b => (
+              <li key={b} className="first:pt-6">
+                {b}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* opens and closes the breakdown */}
+        <button
+          type="button"
+          onClick={() => setOpen(o => !o)}
+          aria-expanded={open}
+          aria-controls={detailsId}
+          className="pill mt-5"
+        >
+          {open ? 'Show less' : 'Read more'}
+        </button>
+      </div>
+    </article>
+  )
+}
 
 export default function Experience() {
   return (
@@ -7,30 +61,10 @@ export default function Experience() {
         Experience
       </h2>
 
-      {/* one row per job, role on the left and bullets on the right */}
+      {/* one row per job, role on the left and the summary on the right */}
       <div className="mt-10 md:mt-14 border-b border-ink">
         {jobs.map(job => (
-          <article
-            key={job.company}
-            data-reveal
-            className="grid gap-x-8 gap-y-4 md:grid-cols-12 border-t border-ink py-8"
-          >
-            <div className="md:col-span-4">
-              <h3 className="text-2xl md:text-3xl font-semibold tracking-tight leading-tight">{job.role}</h3>
-              <p className="mt-1 text-lg">{job.company}</p>
-              <p className="meta mt-3 text-ink-soft">
-                {job.dates}
-                <br />
-                {job.location}
-              </p>
-            </div>
-
-            <ul className="md:col-span-8 space-y-4 text-base md:text-lg leading-snug max-w-[72ch]">
-              {job.bullets.map(b => (
-                <li key={b}>{b}</li>
-              ))}
-            </ul>
-          </article>
+          <JobRow key={job.company} job={job} />
         ))}
       </div>
 

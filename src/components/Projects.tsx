@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { projects, type Project, type ProjectMedia } from '../data/projects'
-import { gsap, ScrollTrigger, useGSAP, reducedMotion } from '../lib/motion'
+import { site } from '../data/site'
+import { gsap, reducedMotion } from '../lib/motion'
 
 // looping clip that only plays while it's on screen
 function Clip({ media }: { media: ProjectMedia }) {
@@ -46,11 +47,21 @@ function Shot({ media }: { media: ProjectMedia }) {
   )
 }
 
-// the clip or screenshot at the top of a card, shaped like the screen recordings
-function Media({ media }: { media: ProjectMedia }) {
+// stand-in screen for projects that don't have a clip or screenshot yet
+function Blank({ project }: { project: Project }) {
   return (
-    <div data-media className="aspect-[1280/692] rounded-xl overflow-hidden bg-mute border border-paper/15">
-      {media.kind === 'video' ? <Clip media={media} /> : <Shot media={media} />}
+    <div className="blank-screen w-full h-full grid place-items-center font-mono text-sm md:text-base text-accent">
+      &gt; {project.id}_
+    </div>
+  )
+}
+
+// the clip or screenshot at the top of a card, shaped like the screen recordings
+function Media({ project }: { project: Project }) {
+  const media = project.media
+  return (
+    <div className="aspect-[1280/692] rounded-xl overflow-hidden bg-mute border border-paper/15">
+      {!media ? <Blank project={project} /> : media.kind === 'video' ? <Clip media={media} /> : <Shot media={media} />}
     </div>
   )
 }
@@ -58,15 +69,18 @@ function Media({ media }: { media: ProjectMedia }) {
 // one floating dark card for a project
 function ProjectCard({ project }: { project: Project }) {
   return (
-    <article data-cursor="project" className="float-card on-ink rounded-2xl bg-ink text-paper p-3 md:p-4">
-      {project.media && <Media media={project.media} />}
+    <article
+      data-cursor="project"
+      className="float-card on-ink h-full flex flex-col rounded-2xl bg-ink text-paper p-1.5 md:p-3"
+    >
+      <Media project={project} />
 
-      <div className={`px-2 md:px-3 pb-4 ${project.media ? 'pt-6' : 'pt-4'}`}>
+      <div className="flex-1 flex flex-col px-3 md:px-3 pt-5 pb-4">
         <h3 className="display text-3xl md:text-4xl">{project.title}</h3>
-        <p className="mt-4 text-base leading-snug text-mute max-w-[62ch]">{project.description}</p>
+        <p className="mt-3 text-base leading-snug text-mute max-w-[52ch]">{project.description}</p>
 
         {/* stack tags */}
-        <ul className="mt-5 flex flex-wrap gap-2">
+        <ul className="mt-4 flex flex-wrap gap-2">
           {project.tags.map(tag => (
             <li key={tag} className="tag">
               {tag}
@@ -74,31 +88,18 @@ function ProjectCard({ project }: { project: Project }) {
           ))}
         </ul>
 
-        {/* demo and github buttons, only the ones that exist */}
-        {(project.demo || project.github) && (
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            {project.demo && (
-              <a
-                href={project.demo}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="pill pill-accent"
-                aria-label={`Live demo of ${project.title} (opens in new tab)`}
-              >
-                Live demo
-              </a>
-            )}
-            {project.github && (
-              <a
-                href={project.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="pill pill-on-ink"
-                aria-label={`${project.title} on GitHub (opens in new tab)`}
-              >
-                GitHub
-              </a>
-            )}
+        {/* demo button, only when there is a demo, pinned to the bottom of the card */}
+        {project.demo && (
+          <div className="mt-auto pt-6 flex flex-wrap items-center gap-3">
+            <a
+              href={project.demo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="pill pill-accent"
+              aria-label={`Live demo of ${project.title} (opens in new tab)`}
+            >
+              Live demo
+            </a>
             {project.desktopOnly && <p className="meta text-mute">Desktop only, needs a keyboard</p>}
           </div>
         )}
@@ -107,109 +108,135 @@ function ProjectCard({ project }: { project: Project }) {
   )
 }
 
-// hand-picked width, sideways nudge, gap above and tilt for each card, so nothing lines up
-const SCATTER = [
-  { w: '100%', x: '0%', gap: '0rem', tilt: '-1.4deg' },
-  { w: '80%', x: '20%', gap: '0rem', tilt: '2deg' },
-  { w: '76%', x: '8%', gap: '5rem', tilt: '1.3deg' },
-  { w: '96%', x: '0%', gap: '9rem', tilt: '-1deg' },
-  { w: '88%', x: '12%', gap: '7rem', tilt: '-2.2deg' },
-  { w: '70%', x: '6%', gap: '4rem', tilt: '1.8deg' },
-  { w: '72%', x: '0%', gap: '10rem', tilt: '2.4deg' },
-  { w: '84%', x: '16%', gap: '6rem', tilt: '-1.6deg' },
-]
-
-// cards alternate between a left and a right column on desktop
-const columns = [0, 1].map(side => projects.map((p, i) => ({ p, i })).filter(({ i }) => i % 2 === side))
+// how far a card one step off center turns away, in degrees
+const TURN = 34
 
 export default function Projects() {
-  const root = useRef<HTMLElement>(null)
+  const track = useRef<HTMLDivElement>(null)
+  // the card sitting in the middle of the wheel
+  const [active, setActive] = useState(0)
 
-  useGSAP(
-    () => {
-      if (reducedMotion()) return
-      const slots = gsap.utils.toArray<HTMLElement>('[data-slot]')
-      slots.forEach(slot => {
-        // card grows and fades in as it scrolls up
-        gsap.from(slot.querySelector('[data-enter]'), {
-          scale: 0.9,
-          opacity: 0,
-          y: 80,
-          ease: 'none',
-          scrollTrigger: { trigger: slot, start: 'top 100%', end: 'top 65%', scrub: 0.6 },
-        })
+  // turns the cards as the wheel scrolls, the middle one faces you and the rest swing away
+  useEffect(() => {
+    const el = track.current
+    if (!el) return
+    const slots = Array.from(el.querySelectorAll<HTMLElement>('[data-slot]'))
+    const flat = reducedMotion()
+    let frame = 0
 
-        // card bobs gently so it looks like it's floating
-        const bob = gsap.to(slot.querySelector('article'), {
-          y: gsap.utils.random(-16, -9),
-          rotation: gsap.utils.random(-0.7, 0.7),
-          duration: gsap.utils.random(2.6, 3.8),
-          ease: 'sine.inOut',
-          yoyo: true,
-          repeat: -1,
-          paused: true,
-        })
-
-        // only bob while the card is on screen, so hidden cards cost nothing
-        ScrollTrigger.create({
-          trigger: slot,
-          start: 'top bottom',
-          end: 'bottom top',
-          onToggle: self => (self.isActive ? bob.play() : bob.pause()),
-        })
-
-        // media wipes open from the top
-        const media = slot.querySelector('[data-media]')
-        if (media) {
-          gsap.fromTo(
-            media,
-            { clipPath: 'inset(0% 0% 100% 0%)' },
-            {
-              clipPath: 'inset(0% 0% 0% 0%)',
-              duration: 1.1,
-              ease: 'power3.inOut',
-              scrollTrigger: { trigger: slot, start: 'top 75%', once: true },
-            },
-          )
+    function update() {
+      frame = 0
+      const middle = el!.scrollLeft + el!.clientWidth / 2
+      let nearest = 0
+      let best = Infinity
+      slots.forEach((slot, i) => {
+        // how many cards away from the middle this one is
+        const off = (slot.offsetLeft + slot.offsetWidth / 2 - middle) / slot.offsetWidth
+        if (Math.abs(off) < best) {
+          best = Math.abs(off)
+          nearest = i
         }
+        if (flat) return
+        const t = gsap.utils.clamp(-1.5, 1.5, off)
+        const card = slot.firstElementChild as HTMLElement
+        // side cards turn, shrink and dim like they're going around the wheel
+        card.style.transform = `perspective(1100px) rotateY(${t * TURN}deg) scale(${1 - Math.abs(t) * 0.1})`
+        card.style.opacity = String(1 - Math.min(Math.abs(t), 1) * 0.5)
       })
-    },
-    { scope: root },
-  )
+      setActive(nearest)
+    }
+
+    // at most one update per frame
+    function onScroll() {
+      if (!frame) frame = requestAnimationFrame(update)
+    }
+
+    // sideways trackpad swipes spin the wheel instead of being taken by the page scroll
+    function onWheel(e: WheelEvent) {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) e.stopPropagation()
+    }
+
+    update()
+    el.addEventListener('scroll', onScroll, { passive: true })
+    el.addEventListener('wheel', onWheel, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      cancelAnimationFrame(frame)
+      el.removeEventListener('scroll', onScroll)
+      el.removeEventListener('wheel', onWheel)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [])
+
+  // spins the wheel so the given card ends up in the middle
+  function spinTo(index: number) {
+    const el = track.current
+    const slot = el?.querySelectorAll<HTMLElement>('[data-slot]')[index]
+    if (!el || !slot) return
+    el.scrollTo({
+      left: slot.offsetLeft - (el.clientWidth - slot.offsetWidth) / 2,
+      behavior: reducedMotion() ? 'auto' : 'smooth',
+    })
+  }
 
   return (
-    <section ref={root} id="projects" className="px-4 md:px-8 py-20 md:py-28 border-t border-ink">
-      <h2 data-reveal className="display section-title">
-        Projects
-      </h2>
+    <section id="projects" className="px-4 md:px-8 py-20 md:py-28 border-t border-ink">
+      {/* headline with the one github button next to it */}
+      <div data-reveal className="flex flex-wrap items-end gap-x-5 md:gap-x-8 gap-y-4">
+        <h2 className="display section-title">Projects</h2>
+        <a
+          href={site.github}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="pill md:mb-3"
+          aria-label="My GitHub (opens in new tab)"
+        >
+          GitHub
+        </a>
+      </div>
 
-      {/* two columns of floating cards, one column on phones */}
-      <div className="mt-10 md:mt-16 flex flex-col gap-10 md:grid md:grid-cols-2 md:gap-x-12 lg:gap-x-20 md:items-start max-w-6xl mx-auto">
-        {columns.map((column, side) => (
-          <div key={side} className={`contents md:block ${side === 1 ? 'md:mt-28' : ''}`}>
-            {column.map(({ p, i }) => (
-              <div
-                key={p.id}
-                id={`project-${p.id}`}
-                data-slot
-                className="scatter scroll-mt-20"
-                style={
-                  {
-                    order: i,
-                    '--w': SCATTER[i % SCATTER.length].w,
-                    '--x': SCATTER[i % SCATTER.length].x,
-                    '--gap': SCATTER[i % SCATTER.length].gap,
-                    '--tilt': SCATTER[i % SCATTER.length].tilt,
-                  } as React.CSSProperties
-                }
-              >
-                <div data-enter>
-                  <ProjectCard project={p} />
-                </div>
+      {/* the wheel, edge to edge: swipe or scroll sideways, the middle card faces you */}
+      <div data-reveal className="-mx-4 md:-mx-8 mt-6 md:mt-10">
+        <div ref={track} role="group" aria-label="Projects" tabIndex={0} className="wheel no-scrollbar">
+          {projects.map((p, i) => (
+            <div
+              key={p.id}
+              id={`project-${p.id}`}
+              data-slot
+              className="wheel-slot"
+              onClick={() => i !== active && spinTo(i)}
+            >
+              <div className="h-full">
+                <ProjectCard project={p} />
               </div>
-            ))}
-          </div>
-        ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* arrows and a counter for the wheel */}
+      <div className="flex items-center justify-center gap-5">
+        <button
+          type="button"
+          onClick={() => spinTo(active - 1)}
+          disabled={active === 0}
+          aria-label="Previous project"
+          className="pill disabled:opacity-30 disabled:pointer-events-none"
+        >
+          &larr;
+        </button>
+        <p className="meta tabular-nums" aria-live="polite">
+          {String(active + 1).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}
+        </p>
+        <button
+          type="button"
+          onClick={() => spinTo(active + 1)}
+          disabled={active === projects.length - 1}
+          aria-label="Next project"
+          className="pill disabled:opacity-30 disabled:pointer-events-none"
+        >
+          &rarr;
+        </button>
       </div>
     </section>
   )

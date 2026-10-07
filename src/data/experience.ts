@@ -3,6 +3,9 @@ export type Job = {
   company: string
   dates: string
   location: string
+  // the short version shown by default
+  summary: string
+  // the full breakdown behind read more
   bullets: string[]
 }
 
@@ -12,13 +15,15 @@ export type School = {
   detail: string
 }
 
-// jobs, newest first, wording matches the resume
+// jobs, newest first, bullets match the resume
 export const jobs: Job[] = [
   {
     role: 'Software Engineering Intern',
     company: 'Ormco (Envista)',
     dates: 'Dec 2025 - Present',
     location: 'Pomona, CA',
+    summary:
+      'Build production .NET apps and computer vision systems for manufacturing lines, including a robot-driven inspection pipeline that checks 200+ trays an hour.',
     bullets: [
       'Build and deploy production .NET WPF applications (C#, XAML, MVVM) used daily by manufacturing line operators worldwide',
       'Barmold AQI: Led development of a computer vision pipeline (Basler cameras, Pylon SDK) that finds molds on trays and drives a Universal Robots arm through a custom C# Modbus TCP layer, automating inspection of 200+ trays/hr',
@@ -33,6 +38,7 @@ export const jobs: Job[] = [
     company: 'Alfa Business',
     dates: 'May 2025 - Dec 2025',
     location: 'Riverside, CA',
+    summary: 'Tier 1 to 3 IT support for 200+ users, plus Office 365 and Azure AD admin for 10+ companies.',
     bullets: [
       'Provided Tier 1 to 3 support for hardware, networking, and software for 200+ users on Windows and macOS',
       'Managed Office 365 and Azure AD for 10+ companies, handling user setup plus onboarding and offboarding',

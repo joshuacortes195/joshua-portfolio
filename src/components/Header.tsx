@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import Terminal from './Terminal'
+import MenuScreen from './MenuScreen'
 
 export default function Header() {
   const [open, setOpen] = useState(false)
@@ -31,10 +31,10 @@ export default function Header() {
           {open ? 'Close' : 'Menu'}
         </button>
 
-        {/* the menu is a computer screen, click a choice or type to get around */}
+        {/* the menu is a little old computer that boots up when opened */}
         {open && (
-          <nav id="site-menu" aria-label="Site menu" className="w-[min(26rem,calc(100vw-2rem))]">
-            <Terminal onNavigate={() => setOpen(false)} />
+          <nav id="site-menu" aria-label="Site menu" className="w-[min(22rem,calc(100vw-2rem))]">
+            <MenuScreen onNavigate={() => setOpen(false)} />
           </nav>
         )}
       </header>
