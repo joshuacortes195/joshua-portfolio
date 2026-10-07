@@ -1,36 +1,56 @@
-export type TimelineEntry = {
-  title: string
-  date: string
-  org: string
+export type Job = {
+  role: string
+  company: string
+  dates: string
+  location: string
+  bullets: string[]
+}
+
+export type School = {
+  school: string
+  dates: string
   detail: string
 }
 
-export const education: TimelineEntry[] = [
+// jobs, newest first, wording matches the resume
+export const jobs: Job[] = [
   {
-    title: 'Bachelor of Science in Computer Science',
-    date: '2025 - present',
-    org: 'California Baptist University',
-    detail: 'Concentration in Machine Learning and AI',
+    role: 'Software Engineering Intern',
+    company: 'Ormco (Envista)',
+    dates: 'Dec 2025 - Present',
+    location: 'Pomona, CA',
+    bullets: [
+      'Build and deploy production .NET WPF applications (C#, XAML, MVVM) used daily by manufacturing line operators worldwide',
+      'Barmold AQI: Led development of a computer vision pipeline (Basler cameras, Pylon SDK) that finds molds on trays and drives a Universal Robots arm through a custom C# Modbus TCP layer, automating inspection of 200+ trays/hr',
+      'Trained and integrated an OCR model that reads engravings on resin molds and checks tray condition (present/absent, full/empty), moving QC checks onto the line and cutting inspection time by 80%',
+      'Paperless: Moved the full work-order process off paper using .NET, MSSQL, and AWS S3, removing hundreds of printed pages a day and cutting order processing time by over 50%',
+      'Rewrote an unstable RFID read/write tool from scratch as a multithreaded app, speeding up tag reads/writes and stopping up to 5 crashes a day under heavy load',
+      'Shipped a cassette damage tracker and label generator (backed by AWS S3) to production at the Mexicali plant',
+    ],
   },
   {
-    title: 'Bachelor of Science in Computer Information Systems',
-    date: '2023-2025',
-    org: 'California Polytechnic University',
-    detail: 'Computer Information Systems',
+    role: 'IT Technician',
+    company: 'Alfa Business',
+    dates: 'May 2025 - Dec 2025',
+    location: 'Riverside, CA',
+    bullets: [
+      'Provided Tier 1 to 3 support for hardware, networking, and software for 200+ users on Windows and macOS',
+      'Managed Office 365 and Azure AD for 10+ companies, handling user setup plus onboarding and offboarding',
+      'Wrote Bash, PowerShell, and Java scripts to automate antivirus detection, system and SQL Server monitoring, and firewall setup',
+    ],
   },
 ]
 
-export const work: TimelineEntry[] = [
+// schools, newest first
+export const education: School[] = [
   {
-    title: 'Manufacturing Software Intern',
-    date: 'Dec 2025 - Present',
-    org: 'Envista Ormco',
-    detail: 'Software engineer intern for the automation team',
+    school: 'California Baptist University',
+    dates: 'Expected 2027',
+    detail: 'B.S. Computer Science, Specialization in Machine Learning and Artificial Intelligence',
   },
   {
-    title: 'IT Technician',
-    date: 'May 2025 - Dec 2025',
-    org: 'ALFA Business',
-    detail: 'Provided level 1-3 technological support for business operations',
+    school: 'Cal Poly Pomona',
+    dates: 'Aug 2023 - Dec 2025',
+    detail: 'Coursework in Computer Information Systems',
   },
 ]
