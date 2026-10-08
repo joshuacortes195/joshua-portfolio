@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { projects, type Project, type ProjectMedia } from '../data/projects'
 import { site } from '../data/site'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { gsap, reducedMotion } from '../lib/motion'
+import { fetchGithubProjects } from '../lib/github'
 
 // looping clip that only plays while it's on screen
 function Clip({ media }: { media: ProjectMedia }) {
@@ -88,18 +90,32 @@ function ProjectCard({ project }: { project: Project }) {
           ))}
         </ul>
 
-        {/* demo button, only when there is a demo, pinned to the bottom of the card */}
-        {project.demo && (
+        {/* demo and code buttons, only when there is something to link, pinned to the bottom of the card */}
+        {(project.demo || project.fromGithub) && (
           <div className="mt-auto pt-6 flex flex-wrap items-center gap-3">
-            <a
-              href={project.demo}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="pill pill-accent"
-              aria-label={`Live demo of ${project.title} (opens in new tab)`}
-            >
-              Live demo
-            </a>
+            {project.demo && (
+              <a
+                href={project.demo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="pill pill-accent"
+                aria-label={`Live demo of ${project.title} (opens in new tab)`}
+              >
+                Live demo
+              </a>
+            )}
+            {/* cards pulled from github also link to the repo */}
+            {project.fromGithub && (
+              <a
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="pill pill-on-ink"
+                aria-label={`Code for ${project.title} (opens in new tab)`}
+              >
+                View code
+              </a>
+            )}
             {project.desktopOnly && <p className="meta text-mute">Desktop only, needs a keyboard</p>}
           </div>
         )}
@@ -115,6 +131,21 @@ export default function Projects() {
   const track = useRef<HTMLDivElement>(null)
   // the card sitting in the middle of the wheel
   const [active, setActive] = useState(0)
+  // cards on the wheel: the hand-written ones, plus any repos tagged on github
+  const [list, setList] = useState(projects)
+
+  // adds the tagged github repos to the end of the wheel, the page works fine without them
+  useEffect(() => {
+    let cancelled = false
+    fetchGithubProjects()
+      .then(extra => {
+        if (!cancelled && extra.length) setList([...projects, ...extra])
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // turns the cards as the wheel scrolls, the middle one faces you and the rest swing away
   useEffect(() => {
@@ -166,7 +197,8 @@ export default function Projects() {
       el.removeEventListener('wheel', onWheel)
       window.removeEventListener('resize', onScroll)
     }
-  }, [])
+    // runs again when github cards get added
+  }, [list.length])
 
   // spins the wheel so the given card ends up in the middle
   function spinTo(index: number) {
@@ -198,7 +230,7 @@ export default function Projects() {
       {/* the wheel, edge to edge: swipe or scroll sideways, the middle card faces you */}
       <div data-reveal className="-mx-4 md:-mx-8 mt-6 md:mt-10">
         <div ref={track} role="group" aria-label="Projects" tabIndex={0} className="wheel no-scrollbar">
-          {projects.map((p, i) => (
+          {list.map((p, i) => (
             <div
               key={p.id}
               id={`project-${p.id}`}
@@ -223,19 +255,19 @@ export default function Projects() {
           aria-label="Previous project"
           className="pill disabled:opacity-30 disabled:pointer-events-none"
         >
-          &larr;
+          <ArrowLeft size={20} strokeWidth={2} aria-hidden="true" />
         </button>
         <p className="meta tabular-nums" aria-live="polite">
-          {String(active + 1).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}
+          {String(active + 1).padStart(2, '0')} / {String(list.length).padStart(2, '0')}
         </p>
         <button
           type="button"
           onClick={() => spinTo(active + 1)}
-          disabled={active === projects.length - 1}
+          disabled={active === list.length - 1}
           aria-label="Next project"
           className="pill disabled:opacity-30 disabled:pointer-events-none"
         >
-          &rarr;
+          <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
         </button>
       </div>
     </section>

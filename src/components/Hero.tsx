@@ -7,7 +7,6 @@ const links = [
   { label: 'GitHub', href: site.github },
   { label: 'LinkedIn', href: site.linkedin },
   { label: 'Email', href: `mailto:${site.email}` },
-  { label: 'Resume', href: site.resume },
 ]
 
 export default function Hero({ ready }: { ready: boolean }) {

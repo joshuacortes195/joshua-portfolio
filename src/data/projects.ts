@@ -19,6 +19,8 @@ export type Project = {
   desktopOnly?: boolean
   // cards without media are text only
   media?: ProjectMedia
+  // true for cards pulled from github instead of written here
+  fromGithub?: boolean
 }
 
 // every project card, resume projects first
