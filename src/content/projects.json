@@ -1,5 +1,16 @@
 [
   {
+    "id": "tinygpt",
+    "title": "Tinygpt",
+    "description": "A GPT-style language model built from scratch that runs in your browser",
+    "tags": [
+      "TypeScript"
+    ],
+    "demo": "https://joshuacortes195.github.io/tinygpt/",
+    "github": "https://github.com/joshuacortes195/tinygpt",
+    "fromGithub": true
+  },
+  {
     "id": "bird-identifier",
     "title": "Bird Identifier",
     "description": "Fine-tuned ConvNeXt-V2 model that classifies 555 North American bird species.",

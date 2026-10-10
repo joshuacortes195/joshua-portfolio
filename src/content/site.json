@@ -30,7 +30,10 @@
       "> connecting modbus://ur-arm .... ok",
       "> starting portfolio ............ ok"
     ],
-    "menu": ["JC-OS v2.6", "memory check ...... ok"],
+    "menu": [
+      "JC-OS v2.6",
+      "memory check ...... ok"
+    ],
     "menuPrompt": "where to?"
   },
   "seo": {
