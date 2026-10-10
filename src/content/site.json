@@ -1,0 +1,42 @@
+{
+  "name": "Joshua Cortes",
+  "email": "joshuacortes195@gmail.com",
+  "resume": "/Joshua_Cortes_Resume.pdf",
+  "github": "https://github.com/joshuacortes195",
+  "linkedin": "https://www.linkedin.com/in/joshua-cortes157",
+  "hero": {
+    "title": "Software Engineer",
+    "subtitle": "CV, ML & Robotics.",
+    "resumeButton": "View resume"
+  },
+  "experience": {
+    "title": "Experience",
+    "educationTitle": "Education"
+  },
+  "projects": {
+    "title": "Projects",
+    "githubTopic": "portfolio"
+  },
+  "contact": {
+    "title": "Contact me",
+    "sendButton": "Send message",
+    "sentMessage": "Message sent. I'll get back to you soon."
+  },
+  "boot": {
+    "intro": [
+      "JC-OS v2.6",
+      "> mounting /projects ............ ok",
+      "> loading bird_identifier.onnx .. ok",
+      "> connecting modbus://ur-arm .... ok",
+      "> starting portfolio ............ ok"
+    ],
+    "menu": ["JC-OS v2.6", "memory check ...... ok"],
+    "menuPrompt": "where to?"
+  },
+  "seo": {
+    "title": "Joshua Cortes",
+    "description": "Joshua Cortes, Full-Stack Developer and Computer Science student at California Baptist University.",
+    "shareTitle": "Joshua Cortes, Full-Stack Developer",
+    "shareDescription": "Full-Stack Developer and CS student focused on machine learning, AI, and robotics. Projects, experience, and photography."
+  }
+}

@@ -64,13 +64,13 @@ export default function Hero({ ready }: { ready: boolean }) {
       <div className="my-auto py-12">
         {/* my name, above the title */}
         <p data-hero-fade data-cursor="josh" className="w-fit mb-3 md:mb-5 text-2xl md:text-4xl font-semibold tracking-tight">
-          Joshua Cortes
+          {site.name}
         </p>
 
         {/* big job title, with the focus areas as a smaller line under it */}
         <h1>
-          <span className="display hero-title block">Software Engineer</span>{' '}
-          <span className="hero-sub block">CV, ML &amp; Robotics.</span>
+          <span className="display hero-title block">{site.hero.title}</span>{' '}
+          <span className="hero-sub block">{site.hero.subtitle}</span>
         </h1>
 
         {/* the big resume button */}
@@ -81,7 +81,7 @@ export default function Hero({ ready }: { ready: boolean }) {
             rel="noopener noreferrer"
             className="pill pill-accent min-h-16 px-10 text-xl font-semibold"
           >
-            View resume
+            {site.hero.resumeButton}
           </a>
         </div>
       </div>

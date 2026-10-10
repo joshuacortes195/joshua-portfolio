@@ -2,7 +2,7 @@ import { projects, type Project } from '../data/projects'
 import { site } from '../data/site'
 
 // repos with this topic on github get their own card
-const TOPIC = 'portfolio'
+const TOPIC = site.projects.githubTopic
 
 // the bits of a github repo we use
 type Repo = {
@@ -15,7 +15,7 @@ type Repo = {
 }
 
 // turns a repo name like "stock-predictor" into "Stock Predictor"
-function toTitle(name: string) {
+export function toTitle(name: string) {
   return name
     .replace(/[-_]+/g, ' ')
     .replace(/([a-z])([A-Z])/g, '$1 $2')
@@ -24,6 +24,8 @@ function toTitle(name: string) {
 
 // gets my public repos tagged with the topic, as project cards
 export async function fetchGithubProjects(): Promise<Project[]> {
+  // no topic set means no automatic cards
+  if (!TOPIC) return []
   const user = site.github.split('/').pop()
   const res = await fetch(`https://api.github.com/users/${user}/repos?per_page=100&sort=pushed`)
   if (!res.ok) return []

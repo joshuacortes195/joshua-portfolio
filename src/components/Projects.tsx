@@ -215,7 +215,7 @@ export default function Projects() {
     <section id="projects" className="px-4 md:px-8 py-20 md:py-28 border-t border-ink">
       {/* headline with the one github button next to it */}
       <div data-reveal className="flex flex-wrap items-end gap-x-5 md:gap-x-8 gap-y-4">
-        <h2 className="display section-title">Projects</h2>
+        <h2 className="display section-title">{site.projects.title}</h2>
         <a
           href={site.github}
           target="_blank"

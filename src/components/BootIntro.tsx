@@ -2,15 +2,10 @@ import { useEffect, useRef } from 'react'
 import RetroMonitor from './RetroMonitor'
 import { gsap, SplitText, Flip, useGSAP } from '../lib/motion'
 import { markBooted } from '../lib/boot'
+import { site } from '../data/site'
 
 // what the little computer prints while it boots
-const LOG = [
-  'JC-OS v2.6',
-  '> mounting /projects ............ ok',
-  '> loading bird_identifier.onnx .. ok',
-  '> connecting modbus://ur-arm .... ok',
-  '> starting portfolio ............ ok',
-]
+const LOG = site.boot.intro
 
 type Props = {
   // fires when the page underneath starts to show

@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { jobs, education, type Job } from '../data/experience'
+import { site } from '../data/site'
 import { ScrollTrigger } from '../lib/motion'
 
 // one job row: short summary up front, full breakdown behind read more
@@ -58,7 +59,7 @@ export default function Experience() {
   return (
     <section id="experience" className="px-4 md:px-8 py-20 md:py-28 border-t border-ink">
       <h2 data-reveal className="display section-title">
-        Experience
+        {site.experience.title}
       </h2>
 
       {/* one row per job, role on the left and the summary on the right */}
@@ -69,7 +70,7 @@ export default function Experience() {
       </div>
 
       {/* schools, same row layout */}
-      <h3 className="mt-16 md:mt-20 text-lg font-semibold tracking-tight mb-4">Education</h3>
+      <h3 className="mt-16 md:mt-20 text-lg font-semibold tracking-tight mb-4">{site.experience.educationTitle}</h3>
       <div className="border-b border-ink">
         {education.map(s => (
           <article

@@ -1,7 +1,6 @@
-// contact details and links used around the site
-export const site = {
-  email: 'joshuacortes195@gmail.com',
-  resume: '/Joshua_Cortes_Resume.pdf',
-  github: 'https://github.com/joshuacortes195',
-  linkedin: 'https://www.linkedin.com/in/joshua-cortes157',
-}
+import content from '../content/site.json'
+
+export type Site = typeof content
+
+// contact details, links and page text, edited from the admin dashboard
+export const site: Site = content
