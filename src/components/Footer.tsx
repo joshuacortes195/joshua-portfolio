@@ -42,7 +42,7 @@ export default function Footer() {
   return (
     <footer id="contact" className="px-4 md:px-8 py-20 md:py-28 border-t border-ink">
       <h2 data-reveal className="display section-title">
-        Contact me
+        {site.contact.title}
       </h2>
 
       <div className="mt-12 md:mt-16 grid gap-x-8 gap-y-12 md:grid-cols-12">
@@ -129,13 +129,13 @@ export default function Footer() {
             disabled={!canSubmit}
             className="pill pill-accent disabled:bg-mute disabled:border-mute disabled:text-ink-soft disabled:cursor-not-allowed"
           >
-            {status === 'sending' ? 'Sending…' : 'Send message'}
+            {status === 'sending' ? 'Sending…' : site.contact.sendButton}
           </button>
 
           {/* result of sending */}
           {status === 'sent' && (
             <p role="status" className="meta">
-              Message sent. I'll get back to you soon.
+              {site.contact.sentMessage}
             </p>
           )}
           {status === 'error' && (

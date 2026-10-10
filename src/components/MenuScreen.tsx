@@ -4,7 +4,7 @@ import { gsap, SplitText, useGSAP, reducedMotion } from '../lib/motion'
 import { scrollToSection } from '../lib/scroll'
 
 // what the little computer prints while it starts up
-const BOOT = ['JC-OS v2.6', 'memory check ...... ok']
+const BOOT = site.boot.menu
 
 // choices that jump to a part of the page
 const SECTIONS = ['experience', 'projects', 'contact']
@@ -67,7 +67,7 @@ export default function MenuScreen({ onNavigate }: { onNavigate: () => void }) {
           </p>
         ))}
         <p data-menu-line className="text-mute">
-          where to?
+          {site.boot.menuPrompt}
         </p>
 
         {/* the choices, click one to go there */}
