@@ -9,6 +9,9 @@ export const BRANCH = 'main'
 // biggest file the dashboard will upload, in megabytes
 export const MAX_UPLOAD_MB = 40
 
+// mp4 videos bigger than this get shrunk before uploading, in megabytes
+export const SHRINK_VIDEO_MB = 8
+
 // everything on the site that can be edited
 export type Content = {
   site: Site

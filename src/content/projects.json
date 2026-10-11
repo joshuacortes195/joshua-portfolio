@@ -1,10 +1,18 @@
 [
   {
     "id": "tinygpt",
-    "title": "Tinygpt",
+    "title": "TinyGPT",
     "description": "A GPT-style language model built from scratch that runs in your browser",
     "tags": [
-      "TypeScript"
+      "TypeScript",
+      "React",
+      "ONNX",
+      "Hugging Face",
+      "Tailwind CSS",
+      "Vite",
+      "Python",
+      "PyTorch",
+      "NumPy"
     ],
     "demo": "https://joshuacortes195.github.io/tinygpt/",
     "github": "https://github.com/joshuacortes195/tinygpt",

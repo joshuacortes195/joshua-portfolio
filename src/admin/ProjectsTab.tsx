@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import type { Project } from '../data/projects'
 import { toTitle } from '../lib/github'
-import { MAX_UPLOAD_MB, type Content } from './config'
+import { MAX_UPLOAD_MB, SHRINK_VIDEO_MB, type Content } from './config'
 import type { Files } from './AdminApp'
-import { fetchRepos, type Repo } from './github'
+import { fetchRepo, fetchRepos, repoReader, type Repo } from './github'
+import { detectStack } from './stack'
+import { toMp4 } from './video'
 import { Group, Text, Area, List, Check, FileButton, RowTools } from './fields'
 import { moveItem } from './list'
 
@@ -67,12 +69,16 @@ type EditorProps = {
   // makes a change to this project
   edit: (fn: (p: Project) => void) => void
   files: Files
+  token: string
+  // the github topic that marks automatic cards, never shown as a tag
+  topic: string
 }
 
 // the image or video for one project
-function MediaEditor({ project, edit, files }: EditorProps) {
+function MediaEditor({ project, edit, files }: Pick<EditorProps, 'project' | 'edit' | 'files'>) {
   const media = project.media
-  const [busy, setBusy] = useState(false)
+  // what the upload button says while a video is being worked on
+  const [busy, setBusy] = useState('')
 
   // queues the old files for removal unless the new media reuses the same name
   function dropOld(keep: string[]) {
@@ -82,9 +88,26 @@ function MediaEditor({ project, edit, files }: EditorProps) {
   }
 
   // takes a picked image or video and makes it this project's media
-  async function pick(file: File) {
-    const isVideo = file.type.startsWith('video/')
-    if (!isVideo && !file.type.startsWith('image/')) return window.alert('Pick an image or an MP4 video.')
+  async function pick(picked: File) {
+    let file = picked
+    const isVideo = file.type.startsWith('video/') || /\.(mov|m4v)$/i.test(file.name)
+    if (!isVideo && !file.type.startsWith('image/')) return window.alert('Pick an image or a video.')
+
+    // quicktime movies and heavy mp4s get turned into a small mp4 first
+    const isMp4 = file.type === 'video/mp4'
+    if (isVideo && (!isMp4 || file.size > SHRINK_VIDEO_MB * 1024 * 1024)) {
+      try {
+        setBusy('Converting…')
+        file = await toMp4(file, done => setBusy(`Converting ${Math.round(done * 100)}%`))
+      } catch {
+        // an mp4 can still go up as it is, anything else has to be converted
+        if (!isMp4) {
+          setBusy('')
+          return window.alert("Couldn't convert that video in this browser. Try Chrome, or export it as an MP4 first.")
+        }
+      }
+    }
+    setBusy('')
     if (file.size > MAX_UPLOAD_MB * 1024 * 1024) return window.alert(`That file is over ${MAX_UPLOAD_MB} MB, trim or compress it first.`)
 
     // files are named after the project so a new upload replaces the old one
@@ -93,9 +116,9 @@ function MediaEditor({ project, edit, files }: EditorProps) {
     const poster = `/media/${project.id}-poster.jpg`
 
     // videos get a still frame to show before they play
-    setBusy(true)
+    if (isVideo) setBusy('Reading video…')
     const still = isVideo ? await grabPoster(file, `${project.id}-poster.jpg`) : null
-    setBusy(false)
+    setBusy('')
 
     dropOld(still ? [src, poster] : [src])
     files.add(src, file)
@@ -153,8 +176,8 @@ function MediaEditor({ project, edit, files }: EditorProps) {
       {/* upload, swap and remove buttons */}
       <div className="flex flex-wrap items-center gap-3">
         <FileButton
-          label={busy ? 'Reading video…' : media ? 'Replace' : 'Upload image or video'}
-          accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4"
+          label={busy || (media ? 'Replace' : 'Upload image or video')}
+          accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/quicktime,.mov,.m4v"
           onPick={pick}
         />
         {media?.kind === 'video' && <FileButton label="Change still image" accept="image/jpeg,image/png,image/webp" onPick={pickPoster} />}
@@ -164,7 +187,10 @@ function MediaEditor({ project, edit, files }: EditorProps) {
           </button>
         )}
       </div>
-      <p className="meta text-ink-soft">JPG, PNG, WebP or MP4, up to {MAX_UPLOAD_MB} MB. Cards are shaped 1280 x 692.</p>
+      <p className="meta text-ink-soft">
+        JPG, PNG, WebP, MP4 or QuickTime MOV. Cards are shaped 1280 x 692. QuickTime movies and big videos are turned
+        into a small MP4 for you.
+      </p>
 
       {/* description of the media for screen readers */}
       {media && (
@@ -179,12 +205,43 @@ function MediaEditor({ project, edit, files }: EditorProps) {
 }
 
 // all the fields for one project
-function ProjectEditor({ project, edit, files }: EditorProps) {
+function ProjectEditor({ project, edit, files, token, topic }: EditorProps) {
+  // progress of pulling the tags from github
+  const [tagState, setTagState] = useState<'idle' | 'loading' | 'error'>('idle')
+
+  // replaces the tags with everything the linked repo uses
+  async function pullTags() {
+    if (!project.github) return
+    setTagState('loading')
+    try {
+      const repo = await fetchRepo(token, project.github)
+      const tags = await detectStack(repo, repoReader(token), topic)
+      edit(p => void (p.tags = tags))
+      setTagState('idle')
+    } catch {
+      setTagState('error')
+    }
+  }
+
   return (
     <div className="mt-5 space-y-5">
       <Text label="Title" value={project.title} onChange={v => edit(p => void (p.title = v))} />
       <Area label="Description" value={project.description} onChange={v => edit(p => void (p.description = v))} />
       <List label="Tags" value={project.tags} onChange={v => edit(p => void (p.tags = v))} />
+
+      {/* fills the tags in from the repo's code, only when there is a repo link */}
+      {project.github && (
+        <div className="flex flex-wrap items-center gap-3">
+          <button type="button" className="pill disabled:opacity-50" onClick={pullTags} disabled={tagState === 'loading'}>
+            {tagState === 'loading' ? 'Reading the repo…' : 'Update tags from GitHub'}
+          </button>
+          {tagState === 'error' && (
+            <p role="alert" className="meta">
+              Couldn't read that repo. Check the link below.
+            </p>
+          )}
+        </div>
+      )}
       <Text
         label="Live demo link"
         value={project.demo ?? ''}
@@ -218,6 +275,8 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
   const [newTitle, setNewTitle] = useState('')
   // my github repos, loaded the first time the import list opens
   const [repos, setRepos] = useState<Repo[] | 'loading' | 'error' | null>(null)
+  // link of the repo being imported right now
+  const [importing, setImporting] = useState('')
 
   // adds an empty project to the top and opens it
   function addProject() {
@@ -238,16 +297,21 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
       .catch(() => setRepos('error'))
   }
 
-  // fills in a new project from a repo: name, description, language, topics and links
-  function importRepo(repo: Repo) {
+  // fills in a new project from a repo: name, description, links, and tags for everything it uses
+  async function importRepo(repo: Repo) {
     const id = uniqueId(slug(repo.name), projects)
-    const topics = (repo.topics ?? []).filter(t => t !== site.projects.githubTopic)
+    setImporting(repo.html_url)
+    // if the repo can't be read fully, the main language is still a start
+    const tags = await detectStack(repo, repoReader(token), site.projects.githubTopic).catch(() =>
+      repo.language ? [repo.language] : [],
+    )
+    setImporting('')
     change(d => {
       d.projects.unshift({
         id,
         title: toTitle(repo.name),
         description: repo.description ?? '',
-        tags: [...(repo.language ? [repo.language] : []), ...topics],
+        tags,
         demo: repo.homepage || undefined,
         github: repo.html_url,
         fromGithub: true,
@@ -310,8 +374,8 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
                 {taken.has(repo.html_url.toLowerCase()) ? (
                   <span className="meta text-ink-soft">Already added</span>
                 ) : (
-                  <button type="button" className="pill" onClick={() => importRepo(repo)}>
-                    Add
+                  <button type="button" className="pill disabled:opacity-50" onClick={() => importRepo(repo)} disabled={importing !== ''}>
+                    {importing === repo.html_url ? 'Reading the repo…' : 'Add'}
                   </button>
                 )}
               </li>
@@ -347,7 +411,13 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
               </div>
             </div>
             {openId === project.id && (
-              <ProjectEditor project={project} edit={fn => change(d => fn(d.projects[i]))} files={files} />
+              <ProjectEditor
+                project={project}
+                edit={fn => change(d => fn(d.projects[i]))}
+                files={files}
+                token={token}
+                topic={site.projects.githubTopic}
+              />
             )}
           </div>
         ))}
