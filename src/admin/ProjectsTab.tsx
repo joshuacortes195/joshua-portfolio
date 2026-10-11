@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Project } from '../data/projects'
 import { toTitle } from '../lib/github'
-import { MAX_UPLOAD_MB, SHRINK_VIDEO_MB, type Content } from './config'
+import { MAX_UPLOAD_MB, SHRINK_VIDEO_MB, REPO, type Content } from './config'
 import type { Files } from './AdminApp'
 import { fetchRepo, fetchRepos, repoReader, type Repo } from './github'
 import { detectStack } from './stack'
@@ -16,6 +16,9 @@ type Props = {
   files: Files
   token: string
 }
+
+// my github username, repos under any other name belong to someone else
+const ME = REPO.split('/')[0].toLowerCase()
 
 // turns a title into a url friendly id, like "Book App" into "book-app"
 function slug(text: string) {
@@ -314,7 +317,8 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
         tags,
         demo: repo.homepage || undefined,
         github: repo.html_url,
-        fromGithub: true,
+        // visitors can't open a private repo, so those don't get a view code button
+        fromGithub: repo.private ? undefined : true,
       })
     })
     setOpenId(id)
@@ -368,7 +372,11 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
             {repos.map(repo => (
               <li key={repo.html_url} className="border-t border-ink py-3 flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold">{repo.name}</p>
+                  <p className="font-semibold">
+                    {/* someone else's repo shows whose it is */}
+                    {repo.full_name.toLowerCase().startsWith(`${ME}/`) ? repo.name : repo.full_name}
+                    {repo.private && <span className="tag ml-2 align-middle">Private</span>}
+                  </p>
                   <p className="text-sm text-ink-soft">{repo.description || 'No description'}</p>
                 </div>
                 {taken.has(repo.html_url.toLowerCase()) ? (

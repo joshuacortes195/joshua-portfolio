@@ -53,6 +53,7 @@ export type Repo = {
   name: string
   full_name: string
   default_branch: string
+  private: boolean
   html_url: string
   description: string | null
   homepage: string | null
@@ -61,9 +62,9 @@ export type Repo = {
   fork: boolean
 }
 
-// my own repos, most recently pushed first
+// my repos and ones I collaborate on, public and private, most recently pushed first
 export function fetchRepos(token: string) {
-  return api<Repo[]>(token, '/user/repos?affiliation=owner&visibility=public&per_page=100&sort=pushed')
+  return api<Repo[]>(token, '/user/repos?affiliation=owner,collaborator&per_page=100&sort=pushed')
 }
 
 // one repo, looked up from its github link

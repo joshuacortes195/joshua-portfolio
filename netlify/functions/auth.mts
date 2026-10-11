@@ -29,8 +29,8 @@ export default async (req: Request) => {
     const to = new URL('https://github.com/login/oauth/authorize')
     to.searchParams.set('client_id', clientId)
     to.searchParams.set('redirect_uri', `${url.origin}/api/auth/callback`)
-    // enough to commit to public repos, nothing private
-    to.searchParams.set('scope', 'public_repo')
+    // lets the dashboard commit here and read my private repos for the import list
+    to.searchParams.set('scope', 'repo')
     to.searchParams.set('state', state)
     // remembers the state so the callback can check the login started here
     return redirect(to.toString(), `admin_state=${state}; Path=/api/auth; HttpOnly; Secure; SameSite=Lax; Max-Age=600`)
