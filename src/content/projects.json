@@ -1,7 +1,7 @@
 [
   {
     "id": "tinygpt",
-    "title": "TinyGPT",
+    "title": "Tinygpt",
     "description": "A GPT-style language model built from scratch that runs in your browser",
     "tags": [
       "TypeScript",
@@ -16,7 +16,11 @@
     ],
     "demo": "https://joshuacortes195.github.io/tinygpt/",
     "github": "https://github.com/joshuacortes195/tinygpt",
-    "fromGithub": true
+    "media": {
+      "kind": "video",
+      "src": "/media/tinygpt.mp4",
+      "alt": "Screen recording of Tinygpt"
+    }
   },
   {
     "id": "bird-identifier",
