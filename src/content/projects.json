@@ -1,5 +1,26 @@
 [
   {
+    "id": "resumefit",
+    "title": "Resumefit",
+    "description": "Free resume match and job application assistant",
+    "tags": [
+      "TypeScript",
+      "React",
+      "Next.js",
+      "Tailwind CSS",
+      "Vite",
+      "Supabase"
+    ],
+    "demo": "https://resumefit-three.vercel.app",
+    "github": "https://github.com/joshuacortes195/resumefit",
+    "media": {
+      "kind": "video",
+      "src": "/media/resumefit.mp4",
+      "poster": "/media/resumefit-poster.jpg",
+      "alt": "Screen recording of Resumefit"
+    }
+  },
+  {
     "id": "tinygpt",
     "title": "Tinygpt",
     "description": "A GPT-style language model built from scratch that runs in your browser",
