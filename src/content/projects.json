@@ -135,7 +135,12 @@
       "Google Drive API"
     ],
     "demo": "https://afterimagethirds.netlify.app/",
-    "github": "https://github.com/joshuacortes195/photography-portfolio"
+    "github": "https://github.com/joshuacortes195/photography-portfolio",
+    "media": {
+      "kind": "image",
+      "src": "/media/photography-portfolio.png",
+      "alt": "Screenshot of Photography Portfolio"
+    }
   },
   {
     "id": "wordle-clone",
