@@ -1,4 +1,5 @@
 import { REPO, BRANCH, FILES, type Content, type Pending } from './config'
+import type { Reader } from './stack'
 
 const API = 'https://api.github.com'
 
@@ -50,6 +51,8 @@ export async function loadContent(token: string): Promise<Content> {
 // the bits of a repo used to fill in a project
 export type Repo = {
   name: string
+  full_name: string
+  default_branch: string
   html_url: string
   description: string | null
   homepage: string | null
@@ -61,6 +64,20 @@ export type Repo = {
 // my own repos, most recently pushed first
 export function fetchRepos(token: string) {
   return api<Repo[]>(token, '/user/repos?affiliation=owner&visibility=public&per_page=100&sort=pushed')
+}
+
+// one repo, looked up from its github link
+export function fetchRepo(token: string, link: string) {
+  const [owner, name] = new URL(link).pathname.split('/').filter(Boolean)
+  return api<Repo>(token, `/repos/${owner}/${name.replace(/\.git$/, '')}`)
+}
+
+// lets the tag detector read repo details and files with my token
+export function repoReader(token: string): Reader {
+  return {
+    json: path => api(token, path),
+    text: async path => (await request(token, path, {}, 'application/vnd.github.raw+json')).text(),
+  }
 }
 
 // turns a file into base64 text, which is how github takes uploads

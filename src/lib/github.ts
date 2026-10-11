@@ -1,5 +1,6 @@
 import { projects, type Project } from '../data/projects'
 import { site } from '../data/site'
+import { prettyTag, uniqueTags } from './stack'
 
 // repos with this topic on github get their own card
 const TOPIC = site.projects.githubTopic
@@ -41,7 +42,7 @@ export async function fetchGithubProjects(): Promise<Project[]> {
       title: toTitle(r.name),
       description: r.description ?? '',
       // main language first, then the other topics on the repo
-      tags: [...(r.language ? [r.language] : []), ...(r.topics ?? []).filter(t => t !== TOPIC)],
+      tags: uniqueTags([...(r.language ? [r.language] : []), ...(r.topics ?? []).filter(t => t !== TOPIC).map(prettyTag)]),
       demo: r.homepage || undefined,
       github: r.html_url,
       fromGithub: true,
