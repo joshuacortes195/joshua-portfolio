@@ -10,7 +10,7 @@ import CursorSpot from './components/CursorSpot'
 import Cutouts from './components/Cutouts'
 import Ripples from './components/Ripples'
 import { gsap, ScrollTrigger, useGSAP, reducedMotion, finePointer } from './lib/motion'
-import { startSmoothScroll, lockScroll } from './lib/scroll'
+import { startSmoothScroll, lockScroll, scrollToSection } from './lib/scroll'
 import { shouldBoot } from './lib/boot'
 
 export default function App() {
@@ -42,6 +42,13 @@ export default function App() {
       history.scrollRestoration = before
     }
   }, [showIntro])
+
+  // a shared link like /#projects opens at that section, once the intro is out of the way
+  useEffect(() => {
+    if (!ready) return
+    const id = window.location.hash.slice(1)
+    if (id) scrollToSection(id, true)
+  }, [ready])
 
   // anything marked data-reveal un-blurs into place when scrolled to
   useGSAP(() => {

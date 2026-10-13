@@ -26,6 +26,11 @@ export default function Footer() {
   // send button only works once every field has something in it
   const canSubmit = name.trim() !== '' && email.trim() !== '' && message.trim() !== '' && status !== 'sending'
 
+  // typing a new message clears the note from the last one
+  function typed() {
+    if (status === 'sent') setStatus('idle')
+  }
+
   // sends the message through web3forms
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -119,7 +124,10 @@ export default function Footer() {
               id="contact-name"
               className="field"
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={e => {
+                setName(e.target.value)
+                typed()
+              }}
               autoComplete="name"
               required
             />
@@ -137,6 +145,7 @@ export default function Footer() {
               value={email}
               onChange={e => {
                 setEmail(e.target.value)
+                typed()
                 // the warning goes away as soon as the email is fixed
                 if (emailBad && EMAIL_SHAPE.test(e.target.value.trim())) setEmailBad(false)
               }}
@@ -164,7 +173,10 @@ export default function Footer() {
               id="contact-message"
               className="field resize-none"
               value={message}
-              onChange={e => setMessage(e.target.value)}
+              onChange={e => {
+                setMessage(e.target.value)
+                typed()
+              }}
               rows={4}
               required
             />
@@ -179,7 +191,7 @@ export default function Footer() {
               {status === 'sending' ? 'Sending…' : site.contact.sendButton}
             </button>
             {/* says why the button is gray while a field is still empty */}
-            {!canSubmit && status !== 'sending' && <p className="meta mt-3 text-ink-soft">All three fields are needed.</p>}
+            {!canSubmit && status !== 'sending' && status !== 'sent' && <p className="meta mt-3 text-ink-soft">All three fields are needed.</p>}
           </div>
 
           {/* result of sending, with a small mono mark in front like the boot log */}

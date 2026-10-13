@@ -150,6 +150,8 @@ export default function Projects() {
   const [active, setActive] = useState(0)
   // the card the wheel is heading to, so fast clicks count on from there and not from the card going past
   const target = useRef(0)
+  // true while the wheel is on its way to a card picked with an arrow or the list
+  const spinning = useRef(false)
   // cards on the wheel: the hand-written ones, plus any repos tagged on github
   const [list, setList] = useState(projects)
 
@@ -197,7 +199,10 @@ export default function Projects() {
       setActive(nearest)
       // once the wheel has stopped, wherever it stopped is where the arrows count from
       clearTimeout(settle)
-      settle = window.setTimeout(() => (target.current = nearest), 150)
+      settle = window.setTimeout(() => {
+        target.current = nearest
+        spinning.current = false
+      }, 150)
     }
 
     // at most one update per frame
@@ -229,17 +234,19 @@ export default function Projects() {
     const el = track.current
     const slot = el?.querySelectorAll<HTMLElement>('[data-slot]')[index]
     if (!el || !slot) return
+    const left = slot.offsetLeft - (el.clientWidth - slot.offsetWidth) / 2
     target.current = index
-    el.scrollTo({
-      left: slot.offsetLeft - (el.clientWidth - slot.offsetWidth) / 2,
-      behavior: reducedMotion() ? 'auto' : 'smooth',
-    })
+    // only counts as on its way when there is somewhere to go, a card already in the middle never scrolls
+    spinning.current = Math.abs(left - el.scrollLeft) > 1
+    el.scrollTo({ left, behavior: reducedMotion() ? 'auto' : 'smooth' })
   }
 
   // moves the wheel one card back or forward, and does nothing at either end
   function step(by: number) {
-    const next = gsap.utils.clamp(0, Math.max(list.length - 1, 0), target.current + by)
-    if (next !== target.current) spinTo(next)
+    // mid-spin the arrows count from where the wheel is heading, after a swipe by hand from the card in the middle
+    const from = spinning.current ? target.current : active
+    const next = gsap.utils.clamp(0, Math.max(list.length - 1, 0), from + by)
+    if (next !== from) spinTo(next)
   }
 
   // a github link that isn't a real https address isn't shown

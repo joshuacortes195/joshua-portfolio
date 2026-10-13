@@ -14,6 +14,9 @@ const links = [
 // parts of the page the row at the bottom of the hero jumps to
 const sections = ['experience', 'projects', 'contact']
 
+// the resume button only shows when the resume is a real file on this site
+const resume = sitePath(site.resume)
+
 export default function Hero({ ready }: { ready: boolean }) {
   const root = useRef<HTMLElement>(null)
   const intro = useRef<gsap.core.Timeline | null>(null)
@@ -91,16 +94,18 @@ export default function Hero({ ready }: { ready: boolean }) {
         )}
 
         {/* the big resume button */}
-        <div data-hero-fade className="mt-8 md:mt-10">
-          <a
-            href={sitePath(site.resume)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="pill pill-accent min-h-16 px-10 text-xl font-semibold"
-          >
-            {site.hero.resumeButton}
-          </a>
-        </div>
+        {resume && (
+          <div data-hero-fade className="mt-8 md:mt-10">
+            <a
+              href={resume}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="pill pill-accent min-h-16 px-10 text-xl font-semibold"
+            >
+              {site.hero.resumeButton}
+            </a>
+          </div>
+        )}
       </div>
 
       {/* jump links along the bottom, written like the menu's choices */}
@@ -114,6 +119,8 @@ export default function Hero({ ready }: { ready: boolean }) {
                   // scrolls there smoothly and takes keyboard focus along
                   e.preventDefault()
                   scrollToSection(name)
+                  // puts the section in the address so it can be shared, without adding a step to the back button
+                  history.replaceState(null, '', `#${name}`)
                 }}
                 className="min-h-11 inline-flex items-center gap-[1ch]"
               >

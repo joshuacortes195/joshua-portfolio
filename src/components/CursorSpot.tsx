@@ -96,7 +96,8 @@ export default function CursorSpot({ enabled, onLag }: Props) {
         gsap.ticker.remove(measure)
       }
     },
-    { dependencies: [enabled] },
+    // cleans up as soon as the trail is switched off, not only when the page closes
+    { dependencies: [enabled], revertOnUpdate: true },
   )
 
   if (!enabled) return null

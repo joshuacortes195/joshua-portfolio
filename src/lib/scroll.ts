@@ -14,6 +14,7 @@ export function startSmoothScroll() {
   // gsap drives lenis so both run on the same frame
   const tick = (time: number) => lenis?.raf(time * 1000)
   gsap.ticker.add(tick)
+  // lenis takes its clock from this ticker, so gsap's catch-up after a slow frame stays off or the scroll falls out of step
   gsap.ticker.lagSmoothing(0)
 
   return () => {
@@ -32,11 +33,11 @@ export function lockScroll(locked: boolean) {
   else lenis?.start()
 }
 
-// scrolls to a section by id, smoothly when smooth scrolling is on
-export function scrollToSection(id: string) {
+// scrolls to a section by id, smoothly when smooth scrolling is on, or straight there with jump
+export function scrollToSection(id: string, jump = false) {
   const el = document.getElementById(id)
   if (!el) return
-  if (lenis) lenis.scrollTo(el)
+  if (lenis) lenis.scrollTo(el, { immediate: jump })
   else el.scrollIntoView()
   // keyboard focus goes along, so the next tab carries on from that section and not from the top
   if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1')

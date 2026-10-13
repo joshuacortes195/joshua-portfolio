@@ -25,24 +25,57 @@ export function toTitle(name: string) {
 }
 
 // where the cards from github are kept for this tab, so reloads don't ask github again
-const SAVED_KEY = `jc-github-cards:${TOPIC}`
+// the number goes up whenever the saved shape changes, so an old tab never reads cards it can't draw
+const SAVED_KEY = `jc-github-cards:v2:${TOPIC}`
+// when github last failed to answer in this tab
+const FAILED_KEY = `jc-github-failed:v2:${TOPIC}`
+// how long to leave github alone after it fails, like when the hourly limit is used up, in milliseconds
+const RETRY_AFTER = 10 * 60 * 1000
 
-// the cards saved earlier in this tab, if there are any
+// true when something has everything a card needs to be drawn
+function isCard(card: unknown): card is Project {
+  const c = card as Project | null
+  return (
+    typeof c === 'object' &&
+    c !== null &&
+    typeof c.id === 'string' &&
+    typeof c.title === 'string' &&
+    Array.isArray(c.tags) &&
+    c.tags.every(t => typeof t === 'string')
+  )
+}
+
+// the cards saved earlier in this tab, if there are any, or no cards for a while after github failed
 function readSaved(): Project[] | null {
   try {
     const saved = JSON.parse(sessionStorage.getItem(SAVED_KEY) ?? 'null')
-    return Array.isArray(saved) ? saved : null
+    // anything that isn't a clean list of cards is thrown out and asked for again
+    if (Array.isArray(saved) && saved.every(isCard)) return saved
+    const failedAt = Number(sessionStorage.getItem(FAILED_KEY))
+    return failedAt && Date.now() - failedAt < RETRY_AFTER ? [] : null
   } catch {
     return null
+  }
+}
+
+// remembers that github just failed, so the next loads in this tab don't keep asking
+function markFailed() {
+  try {
+    sessionStorage.setItem(FAILED_KEY, String(Date.now()))
+  } catch {
+    // storage blocked, github just gets asked again next load
   }
 }
 
 // asks github for my public repos tagged with the topic and turns them into cards
 async function loadCards(): Promise<Project[]> {
   const user = site.github.split('/').pop()
-  const res = await fetch(`https://api.github.com/users/${user}/repos?per_page=100&sort=pushed`)
-  if (!res.ok) return []
-  const repos: Repo[] = await res.json()
+  const res = await fetch(`https://api.github.com/users/${user}/repos?per_page=100&sort=pushed`).catch(() => null)
+  const repos: Repo[] | null = res?.ok ? await res.json().catch(() => null) : null
+  if (!Array.isArray(repos)) {
+    markFailed()
+    return []
+  }
 
   const cards = repos
     .filter(r => r.topics?.includes(TOPIC))

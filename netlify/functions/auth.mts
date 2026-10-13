@@ -109,27 +109,37 @@ export default async (req: Request) => {
   const [savedState, marker = ''] = (readCookie(req, STATE_COOKIE) ?? '').split('.')
   if (!code || !state || state !== savedState || !MARKER_SHAPE.test(marker)) return backToAdmin('error=login_failed')
 
-  // swaps the code for a token
-  const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
-    method: 'POST',
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code }),
-  })
-  const { access_token: token } = (await tokenRes.json().catch(() => ({}))) as { access_token?: unknown }
+  // swaps the code for a token, github being unreachable counts as a failed login
+  let token: unknown
+  try {
+    const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code }),
+    })
+    token = ((await tokenRes.json().catch(() => null)) as { access_token?: unknown } | null)?.access_token
+  } catch {
+    return backToAdmin('error=login_failed')
+  }
   // anything that doesn't look like a github token never goes near the address bar
   if (typeof token !== 'string' || !TOKEN_SHAPE.test(token)) return backToAdmin('error=login_failed')
 
   // checks who just logged in, anyone but me gets turned away
-  const userRes = await fetch('https://api.github.com/user', {
-    headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'portfolio-admin' },
-  })
-  const user = ((await userRes.json().catch(() => null)) ?? {}) as { login?: unknown; id?: unknown }
-  // an answer that isn't a name and an account number counts as a failed login, and the token is cancelled
-  if (userRes.ok && (typeof user.login !== 'string' || typeof user.id !== 'number')) {
+  let user: { login?: unknown; id?: unknown } | null = null
+  try {
+    const userRes = await fetch('https://api.github.com/user', {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'portfolio-admin' },
+    })
+    if (userRes.ok) user = await userRes.json()
+  } catch {
+    // github unreachable or an answer that can't be read, handled just below
+  }
+  // no answer, or one that isn't a name and an account number, counts as a failed login and the token is cancelled
+  if (typeof user?.login !== 'string' || typeof user.id !== 'number') {
     await revoke(clientId, clientSecret, token)
     return backToAdmin('error=login_failed')
   }
-  if (!userRes.ok || user.id !== ADMIN_ID || (user.login as string).toLowerCase() !== ADMIN) {
+  if (user.id !== ADMIN_ID || user.login.toLowerCase() !== ADMIN) {
     // a stranger's token is cancelled on the spot so nothing is left behind
     await revoke(clientId, clientSecret, token)
     return backToAdmin('error=not_allowed')
