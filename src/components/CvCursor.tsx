@@ -74,7 +74,8 @@ export default function CvCursor() {
     // sends the ring to the mouse, or snaps the box around the target
     function place() {
       if (!boxX || !boxY || !boxW || !boxH) return
-      if (target && !target.isConnected) detect()
+      // looks again when the thing it was on is gone, or got covered by the menu or a project write-up
+      if (target && (!target.isConnected || target.closest('[inert]'))) detect()
       if (target) {
         const r = target.getBoundingClientRect()
         boxX(r.left - PAD)

@@ -6,6 +6,7 @@ import { parseDetails } from '../lib/details'
 import { safeLink } from '../lib/links'
 import { useModal } from '../lib/modal'
 import ProjectMedia from './ProjectMedia'
+import StatLine from './StatLine'
 
 type Props = {
   project: Project
@@ -52,7 +53,7 @@ export default function ProjectDetail({ project, onClose, onClosed }: Props) {
   return createPortal(
     // faded sheet over the page, clicking it closes the write-up
     <div
-      className="detail-backdrop fixed inset-0 z-[60] flex items-center justify-center bg-paper/80 p-3 md:p-8"
+      className="detail-backdrop fixed inset-0 z-[60] flex items-center justify-center bg-paper/95 p-3 md:p-8"
       onMouseDown={e => (pressedOutside.current = e.target === e.currentTarget)}
       onClick={e => e.target === e.currentTarget && pressedOutside.current && onClose()}
     >
@@ -77,23 +78,26 @@ export default function ProjectDetail({ project, onClose, onClosed }: Props) {
 
         {/* everything else scrolls inside the panel, lenis leaves wheel and touch scrolling in here alone */}
         <div data-lenis-prevent tabIndex={0} role="document" aria-labelledby={titleId} className="detail-scroll p-4 md:p-6">
-          <ProjectMedia project={project} active onPaper />
+          {/* on a short laptop screen the clip shrinks so the writing still starts on the first screen */}
+          <div className="detail-media">
+            <ProjectMedia project={project} active onPaper />
+          </div>
 
           <h2 id={titleId} className="display mt-6 text-4xl md:text-6xl">
             {project.title}
           </h2>
           {/* headline numbers for the project, only when there are some */}
-          {project.stat && <p className="detail-stat meta mt-4">{project.stat}</p>}
+          {project.stat && <StatLine stat={project.stat} className="detail-stat mt-4" />}
 
           {/* the write-up: section labels, paragraphs and bullet lists, always plain text */}
-          <div className="mt-6 space-y-4 text-base md:text-lg leading-snug">
+          <div className="mt-6 space-y-4 text-base md:text-lg leading-[1.45]">
             {blocks.map((block, i) =>
               block.kind === 'heading' ? (
-                <h3 key={i} className="meta mt-8 border-t border-ink pt-4 text-ink-soft">
+                <h3 key={i} className="meta mt-8 border-t border-ink pt-4 font-medium">
                   {block.text}
                 </h3>
               ) : block.kind === 'list' ? (
-                <ul key={i} className="max-w-[68ch] space-y-3">
+                <ul key={i} className="max-w-[58ch] space-y-3">
                   {block.items.map((item, n) => (
                     // each line gets a small mono arrow in front, same as the experience section
                     <li
@@ -105,7 +109,7 @@ export default function ProjectDetail({ project, onClose, onClosed }: Props) {
                   ))}
                 </ul>
               ) : (
-                <p key={i} className="max-w-[68ch]">
+                <p key={i} className="max-w-[58ch]">
                   {block.text}
                 </p>
               ),

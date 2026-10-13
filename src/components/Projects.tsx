@@ -7,6 +7,7 @@ import { fetchGithubProjects } from '../lib/github'
 import { safeLink } from '../lib/links'
 import ProjectMedia from './ProjectMedia'
 import ProjectDetail from './ProjectDetail'
+import StatLine from './StatLine'
 
 // one floating dark card for a project, active when it's the one in the middle of the wheel
 // onMore opens the bigger write-up, and gets the button that was pressed so focus can come back to it
@@ -27,7 +28,7 @@ function ProjectCard({ project, active, onMore }: { project: Project; active: bo
       <div className="flex-1 flex flex-col px-3 md:px-3 pt-5 pb-4">
         <h3 className="display text-3xl md:text-4xl">{project.title}</h3>
         {/* headline numbers for the project, only when there are some */}
-        {project.stat && <p className="meta mt-3 text-accent">{project.stat}</p>}
+        {project.stat && <StatLine stat={project.stat} className="meta mt-3 text-accent" />}
         <p className="mt-3 text-base leading-snug text-mute max-w-[52ch]">{project.description}</p>
 
         {/* stack tags */}

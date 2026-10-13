@@ -77,7 +77,7 @@ export default function Footer() {
       <div className="mt-12 md:mt-16 grid gap-x-8 gap-y-12 md:grid-cols-12">
         {/* email and social links */}
         <div data-reveal className="md:col-span-5">
-          <a href={`mailto:${site.email}`} className="link inline-block py-2.5 text-xl md:text-2xl font-semibold tracking-tight break-all">
+          <a href={`mailto:${site.email}`} className="link inline-block py-2.5 text-xl lg:text-2xl font-semibold tracking-tight break-all">
             {site.email}
           </a>
           <ul className="mt-3 flex gap-6 text-lg">
@@ -106,7 +106,7 @@ export default function Footer() {
         </div>
 
         {/* contact form */}
-        <form data-reveal onSubmit={handleSubmit} className="md:col-span-6 md:col-start-7 space-y-6" noValidate>
+        <form data-reveal onSubmit={handleSubmit} className="md:col-span-6 md:col-start-7 space-y-8" noValidate>
           {/* hidden trap field for spam bots */}
           <input
             type="checkbox"
@@ -157,7 +157,7 @@ export default function Footer() {
               aria-describedby={emailBad ? 'contact-email-error' : undefined}
             />
             {/* what's wrong with the email, read out with the field */}
-            {/* always there but hidden until needed, so its room is kept and the send button doesn't jump when it shows */}
+            {/* always there but hidden until needed, it sits in the gap under the field so nothing moves when it shows */}
             <p id="contact-email-error" className={`field-error ${emailBad ? '' : 'invisible'}`}>
               <span aria-hidden="true">!</span>
               Enter a valid email, like name@company.com
@@ -170,7 +170,7 @@ export default function Footer() {
             </label>
             <textarea
               id="contact-message"
-              className="field resize-none"
+              className="field block resize-none"
               value={message}
               onChange={e => {
                 setMessage(e.target.value)
@@ -189,8 +189,12 @@ export default function Footer() {
             >
               {status === 'sending' ? 'Sending…' : site.contact.sendButton}
             </button>
-            {/* says why the button is gray while a field is still empty */}
-            {!canSubmit && status !== 'sending' && status !== 'sent' && <p className="meta mt-3 text-ink-soft">All three fields are needed.</p>}
+            {/* says why the button is gray while a field is still empty, its room is kept so the page doesn't shrink when it goes */}
+            {status !== 'sent' && (
+              <p className={`meta mt-3 text-ink-soft ${!canSubmit && status !== 'sending' ? '' : 'invisible'}`}>
+                All three fields are needed.
+              </p>
+            )}
           </div>
 
           {/* result of sending, with a small mono mark in front like the boot log */}
