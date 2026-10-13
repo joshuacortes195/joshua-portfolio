@@ -41,7 +41,10 @@ function isCard(card: unknown): card is Project {
     typeof c.id === 'string' &&
     typeof c.title === 'string' &&
     Array.isArray(c.tags) &&
-    c.tags.every(t => typeof t === 'string')
+    c.tags.every(t => typeof t === 'string') &&
+    // cards from github never carry a write-up or a category, anything else in those spots isn't one of ours
+    c.details === undefined &&
+    c.category === undefined
   )
 }
 

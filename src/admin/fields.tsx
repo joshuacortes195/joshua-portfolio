@@ -46,6 +46,32 @@ export function Area({ label, value, onChange, hint, rows = 3 }: FieldProps & { 
   )
 }
 
+// a dropdown with a few choices
+export function Select({
+  label,
+  value,
+  onChange,
+  options,
+  hint,
+}: FieldProps & { options: { value: string; label: string }[] }) {
+  const id = useId()
+  return (
+    <div>
+      <label htmlFor={id} className="meta block text-ink-soft">
+        {label}
+      </label>
+      <select id={id} className="field" value={value} onChange={e => onChange(e.target.value)}>
+        {options.map(option => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      {hint && <p className="meta mt-1 text-ink-soft">{hint}</p>}
+    </div>
+  )
+}
+
 type ListProps = {
   label: string
   value: string[]

@@ -3,10 +3,11 @@ import type { Project } from '../data/projects'
 import { toTitle } from '../lib/github'
 import { MAX_UPLOAD_MB, SHRINK_VIDEO_MB, REPO, IMAGE_ENDINGS, type Content } from './config'
 import type { Files } from './AdminApp'
-import { fetchRepo, fetchRepos, repoReader, type Repo } from './github'
+import { fetchReadme, fetchRepo, fetchRepos, repoReader, type Repo } from './github'
 import { detectStack } from './stack'
+import { readmeToDetails } from './readme'
 import { toMp4 } from './video'
-import { Group, Text, Area, List, Check, FileButton, RowTools } from './fields'
+import { Group, Text, Area, Select, List, Check, FileButton, RowTools } from './fields'
 import { moveItem } from './list'
 
 type Props = {
@@ -77,7 +78,11 @@ type EditorProps = {
   token: string
   // the github topic that marks automatic cards, never shown as a tag
   topic: string
+  // the categories a project can be filed under
+  categories: Category[]
 }
+
+type Category = { id: string; label: string }
 
 // the image or video for one project
 function MediaEditor({ project, edit, current, files }: Pick<EditorProps, 'project' | 'edit' | 'current' | 'files'>) {
@@ -225,9 +230,28 @@ function MediaEditor({ project, edit, current, files }: Pick<EditorProps, 'proje
 }
 
 // all the fields for one project
-function ProjectEditor({ project, edit, current, files, token, topic }: EditorProps) {
+function ProjectEditor({ project, edit, current, files, token, topic, categories }: EditorProps) {
   // progress of pulling the tags from github
   const [tagState, setTagState] = useState<'idle' | 'loading' | 'error'>('idle')
+  // progress of pulling the read more text from the repo's README
+  const [readmeState, setReadmeState] = useState<'idle' | 'loading' | 'error' | 'empty'>('idle')
+
+  // fills the read more text from the repo's README, asking first when there is text it would replace
+  async function pullDetails() {
+    if (!project.github) return
+    setReadmeState('loading')
+    try {
+      const details = readmeToDetails(await fetchReadme(token, project.github))
+      // a repo with no README, or one with nothing usable in it, leaves the text alone
+      if (!details) return setReadmeState('empty')
+      setReadmeState('idle')
+      // checked against the text as it is now, it may have been typed in while github was answering
+      if (current()?.details?.trim() && !window.confirm(`Replace the read more text for ${project.title} with its README from GitHub?`)) return
+      edit(p => void (p.details = details))
+    } catch {
+      setReadmeState('error')
+    }
+  }
 
   // replaces the tags with everything the linked repo uses
   async function pullTags() {
@@ -247,6 +271,21 @@ function ProjectEditor({ project, edit, current, files, token, topic }: EditorPr
     <div className="mt-5 space-y-5">
       <Text label="Title" value={project.title} onChange={v => edit(p => void (p.title = v))} />
       <Area label="Description" value={project.description} onChange={v => edit(p => void (p.description = v))} />
+      <Area
+        label="Read more text"
+        rows={8}
+        value={project.details ?? ''}
+        // an emptied box takes the read more button off the card
+        onChange={v => edit(p => void (p.details = v.trim() ? v : undefined))}
+        hint='Blank lines split paragraphs, a line starting with "- " is a bullet, a short line on its own is a heading. Leave empty for no Read more button'
+      />
+      <Select
+        label="Category"
+        value={categories.some(c => c.id === project.category) ? project.category! : ''}
+        onChange={v => edit(p => void (p.category = v || undefined))}
+        options={[{ value: '', label: 'None' }, ...categories.map(c => ({ value: c.id, label: c.label || c.id }))]}
+        hint="Which filter button it shows under. The list of categories is in the Text tab"
+      />
       <Text
         label="Stat line"
         value={project.stat ?? ''}
@@ -255,15 +294,23 @@ function ProjectEditor({ project, edit, current, files, token, topic }: EditorPr
       />
       <List label="Tags" value={project.tags} onChange={v => edit(p => void (p.tags = v))} />
 
-      {/* fills the tags in from the repo's code, only when there is a repo link */}
+      {/* fills the tags in from the repo's code, or the read more text from its README, only when there is a repo link */}
       {project.github && (
         <div className="flex flex-wrap items-center gap-3">
           <button type="button" className="pill disabled:opacity-50" onClick={pullTags} disabled={tagState === 'loading'}>
             {tagState === 'loading' ? 'Reading the repo…' : 'Update tags from GitHub'}
           </button>
-          {tagState === 'error' && (
+          <button type="button" className="pill disabled:opacity-50" onClick={pullDetails} disabled={readmeState === 'loading'}>
+            {readmeState === 'loading' ? 'Reading the README…' : 'Fill read more text from README'}
+          </button>
+          {(tagState === 'error' || readmeState === 'error') && (
             <p role="alert" className="meta">
               Couldn't read that repo. Check the link below.
+            </p>
+          )}
+          {readmeState === 'empty' && (
+            <p role="status" className="meta">
+              That repo has no README text to use.
             </p>
           )}
         </div>
@@ -331,13 +378,17 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
       .catch(() => setRepos('error'))
   }
 
-  // fills in a new project from a repo: name, description, links, and tags for everything it uses
+  // fills in a new project from a repo: name, description, links, tags for everything it uses, and a read more text from its README
   async function importRepo(repo: Repo) {
     setImporting(repo.html_url)
-    // if the repo can't be read fully, the main language is still a start
-    const tags = await detectStack(repo, repoReader(token), site.projects.githubTopic).catch(() =>
-      repo.language ? [repo.language] : [],
-    )
+    const [tags, details] = await Promise.all([
+      // if the repo can't be read fully, the main language is still a start
+      detectStack(repo, repoReader(token), site.projects.githubTopic).catch(() => (repo.language ? [repo.language] : [])),
+      // no README, or one that can't be read, just means no read more text yet
+      fetchReadme(token, repo.html_url)
+        .then(readmeToDetails)
+        .catch(() => ''),
+    ])
     setImporting('')
     change(d => {
       d.projects.unshift({
@@ -345,6 +396,7 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
         id: uniqueId(slug(repo.name), d.projects),
         title: toTitle(repo.name),
         description: repo.description ?? '',
+        details: details || undefined,
         tags,
         demo: repo.homepage || undefined,
         github: repo.html_url,
@@ -463,6 +515,7 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
                 files={files}
                 token={token}
                 topic={site.projects.githubTopic}
+                categories={site.projects.categories ?? []}
               />
             )}
           </div>

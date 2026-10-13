@@ -73,6 +73,19 @@ export function fetchRepo(token: string, link: string) {
   return api<Repo>(token, `/repos/${owner}/${name.replace(/\.git$/, '')}`)
 }
 
+// the README of a repo, looked up from its github link, as the markdown it was written in
+// a repo without one gives back nothing instead of failing
+export async function fetchReadme(token: string, link: string) {
+  const [owner, name] = new URL(link).pathname.split('/').filter(Boolean)
+  const path = `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name.replace(/\.git$/, ''))}/readme`
+  try {
+    return await (await request(token, path, {}, 'application/vnd.github.raw+json')).text()
+  } catch (err) {
+    if (err instanceof GithubError && err.status === 404) return ''
+    throw err
+  }
+}
+
 // lets the tag detector read repo details and files with my token
 export function repoReader(token: string): Reader {
   return {

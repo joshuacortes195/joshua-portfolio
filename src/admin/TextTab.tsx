@@ -1,10 +1,93 @@
+import { useState } from 'react'
 import type { Content } from './config'
-import { Group, Text, Area, List } from './fields'
+import { Group, Text, Area, List, RowTools } from './fields'
+import { moveItem } from './list'
 
 type Props = {
   content: Content
   // makes a change to the content
   change: (edit: (draft: Content) => void) => void
+}
+
+// the list of project categories: add, rename, reorder and remove
+function CategoryEditor({ content, change }: Props) {
+  // an older site file may not have the list yet
+  const categories = content.site.projects.categories ?? []
+  const [newLabel, setNewLabel] = useState('')
+
+  // adds a category to the end, with an id made from its name that no other category has
+  function add() {
+    const label = newLabel.trim()
+    if (!label) return
+    const base = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'category'
+    let id = base
+    for (let n = 2; categories.some(c => c.id === id); n++) id = `${base}-${n}`
+    change(d => void (d.site.projects.categories = [...(d.site.projects.categories ?? []), { id, label }]))
+    setNewLabel('')
+  }
+
+  // takes a category off the list, and off every project that was filed under it
+  function remove(id: string) {
+    change(d => {
+      d.site.projects.categories = (d.site.projects.categories ?? []).filter(c => c.id !== id)
+      for (const p of d.projects) if (p.category === id) delete p.category
+    })
+  }
+
+  return (
+    <Group title="Project categories">
+      <p className="text-ink-soft">
+        The filter buttons above the project wheel, in this order. A category only shows once a project is filed under it,
+        which is set on each project in the Projects tab.
+      </p>
+
+      {/* one row per category: its name, how many projects use it, and the move and delete buttons */}
+      {categories.map((category, i) => {
+        const used = content.projects.filter(p => p.category === category.id).length
+        return (
+          <div key={category.id} className="border-t border-ink pt-4 flex flex-wrap items-end justify-between gap-3">
+            <div className="flex-1 min-w-48">
+              {/* renaming keeps the id, so projects stay filed under it */}
+              <Text
+                label={`Category ${i + 1}`}
+                value={category.label}
+                onChange={v =>
+                  change(d => {
+                    const target = d.site.projects.categories.find(c => c.id === category.id)
+                    if (target) target.label = v
+                  })
+                }
+                hint={used === 1 ? '1 project' : `${used} projects`}
+              />
+            </div>
+            <RowTools
+              name={category.label || 'this category'}
+              index={i}
+              count={categories.length}
+              onMove={to => change(d => moveItem(d.site.projects.categories, i, to))}
+              onDelete={() => remove(category.id)}
+            />
+          </div>
+        )
+      })}
+
+      {/* add a new one */}
+      <form
+        className="border-t border-ink pt-4 flex flex-wrap items-end gap-3"
+        onSubmit={e => {
+          e.preventDefault()
+          add()
+        }}
+      >
+        <div className="flex-1 min-w-48">
+          <Text label="New category" value={newLabel} onChange={setNewLabel} />
+        </div>
+        <button type="submit" className="pill" disabled={!newLabel.trim()}>
+          Add category
+        </button>
+      </form>
+    </Group>
+  )
 }
 
 // every bit of text on the site that isn't a job or a project
@@ -36,6 +119,9 @@ export default function TextTab({ content, change }: Props) {
         <Text label="Projects" value={site.projects.title} onChange={v => change(d => void (d.site.projects.title = v))} />
         <Text label="Contact" value={site.contact.title} onChange={v => change(d => void (d.site.contact.title = v))} />
       </Group>
+
+      {/* the filter buttons above the project wheel */}
+      <CategoryEditor content={content} change={change} />
 
       {/* contact form wording */}
       <Group title="Contact form">

@@ -16,6 +16,10 @@ export type Project = {
   tags: string[]
   // one short line of numbers shown under the title, the card leaves it out when empty
   stat?: string
+  // the longer write-up behind the read more button: plain text, blank lines split paragraphs, "- " starts a bullet
+  details?: string
+  // id of one of the categories in site.json, the filter buttons above the wheel use it
+  category?: string
   demo?: string
   // repo link, kept for reference, the cards don't show it
   github?: string

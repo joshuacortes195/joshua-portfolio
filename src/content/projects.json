@@ -3,6 +3,9 @@
     "id": "resumefit",
     "title": "ResumeFit",
     "description": "Free resume match and job application assistant.",
+    "stat": "About 6,750 skills matched · 30+ checks · 297 unit and 28 browser tests",
+    "details": "ResumeFit is a free web app and Chrome extension that scores a resume against a job description, shows what is missing, and keeps every application in one tracker. I wanted a resume scanner for me and my friends with no paywalls, credits or locked features, and a score I could explain.\n\nWhat I built\n\n- A scoring engine in plain code: hard skills 50%, soft skills 15%, searchability 15%, recruiter tips 10%, formatting 10%\n- PDF and DOCX readers that rebuild lines from text positions and document XML, so fonts, columns, tables and margins can be checked\n- A Manifest V3 Chrome extension that scans the job posting on the page you are on\n- A drag and drop application tracker, and a resume builder with 8 templates and PDF and Word export\n- Writing help that tries Gemini, then Groq, then Cloudflare Workers AI, on free tiers only\n\nResults\n\n- About 6,750 skills matched per scan: 191 hard and 35 soft picked by hand, 6,559 imported from the O*NET database\n- 30+ report checks and 11 applicant tracking systems detected\n- 297 unit and data layer tests, 28 browser tests, and accessibility checks on 16 pages\n- 17 database tables, with row level security on every one\n\nLimits\n\nI built an auto apply feature, tested it on real company sites, and removed about 4,800 lines when it did not hold up. Sign in is invite only by default, and there is no usage data or feedback from other people yet.",
+    "category": "web-apps",
     "tags": [
       "TypeScript",
       "React",
@@ -24,6 +27,9 @@
     "id": "tinygpt",
     "title": "TinyGPT",
     "description": "A GPT-style language model built from scratch that runs in your browser.",
+    "stat": "27.4M parameters · about 329M training tokens · about 75 tokens/sec on WebGPU",
+    "details": "TinyGPT is a small language model I wrote myself instead of using a library: my own tokenizer, my own transformer and my own training loop. I trained it on recipes, so you type the name of a dish and it writes the ingredients and steps. I built it to understand how GPT-style models work by writing every piece, and so anyone can try one in a click with no server behind it.\n\nWhat I built\n\n- A byte-level BPE tokenizer with a 4,096 token vocabulary, in Python and again in TypeScript, checked against 20 shared test inputs\n- A decoder-only transformer with hand-written multi-head attention\n- A training loop with AdamW, warmup then cosine decay, mixed precision, and checkpoints that resume bit-for-bit\n- An ONNX export that runs in the browser on WebGPU, with a WebAssembly fallback on the CPU\n- Views of the tokens, the top 10 guesses at every step, and what each attention head was looking at\n\nResults\n\n- 27.4M parameter model trained on about 329M tokens of recipes: 36,000 steps in 2 h 59 min on one RTX 3060, validation loss 1.430\n- About 75 tokens/sec on WebGPU in Chrome\n- A smaller 10.5M parameter model reached validation loss 1.537 in 48 min\n\nLimits\n\nThe model has learned which words tend to follow which. It does not have a real idea of cooking, so ingredients listed at the top don't always get used. Safari has not been tested.",
+    "category": "ai-ml",
     "tags": [
       "TypeScript",
       "React",
@@ -48,6 +54,9 @@
     "id": "bird-identifier",
     "title": "Bird Identifier",
     "description": "Fine-tuned ConvNeXt-V2 model that classifies 555 North American bird species.",
+    "stat": "89.00% top-1 · 98.78% top-5 · 24,633 test images · 555 species",
+    "details": "Bird Identifier names 555 North American bird species from one photo. You upload a picture and get the most likely species with a confidence score, the other top possibilities, a Wikipedia summary and the species' conservation status. I do computer vision work at my internship and shoot wildlife photos myself, so I wanted an end-to-end vision project of my own.\n\nWhat I built\n\n- A ConvNeXt-V2-Base model (about 88.3M parameters) fine-tuned on the NABirds dataset with Mixup, CutMix, label smoothing and EMA\n- Evaluation with temperature scaling for calibration and Grad-CAM overlays to see what the model looks at\n- A FastAPI service that runs on ONNX Runtime with no PyTorch, with upload limits and rate limiting\n- A React front end that resizes photos in the browser and pulls species info from Wikipedia and Wikidata\n- A Docker image on Render for the API, and Vercel for the front end\n\nResults\n\n- 89.00% top-1 and 98.78% top-5 accuracy on 24,633 test images\n- Trained on 21,519 images in about 3.3 hours on one RTX 3060\n- Expected calibration error went from 0.134 to 0.037 after temperature scaling\n- ONNX fp32 runs at 145 ms p50 on the CPU, against 198 ms for PyTorch\n- 62 automated tests\n\nLimits\n\nThe free host only fits the 85.6 MB INT8 model, which is slower than fp32, and the first request after idle takes 30 to 60 seconds. Rare classes are weak: some have only 3 to 9 training images.",
+    "category": "ai-ml",
     "tags": [
       "Python",
       "PyTorch",
@@ -69,6 +78,9 @@
     "id": "stock-predictor",
     "title": "Stock Movement Predictor",
     "description": "ML pipeline that predicts S&P 500 stock movement, served through a Flask API.",
+    "stat": "499 tickers · about 1.27M rows · 24 features · 46 tests",
+    "details": "You pick a stock ticker and the app predicts whether it goes up or down over the next day, week or month, with a confidence level, a plain-language verdict and a price chart. I built it to do machine learning on a problem where it is very easy to fool yourself, with a method I can defend end to end. The honest result is that no model beats the baseline.\n\nWhat I built\n\n- A pipeline over daily prices for 499 S&P 500 companies from January 2016 to June 2026, with 24 features that only use information available at or before prediction time\n- Logistic regression, random forest and gradient boosting models for three horizons, compared against naive baselines on a chronological holdout\n- A Flask API that fetches recent data live and returns the direction, a confidence level and a verdict\n- Accounts and a watchlist with scrypt-hashed passwords, and a React front end, shipped as one Docker image on Render\n\nResults\n\n- About 1.27 million rows after feature engineering: 1,011,331 for training and 260,960 for testing on the next-day horizon\n- Next-day test accuracy of 0.520, the same as the majority baseline. Next week 0.531 against 0.534, next month 0.553 against 0.554\n- A leakage bug made cross-validation show 65.7% for a model that scored 50.8% on the holdout. Fixed, it was about 52%\n- 46 automated tests\n\nLimits\n\nThe model does not predict market direction better than chance from daily price data, and the app says so. This is an educational demo, not investment advice.",
+    "category": "ai-ml",
     "tags": [
       "Python",
       "scikit-learn",
@@ -91,6 +103,7 @@
     "id": "book-app",
     "title": "Book App",
     "description": "Full-stack Bible app with verse highlighting, notes, and daily streaks.",
+    "category": "web-apps",
     "tags": [
       "React",
       "TypeScript",
@@ -110,6 +123,7 @@
     "id": "asteroids",
     "title": "Asteroids Game",
     "description": "Multiplayer space shooter with three game modes on a 9-thread engine.",
+    "category": "games",
     "tags": [
       "Java",
       "Swing",
@@ -128,6 +142,7 @@
     "id": "photography-portfolio",
     "title": "Photography Portfolio",
     "description": "Portfolio site for a three-photographer collective, with galleries pulled from Google Drive.",
+    "category": "web-apps",
     "tags": [
       "Next.js",
       "React",
@@ -147,6 +162,7 @@
     "id": "wordle-clone",
     "title": "Wordle Game Clone",
     "description": "Browser Wordle clone with 5,700+ words and custom word lists.",
+    "category": "games",
     "tags": [
       "JavaScript",
       "HTML",
@@ -158,6 +174,7 @@
     "id": "pacman-ai",
     "title": "Pacman AI",
     "description": "Maze-solving Pacman agent using DFS, BFS, UCS, and A* search.",
+    "category": "ai-ml",
     "tags": [
       "Python",
       "AI",
@@ -168,6 +185,7 @@
     "id": "acquisition-robot",
     "title": "Acquisition Robot",
     "description": "Button-controlled robotic arm with a 99% retrieval success rate.",
+    "category": "robotics",
     "tags": [
       "EV3 Mindstorms",
       "AutoCAD",

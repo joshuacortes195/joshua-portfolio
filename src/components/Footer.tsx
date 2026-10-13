@@ -157,12 +157,11 @@ export default function Footer() {
               aria-describedby={emailBad ? 'contact-email-error' : undefined}
             />
             {/* what's wrong with the email, read out with the field */}
-            {emailBad && (
-              <p id="contact-email-error" className="field-error">
-                <span aria-hidden="true">!</span>
-                Enter a valid email, like name@company.com
-              </p>
-            )}
+            {/* always there but hidden until needed, so its room is kept and the send button doesn't jump when it shows */}
+            <p id="contact-email-error" className={`field-error ${emailBad ? '' : 'invisible'}`}>
+              <span aria-hidden="true">!</span>
+              Enter a valid email, like name@company.com
+            </p>
           </div>
 
           <div>

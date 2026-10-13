@@ -16,7 +16,25 @@
   },
   "projects": {
     "title": "Projects",
-    "githubTopic": "portfolio"
+    "githubTopic": "portfolio",
+    "categories": [
+      {
+        "id": "ai-ml",
+        "label": "AI / ML"
+      },
+      {
+        "id": "web-apps",
+        "label": "Web apps"
+      },
+      {
+        "id": "games",
+        "label": "Games"
+      },
+      {
+        "id": "robotics",
+        "label": "Robotics"
+      }
+    ]
   },
   "contact": {
     "title": "Contact me",

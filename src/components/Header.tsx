@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import MenuScreen from './MenuScreen'
-import { lockScroll, scrollToSection } from '../lib/scroll'
+import { scrollToSection } from '../lib/scroll'
+import { useModal } from '../lib/modal'
 
 export default function Header() {
   const [open, setOpen] = useState(false)
@@ -8,36 +9,19 @@ export default function Header() {
   // the section picked in the menu, jumped to once the menu has closed
   const jump = useRef<string | null>(null)
 
-  // escape key closes the menu
-  useEffect(() => {
-    if (!open) return
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [open])
-
-  // while the menu is open the page behind it can't be scrolled, clicked or tabbed into
-  useEffect(() => {
-    if (!open) return
-    const behind = Array.from(document.querySelectorAll<HTMLElement>('main, footer, .skip-link'))
-    const menuButton = button.current
-    lockScroll(true)
-    behind.forEach(el => (el.inert = true))
-    // keyboard focus starts on the first choice, a frame later so the enter press that opened the menu doesn't also pick it
-    const focusFirst = requestAnimationFrame(() => document.querySelector<HTMLElement>('#site-menu .menu-choice')?.focus())
-
-    return () => {
-      cancelAnimationFrame(focusFirst)
-      lockScroll(false)
-      behind.forEach(el => (el.inert = false))
-      // focus goes to the picked section, or back to the menu button when nothing was picked
+  // while the menu is open the page behind it can't be scrolled, clicked or tabbed into, and escape closes it
+  useModal(open, {
+    behind: 'main, footer, .skip-link',
+    onEscape: () => setOpen(false),
+    // keyboard focus starts on the first choice
+    focusIn: () => document.querySelector<HTMLElement>('#site-menu .menu-choice'),
+    // focus goes to the picked section, or back to the menu button when nothing was picked
+    focusOut: () => {
       if (jump.current) scrollToSection(jump.current)
-      else menuButton?.focus()
+      else button.current?.focus()
       jump.current = null
-    }
-  }, [open])
+    },
+  })
 
   // closes the menu, and remembers the section to jump to if one was picked
   function close(section?: string) {

@@ -1,96 +1,28 @@
-import { useEffect, useRef, useState } from 'react'
-import { projects, type Project, type ProjectMedia } from '../data/projects'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { projects, type Project } from '../data/projects'
 import { site } from '../data/site'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { gsap, reducedMotion } from '../lib/motion'
 import { fetchGithubProjects } from '../lib/github'
 import { safeLink } from '../lib/links'
-
-// looping clip that only plays on the middle card while it's on screen
-function Clip({ media, active }: { media: ProjectMedia; active: boolean }) {
-  const video = useRef<HTMLVideoElement>(null)
-  // with reduced motion the clip waits for a click instead of autoplaying
-  const [manual] = useState(reducedMotion)
-  const [onScreen, setOnScreen] = useState(false)
-  // true when the phone refused to autoplay, like in low power mode
-  const [blocked, setBlocked] = useState(false)
-
-  // keeps track of whether the clip is on screen
-  useEffect(() => {
-    const el = video.current
-    if (!el || manual) return
-    const watcher = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), { threshold: 0.4 })
-    watcher.observe(el)
-    return () => watcher.disconnect()
-  }, [manual])
-
-  // plays on the middle card, pauses everywhere else
-  useEffect(() => {
-    const el = video.current
-    if (!el || manual) return
-    if (!active || !onScreen) return el.pause()
-    if (blocked) return
-    // when autoplay isn't allowed the play button shows up instead
-    el.play().catch(err => {
-      if (err?.name === 'NotAllowedError') setBlocked(true)
-    })
-  }, [manual, active, onScreen, blocked])
-
-  return (
-    <video
-      ref={video}
-      className="w-full h-full object-cover"
-      poster={media.poster}
-      aria-label={media.alt}
-      controls={manual || blocked}
-      muted
-      loop
-      playsInline
-      preload="none"
-    >
-      <source src={media.src} type="video/mp4" />
-    </video>
-  )
-}
-
-// screenshot of the project
-function Shot({ media }: { media: ProjectMedia }) {
-  return (
-    <img className="w-full h-full object-cover" src={media.src} alt={media.alt} loading="lazy" decoding="async" />
-  )
-}
-
-// stand-in screen for projects that don't have a clip or screenshot yet
-function Blank({ project }: { project: Project }) {
-  return (
-    <div className="blank-screen w-full h-full grid place-items-center font-mono text-sm md:text-base text-accent">
-      &gt; {project.id}_
-    </div>
-  )
-}
-
-// the clip or screenshot at the top of a card, shaped like the screen recordings
-function Media({ project, active }: { project: Project; active: boolean }) {
-  const media = project.media
-  return (
-    <div className="aspect-[1280/692] rounded-[10px] md:rounded-xl overflow-hidden bg-mute border border-paper/15">
-      {!media ? <Blank project={project} /> : media.kind === 'video' ? <Clip media={media} active={active} /> : <Shot media={media} />}
-    </div>
-  )
-}
+import ProjectMedia from './ProjectMedia'
+import ProjectDetail from './ProjectDetail'
 
 // one floating dark card for a project, active when it's the one in the middle of the wheel
-function ProjectCard({ project, active }: { project: Project; active: boolean }) {
+// onMore opens the bigger write-up, and gets the button that was pressed so focus can come back to it
+function ProjectCard({ project, active, onMore }: { project: Project; active: boolean; onMore: (opener: HTMLElement) => void }) {
   // links only show when they are real https addresses
   const demo = safeLink(project.demo)
   const code = project.fromGithub ? safeLink(project.github) : undefined
+  // the read more button only shows when there is a write-up to open
+  const more = typeof project.details === 'string' && project.details.trim() !== ''
 
   return (
     <article
       data-cursor="project"
       className="float-card on-ink h-full flex flex-col rounded-2xl md:rounded-3xl bg-ink text-paper p-1.5 md:p-3"
     >
-      <Media project={project} active={active} />
+      <ProjectMedia project={project} active={active} />
 
       <div className="flex-1 flex flex-col px-3 md:px-3 pt-5 pb-4">
         <h3 className="display text-3xl md:text-4xl">{project.title}</h3>
@@ -107,8 +39,8 @@ function ProjectCard({ project, active }: { project: Project; active: boolean })
           ))}
         </ul>
 
-        {/* demo and code buttons, only when there is something to link, pinned to the bottom of the card */}
-        {(demo || code) && (
+        {/* demo, read more and code buttons, only when there is something behind them, pinned to the bottom of the card */}
+        {(demo || code || more) && (
           <div className="mt-auto pt-6 flex flex-wrap items-center gap-3">
             {demo && (
               <a
@@ -120,6 +52,18 @@ function ProjectCard({ project, active }: { project: Project; active: boolean })
               >
                 Live demo
               </a>
+            )}
+            {/* opens the bigger write-up for this project */}
+            {more && (
+              <button
+                type="button"
+                className="pill pill-on-ink"
+                aria-haspopup="dialog"
+                aria-label={`Read more about ${project.title}`}
+                onClick={e => onMore(e.currentTarget)}
+              >
+                Read more
+              </button>
             )}
             {/* cards pulled from github also link to the repo */}
             {code && (
@@ -144,6 +88,9 @@ function ProjectCard({ project, active }: { project: Project; active: boolean })
 // how far a card one step off center turns away, in degrees
 const TURN = 34
 
+// the filter that shows every project
+const ALL = 'all'
+
 export default function Projects() {
   const track = useRef<HTMLDivElement>(null)
   // the card sitting in the middle of the wheel
@@ -154,6 +101,20 @@ export default function Projects() {
   const spinning = useRef(false)
   // cards on the wheel: the hand-written ones, plus any repos tagged on github
   const [list, setList] = useState(projects)
+  // the category picked in the filter row, or all of them
+  const [filter, setFilter] = useState(ALL)
+  // the project whose write-up is open, if any
+  const [reading, setReading] = useState<Project | null>(null)
+  // the read more button that opened the write-up, focus goes back to it on close
+  const opener = useRef<HTMLElement | null>(null)
+
+  // categories that have at least one project, in the order set in the dashboard
+  const categories = (site.projects.categories ?? [])
+    .filter(c => c.label.trim() !== '')
+    .map(c => ({ ...c, count: list.filter(p => p.category === c.id).length }))
+    .filter(c => c.count > 0)
+  // the cards on the wheel right now, github cards have no category so they only show under all
+  const shown = filter === ALL ? list : list.filter(p => p.category === filter)
 
   // adds the tagged github repos to the end of the wheel, the page works fine without them
   useEffect(() => {
@@ -169,7 +130,8 @@ export default function Projects() {
   }, [])
 
   // turns the cards as the wheel scrolls, the middle one faces you and the rest swing away
-  useEffect(() => {
+  // set up before the browser paints, so a changed set of cards never shows with the old turn on them
+  useLayoutEffect(() => {
     const el = track.current
     if (!el) return
     const slots = Array.from(el.querySelectorAll<HTMLElement>('[data-slot]'))
@@ -226,8 +188,18 @@ export default function Projects() {
       el.removeEventListener('wheel', onWheel)
       window.removeEventListener('resize', onScroll)
     }
-    // runs again when github cards get added
-  }, [list.length])
+    // runs again when github cards get added or the filter changes the cards
+  }, [list.length, filter])
+
+  // shows one category, or everything, and counts the wheel from its first card again
+  // the wheel itself is built fresh for each filter, so it starts at the first card with no spin left over from the last one
+  function pick(next: string) {
+    if (next === filter) return
+    target.current = 0
+    spinning.current = false
+    setActive(0)
+    setFilter(next)
+  }
 
   // spins the wheel so the given card ends up in the middle
   function spinTo(index: number) {
@@ -245,8 +217,18 @@ export default function Projects() {
   function step(by: number) {
     // mid-spin the arrows count from where the wheel is heading, after a swipe by hand from the card in the middle
     const from = spinning.current ? target.current : active
-    const next = gsap.utils.clamp(0, Math.max(list.length - 1, 0), from + by)
+    const next = gsap.utils.clamp(0, Math.max(shown.length - 1, 0), from + by)
     if (next !== from) spinTo(next)
+  }
+
+  // after a write-up closes, the wheel turns to the card it belongs to and its read more button gets focus back
+  function backToCard() {
+    const button = opener.current
+    const slot = button?.closest('[data-slot]')
+    const slots = Array.from(track.current?.querySelectorAll('[data-slot]') ?? [])
+    if (slot && slots.includes(slot)) spinTo(slots.indexOf(slot))
+    // the wheel does the moving, so focus doesn't yank the card into view on its own
+    button?.focus({ preventScroll: true })
   }
 
   // a github link that isn't a real https address isn't shown
@@ -270,10 +252,31 @@ export default function Projects() {
         )}
       </div>
 
+      {/* filter buttons: everything, or one category at a time, only when some projects have a category */}
+      {categories.length > 0 && (
+        <div data-reveal role="group" aria-label="Filter projects by category" className="mt-6 md:mt-8 flex flex-wrap gap-2">
+          {[{ id: ALL, label: 'All', count: list.length }, ...categories].map(c => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => pick(c.id)}
+              aria-pressed={filter === c.id}
+              // read out as one phrase, like "Games, 2 projects"
+              aria-label={`${c.label}, ${c.count} ${c.count === 1 ? 'project' : 'projects'}`}
+              className="pill filter-pill"
+            >
+              {c.label}
+              {/* how many projects are in it */}
+              <span className="filter-count">{c.count}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* the wheel, edge to edge: swipe or scroll sideways, the middle card faces you */}
-      <div data-reveal className="-mx-4 md:-mx-8 mt-6 md:mt-10">
-        <div ref={track} role="group" aria-label="Projects" tabIndex={0} className="wheel no-scrollbar">
-          {list.map((p, i) => (
+      <div data-reveal className={`-mx-4 md:-mx-8 ${categories.length > 0 ? 'mt-2 md:mt-4' : 'mt-6 md:mt-10'}`}>
+        <div key={filter} ref={track} role="group" aria-label="Projects" tabIndex={0} className="wheel no-scrollbar">
+          {shown.map((p, i) => (
             <div
               key={p.id}
               id={`project-${p.id}`}
@@ -282,7 +285,15 @@ export default function Projects() {
               onClick={() => i !== active && spinTo(i)}
             >
               <div className="h-full">
-                <ProjectCard project={p} active={i === active} />
+                {/* the clip stops while a write-up is open over the page */}
+                <ProjectCard
+                  project={p}
+                  active={i === active && !reading}
+                  onMore={button => {
+                    opener.current = button
+                    setReading(p)
+                  }}
+                />
               </div>
             </div>
           ))}
@@ -302,13 +313,13 @@ export default function Projects() {
         </button>
         {/* tells screen readers which project is in the middle now */}
         <p className="sr-only" aria-live="polite">
-          Project {Math.min(active + 1, list.length)} of {list.length}
-          {list[active] ? `: ${list[active].title}` : ''}
+          Project {Math.min(active + 1, shown.length)} of {shown.length}
+          {shown[active] ? `: ${shown[active].title}` : ''}
         </p>
         <button
           type="button"
           onClick={() => step(1)}
-          aria-disabled={active >= list.length - 1}
+          aria-disabled={active >= shown.length - 1}
           aria-label="Next project"
           className="pill aria-disabled:opacity-30 aria-disabled:pointer-events-none"
         >
@@ -318,7 +329,7 @@ export default function Projects() {
 
       {/* every project by name, so the whole list shows at a glance, click one to spin the wheel to it */}
       <ol className="wheel-index">
-        {list.map((p, i) => (
+        {shown.map((p, i) => (
           <li key={p.id}>
             <button type="button" onClick={() => spinTo(i)} aria-current={i === active ? 'true' : undefined}>
               <span aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
@@ -327,6 +338,15 @@ export default function Projects() {
           </li>
         ))}
       </ol>
+
+      {/* the bigger write-up for one project, on top of the page */}
+      {reading && (
+        <ProjectDetail
+          project={reading}
+          onClose={() => setReading(null)}
+          onClosed={backToCard}
+        />
+      )}
     </section>
   )
 }
