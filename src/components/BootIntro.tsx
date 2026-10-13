@@ -38,12 +38,13 @@ export default function BootIntro({ onReveal, onDone }: Props) {
   useGSAP(
     () => {
       const screen = root.current!.querySelector<HTMLElement>('.monitor-screen')!
-      const split = SplitText.create('[data-boot-line]', { type: 'chars', aria: 'none' })
-
       const tl = gsap.timeline({ onComplete: finish })
 
-      // boot log types out fast
-      tl.from(split.chars, { autoAlpha: 0, duration: 0.01, stagger: 0.0042 })
+      // boot log types out fast, skipped when the log has no lines
+      if (LOG.length) {
+        const split = SplitText.create('[data-boot-line]', { type: 'chars', aria: 'none' })
+        tl.from(split.chars, { autoAlpha: 0, duration: 0.01, stagger: 0.0042 })
+      }
 
       // screen grows out of the monitor until it fills the window
       tl.add(() => {
@@ -74,8 +75,8 @@ export default function BootIntro({ onReveal, onDone }: Props) {
       <div className="w-full max-w-[24rem]">
         <RetroMonitor>
           <div data-boot-fade role="status" aria-label="Loading portfolio">
-            {LOG.map(line => (
-              <p key={line} data-boot-line aria-hidden="true" className="whitespace-pre">
+            {LOG.map((line, i) => (
+              <p key={i} data-boot-line aria-hidden="true" className="whitespace-pre">
                 {line}
               </p>
             ))}

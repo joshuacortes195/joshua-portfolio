@@ -7,6 +7,7 @@
   "hero": {
     "title": "Software Engineer",
     "subtitle": "CV, ML & Robotics.",
+    "pitch": "Software engineering intern at Ormco, building computer vision and robot inspection systems for manufacturing lines, along with WPF and .NET MAUI applications. B.S. Computer Science at California Baptist University, 2027.",
     "resumeButton": "View resume"
   },
   "experience": {
@@ -37,9 +38,9 @@
     "menuPrompt": "where to?"
   },
   "seo": {
-    "title": "Joshua Cortes",
-    "description": "Joshua Cortes, Full-Stack Developer and Computer Science student at California Baptist University.",
-    "shareTitle": "Joshua Cortes, Full-Stack Developer",
-    "shareDescription": "Full-Stack Developer and CS student focused on machine learning, AI, and robotics. Projects, experience, and photography."
+    "title": "Joshua Cortes, Software Engineer",
+    "description": "Joshua Cortes, Software Engineer and Computer Science student at California Baptist University, focused on computer vision, machine learning and robotics.",
+    "shareTitle": "Joshua Cortes, Software Engineer",
+    "shareDescription": "Software Engineer and CS student focused on computer vision, machine learning and robotics. Projects and experience."
   }
 }

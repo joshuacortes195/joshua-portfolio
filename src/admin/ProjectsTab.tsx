@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Project } from '../data/projects'
 import { toTitle } from '../lib/github'
-import { MAX_UPLOAD_MB, SHRINK_VIDEO_MB, REPO, type Content } from './config'
+import { MAX_UPLOAD_MB, SHRINK_VIDEO_MB, REPO, IMAGE_ENDINGS, type Content } from './config'
 import type { Files } from './AdminApp'
 import { fetchRepo, fetchRepos, repoReader, type Repo } from './github'
 import { detectStack } from './stack'
@@ -71,6 +71,8 @@ type EditorProps = {
   project: Project
   // makes a change to this project
   edit: (fn: (p: Project) => void) => void
+  // this project as it is right now, or nothing if it got deleted in the meantime
+  current: () => Project | undefined
   files: Files
   token: string
   // the github topic that marks automatic cards, never shown as a tag
@@ -78,13 +80,14 @@ type EditorProps = {
 }
 
 // the image or video for one project
-function MediaEditor({ project, edit, files }: Pick<EditorProps, 'project' | 'edit' | 'files'>) {
+function MediaEditor({ project, edit, current, files }: Pick<EditorProps, 'project' | 'edit' | 'current' | 'files'>) {
   const media = project.media
   // what the upload button says while a video is being worked on
   const [busy, setBusy] = useState('')
 
   // queues the old files for removal unless the new media reuses the same name
   function dropOld(keep: string[]) {
+    const media = current()?.media
     for (const old of [media?.src, media?.poster]) {
       if (old?.startsWith('/media/') && !keep.includes(old)) files.drop(old)
     }
@@ -93,8 +96,12 @@ function MediaEditor({ project, edit, files }: Pick<EditorProps, 'project' | 'ed
   // takes a picked image or video and makes it this project's media
   async function pick(picked: File) {
     let file = picked
-    const isVideo = file.type.startsWith('video/') || /\.(mov|m4v)$/i.test(file.name)
-    if (!isVideo && !file.type.startsWith('image/')) return window.alert('Pick an image or a video.')
+    // mp4 and quicktime are the only videos taken, some browsers leave the type of a .mov or .m4v empty
+    const isVideo = file.type === 'video/mp4' || file.type === 'video/quicktime' || /\.(mov|m4v)$/i.test(file.name)
+    // anything that isn't one of those videos or a listed image type is turned away, svg included
+    if (!isVideo && !Object.hasOwn(IMAGE_ENDINGS, file.type)) {
+      return window.alert('Pick a JPG, PNG, WebP, GIF or AVIF image, or an MP4 or MOV video.')
+    }
 
     // quicktime movies and heavy mp4s get turned into a small mp4 first
     const isMp4 = file.type === 'video/mp4'
@@ -114,7 +121,8 @@ function MediaEditor({ project, edit, files }: Pick<EditorProps, 'project' | 'ed
     if (file.size > MAX_UPLOAD_MB * 1024 * 1024) return window.alert(`That file is over ${MAX_UPLOAD_MB} MB, trim or compress it first.`)
 
     // files are named after the project so a new upload replaces the old one
-    const ext = file.name.split('.').pop()!.toLowerCase()
+    // the ending comes from the checked type, videos are always mp4 by this point
+    const ext = isVideo ? 'mp4' : IMAGE_ENDINGS[file.type]
     const src = `/media/${project.id}.${ext}`
     const poster = `/media/${project.id}-poster.jpg`
 
@@ -122,6 +130,9 @@ function MediaEditor({ project, edit, files }: Pick<EditorProps, 'project' | 'ed
     if (isVideo) setBusy('Reading video…')
     const still = isVideo ? await grabPoster(file, `${project.id}-poster.jpg`) : null
     setBusy('')
+
+    // the project may have been deleted while the video was being worked on
+    if (!current()) return
 
     dropOld(still ? [src, poster] : [src])
     files.add(src, file)
@@ -138,12 +149,14 @@ function MediaEditor({ project, edit, files }: Pick<EditorProps, 'project' | 'ed
 
   // swaps just the still image of a video
   function pickPoster(file: File) {
-    if (!file.type.startsWith('image/')) return window.alert('The still needs to be an image.')
-    const ext = file.name.split('.').pop()!.toLowerCase()
-    const poster = `/media/${project.id}-poster.${ext}`
-    if (media?.poster?.startsWith('/media/') && media.poster !== poster) files.drop(media.poster)
+    if (!media) return
+    if (!Object.hasOwn(IMAGE_ENDINGS, file.type)) return window.alert('The still needs to be a JPG, PNG, WebP, GIF or AVIF image.')
+    const poster = `/media/${project.id}-poster.${IMAGE_ENDINGS[file.type]}`
+    if (media.poster?.startsWith('/media/') && media.poster !== poster) files.drop(media.poster)
     files.add(poster, file)
-    edit(p => void (p.media!.poster = poster))
+    edit(p => {
+      if (p.media) p.media.poster = poster
+    })
   }
 
   // goes back to the text only card
@@ -200,7 +213,11 @@ function MediaEditor({ project, edit, files }: Pick<EditorProps, 'project' | 'ed
         <Text
           label="Describe what it shows"
           value={media.alt}
-          onChange={v => edit(p => void (p.media!.alt = v))}
+          onChange={v =>
+            edit(p => {
+              if (p.media) p.media.alt = v
+            })
+          }
         />
       )}
     </div>
@@ -208,7 +225,7 @@ function MediaEditor({ project, edit, files }: Pick<EditorProps, 'project' | 'ed
 }
 
 // all the fields for one project
-function ProjectEditor({ project, edit, files, token, topic }: EditorProps) {
+function ProjectEditor({ project, edit, current, files, token, topic }: EditorProps) {
   // progress of pulling the tags from github
   const [tagState, setTagState] = useState<'idle' | 'loading' | 'error'>('idle')
 
@@ -230,6 +247,12 @@ function ProjectEditor({ project, edit, files, token, topic }: EditorProps) {
     <div className="mt-5 space-y-5">
       <Text label="Title" value={project.title} onChange={v => edit(p => void (p.title = v))} />
       <Area label="Description" value={project.description} onChange={v => edit(p => void (p.description = v))} />
+      <Text
+        label="Stat line"
+        value={project.stat ?? ''}
+        onChange={v => edit(p => void (p.stat = v || undefined))}
+        hint="One short line of numbers under the title. Leave empty to hide it"
+      />
       <List label="Tags" value={project.tags} onChange={v => edit(p => void (p.tags = v))} />
 
       {/* fills the tags in from the repo's code, only when there is a repo link */}
@@ -256,9 +279,11 @@ function ProjectEditor({ project, edit, files, token, topic }: EditorProps) {
         value={project.github ?? ''}
         onChange={v => edit(p => void (p.github = v.trim() || undefined))}
       />
+      {/* the view code button needs a repo link to point at */}
       <Check
         label="Show a view code button"
-        checked={!!project.fromGithub}
+        checked={!!project.fromGithub && !!project.github}
+        disabled={!project.github}
         onChange={on => edit(p => void (p.fromGithub = on || undefined))}
       />
       <Check
@@ -266,7 +291,7 @@ function ProjectEditor({ project, edit, files, token, topic }: EditorProps) {
         checked={!!project.desktopOnly}
         onChange={on => edit(p => void (p.desktopOnly = on || undefined))}
       />
-      <MediaEditor project={project} edit={edit} files={files} />
+      <MediaEditor project={project} edit={edit} current={current} files={files} />
     </div>
   )
 }
@@ -280,6 +305,12 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
   const [repos, setRepos] = useState<Repo[] | 'loading' | 'error' | null>(null)
   // link of the repo being imported right now
   const [importing, setImporting] = useState('')
+
+  // the newest list of projects, for work that finishes later like a video conversion
+  const latest = useRef(projects)
+  useEffect(() => {
+    latest.current = projects
+  }, [projects])
 
   // adds an empty project to the top and opens it
   function addProject() {
@@ -302,7 +333,6 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
 
   // fills in a new project from a repo: name, description, links, and tags for everything it uses
   async function importRepo(repo: Repo) {
-    const id = uniqueId(slug(repo.name), projects)
     setImporting(repo.html_url)
     // if the repo can't be read fully, the main language is still a start
     const tags = await detectStack(repo, repoReader(token), site.projects.githubTopic).catch(() =>
@@ -311,7 +341,8 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
     setImporting('')
     change(d => {
       d.projects.unshift({
-        id,
+        // the id is picked now, against the list as it is after the wait
+        id: uniqueId(slug(repo.name), d.projects),
         title: toTitle(repo.name),
         description: repo.description ?? '',
         tags,
@@ -321,16 +352,16 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
         fromGithub: repo.private ? undefined : true,
       })
     })
-    setOpenId(id)
+    setOpenId(uniqueId(slug(repo.name), latest.current))
   }
 
   // deletes a project and its media files
-  function removeProject(index: number) {
-    const media = projects[index].media
+  function removeProject(id: string) {
+    const media = projects.find(p => p.id === id)?.media
     for (const path of [media?.src, media?.poster]) {
       if (path?.startsWith('/media/')) files.drop(path)
     }
-    change(d => void d.projects.splice(index, 1))
+    change(d => void (d.projects = d.projects.filter(p => p.id !== id)))
   }
 
   // repos that already have a card
@@ -414,14 +445,21 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
                   index={i}
                   count={projects.length}
                   onMove={to => change(d => moveItem(d.projects, i, to))}
-                  onDelete={() => removeProject(i)}
+                  onDelete={() => removeProject(project.id)}
                 />
               </div>
             </div>
             {openId === project.id && (
               <ProjectEditor
                 project={project}
-                edit={fn => change(d => fn(d.projects[i]))}
+                // looked up by id, so a reorder or delete while something is still loading can't land on another project
+                edit={fn =>
+                  change(d => {
+                    const target = d.projects.find(p => p.id === project.id)
+                    if (target) fn(target)
+                  })
+                }
+                current={() => latest.current.find(p => p.id === project.id)}
                 files={files}
                 token={token}
                 topic={site.projects.githubTopic}

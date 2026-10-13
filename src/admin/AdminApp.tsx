@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { FILES, type Content, type Pending } from './config'
+import { FILES, REPO, OWNER_ID, type Content, type Pending } from './config'
 import { GithubError, fetchUser, loadContent, publish } from './github'
 import TextTab from './TextTab'
 import ExperienceTab from './ExperienceTab'
@@ -7,6 +7,10 @@ import ProjectsTab from './ProjectsTab'
 import ResumeTab from './ResumeTab'
 
 const TOKEN_KEY = 'admin-token'
+const MARKER_KEY = 'admin-login-marker'
+
+// my github username, the only one the dashboard opens for
+const OWNER = REPO.split('/')[0].toLowerCase()
 
 // what the tabs use to queue file uploads and removals
 export type Files = {
@@ -30,25 +34,72 @@ const LOGIN_ERRORS: Record<string, string> = {
 
 // picks up the token or error github login left in the url, then wipes it from the address bar
 const landed = new URLSearchParams(window.location.hash.slice(1))
-if (landed.has('token') || landed.has('error')) {
+if (landed.has('token') || landed.has('error') || landed.has('marker')) {
   history.replaceState(null, '', window.location.pathname)
 }
+
+// asks the login function to cancel a token at github, best effort, nothing here waits on it
+function revoke(token: string) {
+  fetch('/api/auth/logout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+    keepalive: true,
+  }).catch(() => {})
+}
+
+// a token in the url only counts when it comes back with the marker this tab made at sign in, which is then used up
+function acceptLanded() {
+  const token = landed.get('token')
+  if (!token) return null
+  let expected: string | null = null
+  try {
+    expected = sessionStorage.getItem(MARKER_KEY)
+    sessionStorage.removeItem(MARKER_KEY)
+  } catch {
+    // storage blocked, so there is no marker to match and the token is refused
+  }
+  if (expected && landed.get('marker') === expected) return token
+  // a token this tab didn't ask for is cancelled at github, not just ignored
+  revoke(token)
+  return null
+}
+const fresh = acceptLanded()
+
+// what went wrong with the last login, a token that wasn't asked for here counts as a failed login
+const landedError = landed.get('error') ?? (landed.has('token') && !fresh ? 'login_failed' : null)
 
 // the token from a fresh login, or the one saved for this tab
 function startingToken() {
   try {
-    const fresh = landed.get('token')
     if (fresh) sessionStorage.setItem(TOKEN_KEY, fresh)
     return fresh ?? sessionStorage.getItem(TOKEN_KEY)
   } catch {
-    return landed.get('token')
+    return fresh
   }
 }
 
+// a long random value that can't be guessed, safe to put in a url
+function newMarker() {
+  const bytes = crypto.getRandomValues(new Uint8Array(32))
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
 // the sign in screen
-function Login({ onToken }: { onToken: (token: string) => void }) {
-  const error = landed.get('error')
+function Login({ error, onToken }: { error: string | null; onToken: (token: string) => void }) {
   const [pasted, setPasted] = useState('')
+
+  // saves a fresh marker for this tab and sends it along with the login, so only a login started here is let back in
+  function startLogin(e: React.MouseEvent) {
+    e.preventDefault()
+    const marker = newMarker()
+    try {
+      sessionStorage.setItem(MARKER_KEY, marker)
+    } catch {
+      // storage blocked, the login will come back refused
+    }
+    window.location.assign(`/api/auth/login?marker=${marker}`)
+  }
 
   return (
     <main className="min-h-svh grid place-items-center px-4">
@@ -59,11 +110,11 @@ function Login({ onToken }: { onToken: (token: string) => void }) {
         {/* why the last login attempt failed */}
         {error && (
           <p role="alert" className="mt-4 rounded-xl bg-accent-soft p-4">
-            {LOGIN_ERRORS[error] ?? LOGIN_ERRORS.login_failed}
+            {Object.hasOwn(LOGIN_ERRORS, error) ? LOGIN_ERRORS[error] : LOGIN_ERRORS.login_failed}
           </p>
         )}
 
-        <a href="/api/auth/login" className="pill pill-accent mt-8 w-full min-h-14 text-lg font-semibold">
+        <a href="/api/auth/login" onClick={startLogin} className="pill pill-accent mt-8 w-full min-h-14 text-lg font-semibold">
           Sign in with GitHub
         </a>
 
@@ -101,7 +152,7 @@ const TABS = ['Text', 'Experience', 'Projects', 'Resume'] as const
 type Tab = (typeof TABS)[number]
 
 // the dashboard itself, once signed in
-function Dashboard({ token, onSignOut }: { token: string; onSignOut: () => void }) {
+function Dashboard({ token, onSignOut, onNotAllowed }: { token: string; onSignOut: () => void; onNotAllowed: () => void }) {
   const [user, setUser] = useState('')
   // what's being edited, and what was last published
   const [content, setContent] = useState<Content | null>(null)
@@ -118,6 +169,8 @@ function Dashboard({ token, onSignOut }: { token: string; onSignOut: () => void 
     Promise.all([fetchUser(token), loadContent(token)])
       .then(([me, loaded]) => {
         if (cancelled) return
+        // a working token from any account but mine goes back to the sign in screen
+        if (me.id !== OWNER_ID || me.login.toLowerCase() !== OWNER) return onNotAllowed()
         setUser(me.login)
         setContent(loaded)
         setSaved(loaded)
@@ -131,7 +184,7 @@ function Dashboard({ token, onSignOut }: { token: string; onSignOut: () => void 
     return () => {
       cancelled = true
     }
-  }, [token, onSignOut])
+  }, [token, onSignOut, onNotAllowed])
 
   // which content files have edits
   const changed = useMemo(() => {
@@ -162,6 +215,25 @@ function Dashboard({ token, onSignOut }: { token: string; onSignOut: () => void 
 
   // preview addresses for queued uploads, one per file
   const previews = useRef(new Map<File, string>())
+
+  // frees the preview of any file that is no longer queued, like one that got replaced or published
+  useEffect(() => {
+    const queued = new Set(Object.values(pending.uploads))
+    for (const [file, url] of previews.current) {
+      if (queued.has(file)) continue
+      URL.revokeObjectURL(url)
+      previews.current.delete(file)
+    }
+  }, [pending.uploads])
+
+  // frees every preview when the dashboard closes
+  useEffect(() => {
+    const made = previews.current
+    return () => {
+      for (const url of made.values()) URL.revokeObjectURL(url)
+      made.clear()
+    }
+  }, [])
 
   const files: Files = {
     pending,
@@ -215,7 +287,11 @@ function Dashboard({ token, onSignOut }: { token: string; onSignOut: () => void 
     try {
       await publish(token, content, pending, describeChanges(), text => setStatus({ kind: 'working', text }))
       setSaved(content)
-      setPending({ uploads: {}, deletes: [] })
+      // clears what just went out, anything queued while it was publishing stays for the next one
+      setPending(now => ({
+        uploads: Object.fromEntries(Object.entries(now.uploads).filter(([path, file]) => pending.uploads[path] !== file)),
+        deletes: now.deletes.filter(path => !pending.deletes.includes(path)),
+      }))
       setStatus({ kind: 'done', text: 'Published. The live site updates in about a minute.' })
     } catch (err) {
       if (err instanceof GithubError && err.status === 401) return onSignOut()
@@ -294,12 +370,14 @@ function Dashboard({ token, onSignOut }: { token: string; onSignOut: () => void 
         ))}
       </nav>
 
-      {/* the fields for the chosen tab */}
+      {/* the fields for the chosen tab, switched off while a publish is running */}
       <main className="mt-8">
-        {tab === 'Text' && <TextTab content={content} change={change} />}
-        {tab === 'Experience' && <ExperienceTab content={content} change={change} />}
-        {tab === 'Projects' && <ProjectsTab content={content} change={change} files={files} token={token} />}
-        {tab === 'Resume' && <ResumeTab content={content} files={files} />}
+        <fieldset disabled={working} aria-busy={working} className="min-w-0">
+          {tab === 'Text' && <TextTab content={content} change={change} />}
+          {tab === 'Experience' && <ExperienceTab content={content} change={change} />}
+          {tab === 'Projects' && <ProjectsTab content={content} change={change} files={files} token={token} />}
+          {tab === 'Resume' && <ResumeTab content={content} files={files} />}
+        </fieldset>
       </main>
 
       {/* bar stuck to the bottom with the publish button */}
@@ -331,6 +409,8 @@ function Dashboard({ token, onSignOut }: { token: string; onSignOut: () => void 
 
 export default function AdminApp() {
   const [token, setToken] = useState(startingToken)
+  // the problem to show on the sign in screen, if any
+  const [error, setError] = useState(landedError)
 
   // remembers the token for this tab only
   function signIn(next: string) {
@@ -339,18 +419,26 @@ export default function AdminApp() {
     } catch {
       // storage blocked, the login just won't survive a refresh
     }
+    setError(null)
     setToken(next)
   }
 
-  // forgets the token and goes back to the sign in screen
-  function signOut() {
+  // cancels the token at github, forgets it here and goes back to the sign in screen
+  function signOut(reason: string | null = null) {
+    // signing out here still happens when github can't be reached
+    if (token) revoke(token)
     try {
       sessionStorage.removeItem(TOKEN_KEY)
     } catch {
       // nothing saved to clear
     }
     setToken(null)
+    setError(reason)
   }
 
-  return token ? <Dashboard token={token} onSignOut={signOut} /> : <Login onToken={signIn} />
+  return token ? (
+    <Dashboard token={token} onSignOut={() => signOut()} onNotAllowed={() => signOut('not_allowed')} />
+  ) : (
+    <Login error={error} onToken={signIn} />
+  )
 }

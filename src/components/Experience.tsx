@@ -4,8 +4,9 @@ import { site } from '../data/site'
 import { ScrollTrigger } from '../lib/motion'
 
 // one job row: short summary up front, full breakdown behind read more
-function JobRow({ job }: { job: Job }) {
-  const [open, setOpen] = useState(false)
+function JobRow({ job, startOpen }: { job: Job; startOpen: boolean }) {
+  // the newest job shows its full breakdown from the start
+  const [open, setOpen] = useState(startOpen)
   const detailsId = useId()
 
   return (
@@ -32,8 +33,12 @@ function JobRow({ job }: { job: Job }) {
           className={`more ${open ? 'is-open' : ''}`}
         >
           <ul className="space-y-4 text-base md:text-lg leading-snug">
-            {job.bullets.map(b => (
-              <li key={b} className="first:pt-6">
+            {job.bullets.map((b, i) => (
+              // each line gets a small mono arrow in front, like a terminal prompt
+              <li
+                key={i}
+                className="relative pl-6 first:pt-6 before:content-['>'] before:absolute before:left-0 before:font-mono before:text-[0.85em] before:text-ink-soft first:before:top-6"
+              >
                 {b}
               </li>
             ))}
@@ -64,17 +69,17 @@ export default function Experience() {
 
       {/* one row per job, role on the left and the summary on the right */}
       <div className="mt-10 md:mt-14 border-b border-ink">
-        {jobs.map(job => (
-          <JobRow key={job.company} job={job} />
+        {jobs.map((job, i) => (
+          <JobRow key={i} job={job} startOpen={i === 0} />
         ))}
       </div>
 
       {/* schools, same row layout */}
-      <h3 className="mt-16 md:mt-20 text-lg font-semibold tracking-tight mb-4">{site.experience.educationTitle}</h3>
+      <h3 className="mt-16 md:mt-20 text-2xl md:text-3xl font-semibold tracking-tight mb-4">{site.experience.educationTitle}</h3>
       <div className="border-b border-ink">
-        {education.map(s => (
+        {education.map((s, i) => (
           <article
-            key={s.school}
+            key={i}
             data-reveal
             className="grid gap-x-8 gap-y-2 md:grid-cols-12 border-t border-ink py-6"
           >

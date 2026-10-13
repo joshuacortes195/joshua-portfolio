@@ -1,11 +1,11 @@
 {
   "name": "Joshua Cortes — Portfolio",
   "short_name": "Joshua Cortes",
-  "description": "Full-Stack Developer and CS student focused on machine learning, AI, and robotics.",
+  "description": "Joshua Cortes, Software Engineer and Computer Science student at California Baptist University, focused on computer vision, machine learning and robotics.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0D1117",
-  "theme_color": "#0D1117",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },

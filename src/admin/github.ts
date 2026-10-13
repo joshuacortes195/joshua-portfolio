@@ -35,7 +35,7 @@ async function api<T>(token: string, path: string, body?: unknown, method = body
 
 // the account the token belongs to
 export function fetchUser(token: string) {
-  return api<{ login: string }>(token, '/user')
+  return api<{ login: string; id: number }>(token, '/user')
 }
 
 // reads the three content files from the repo, so the dashboard always starts from what was last published

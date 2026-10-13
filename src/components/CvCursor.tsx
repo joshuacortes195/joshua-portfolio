@@ -11,6 +11,8 @@ const TARGETS = '[data-cursor], a, button'
 const TAP_SLOP = 10
 // how long a tap's detection box stays up, in seconds
 const TAP_HOLD = 1.1
+// space the label needs above a box before it has to flip under it, in pixels
+const LABEL_ROOM = 22
 
 export default function CvCursor() {
   // real mouse gets the full cursor, touch screens get a detection box on tap
@@ -25,11 +27,12 @@ export default function CvCursor() {
   // writes the label for a detection, like "link 0.52"
   function label(target: HTMLElement) {
     if (!tag.current || !score.current) return
-    // new made-up confidence for every detection, from 0.01 to 0.99
-    const confidence = gsap.utils.random(0.01, 0.99, 0.01)
-    tag.current.textContent = target.dataset.cursor ?? 'link'
+    // new made-up confidence for every detection, kept high so it never looks like something failed
+    const confidence = gsap.utils.random(0.62, 0.99, 0.01)
+    // buttons are called buttons, everything else without its own name is a link
+    tag.current.textContent = target.dataset.cursor ?? (target.tagName === 'BUTTON' ? 'button' : 'link')
     score.current.textContent = confidence.toFixed(2)
-    // low scores are red, high scores are green, yellow in between
+    // lower scores lean yellow, higher ones are green
     score.current.style.color = `hsl(${Math.round(confidence * 120)} 85% 58%)`
   }
 
@@ -63,6 +66,8 @@ export default function CvCursor() {
       if (next === target) return
       target = next
       boxEl?.classList.toggle('is-locked', Boolean(target))
+      // the dot steps aside on links and buttons so it doesn't sit on top of their words
+      dot.current?.classList.toggle('is-on-control', Boolean(target?.matches('a, button')))
       if (target) label(target)
     }
 
@@ -76,6 +81,8 @@ export default function CvCursor() {
         boxY(r.top - PAD)
         boxW(r.width + PAD * 2)
         boxH(r.height + PAD * 2)
+        // near the top of the window the label hangs under the box instead of getting cut off
+        boxEl?.classList.toggle('is-below', r.top - PAD < LABEL_ROOM)
       } else {
         boxX(mouseX - RING / 2)
         boxY(mouseY - RING / 2)
@@ -189,6 +196,8 @@ export default function CvCursor() {
         return
       }
       const r = target.getBoundingClientRect()
+      // same flip as on desktop when the tapped thing is at the top of the screen
+      boxEl!.classList.toggle('is-below', r.top - gap.pad < LABEL_ROOM)
       gsap.set(boxEl, {
         x: r.left - gap.pad,
         y: r.top - gap.pad,
