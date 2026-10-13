@@ -31,6 +31,18 @@ export default function App() {
     return () => lockScroll(false)
   }, [ready])
 
+  // the intro always opens over the top of the page, not over a scroll spot the browser remembered
+  useEffect(() => {
+    if (!showIntro) return
+    const before = history.scrollRestoration
+    history.scrollRestoration = 'manual'
+    // a link straight to a section keeps its place
+    if (!window.location.hash) window.scrollTo(0, 0)
+    return () => {
+      history.scrollRestoration = before
+    }
+  }, [showIntro])
+
   // anything marked data-reveal un-blurs into place when scrolled to
   useGSAP(() => {
     if (reducedMotion()) return
@@ -64,7 +76,7 @@ export default function App() {
       <Header />
 
       {/* every section of the page, top to bottom */}
-      <main id="main-content">
+      <main id="main-content" tabIndex={-1}>
         <Hero ready={ready} />
         <Experience />
         <Projects />

@@ -40,6 +40,7 @@
     "media": {
       "kind": "video",
       "src": "/media/tinygpt.mp4",
+      "poster": "/media/tinygpt.jpg",
       "alt": "Screen recording of Tinygpt"
     }
   },
@@ -138,7 +139,7 @@
     "github": "https://github.com/joshuacortes195/photography-portfolio",
     "media": {
       "kind": "image",
-      "src": "/media/photography-portfolio.png",
+      "src": "/media/photography-portfolio.jpg",
       "alt": "Screenshot of Photography Portfolio"
     }
   },

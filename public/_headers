@@ -9,3 +9,12 @@
 # Cache immutable built assets aggressively
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# Admin dashboard: kept out of search results and never cached
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+
+# Project images and clips: cached for a day, not forever, since a new upload reuses the same file name
+/media/*
+  Cache-Control: public, max-age=86400

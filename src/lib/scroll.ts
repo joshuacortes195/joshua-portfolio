@@ -18,12 +18,14 @@ export function startSmoothScroll() {
 
   return () => {
     gsap.ticker.remove(tick)
+    // puts gsap's catch-up after a slow frame back to how it comes
+    gsap.ticker.lagSmoothing(500, 33)
     lenis?.destroy()
     lenis = null
   }
 }
 
-// freezes the page while the boot intro is showing
+// freezes the page while the boot intro is showing or the menu is open
 export function lockScroll(locked: boolean) {
   document.documentElement.style.overflow = locked ? 'hidden' : ''
   if (locked) lenis?.stop()
@@ -36,4 +38,7 @@ export function scrollToSection(id: string) {
   if (!el) return
   if (lenis) lenis.scrollTo(el)
   else el.scrollIntoView()
+  // keyboard focus goes along, so the next tab carries on from that section and not from the top
+  if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1')
+  el.focus({ preventScroll: true })
 }

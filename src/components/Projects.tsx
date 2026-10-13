@@ -4,26 +4,37 @@ import { site } from '../data/site'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { gsap, reducedMotion } from '../lib/motion'
 import { fetchGithubProjects } from '../lib/github'
+import { safeLink } from '../lib/links'
 
-// looping clip that only plays while it's on screen
-function Clip({ media }: { media: ProjectMedia }) {
+// looping clip that only plays on the middle card while it's on screen
+function Clip({ media, active }: { media: ProjectMedia; active: boolean }) {
   const video = useRef<HTMLVideoElement>(null)
   // with reduced motion the clip waits for a click instead of autoplaying
   const [manual] = useState(reducedMotion)
+  const [onScreen, setOnScreen] = useState(false)
+  // true when the phone refused to autoplay, like in low power mode
+  const [blocked, setBlocked] = useState(false)
 
+  // keeps track of whether the clip is on screen
   useEffect(() => {
     const el = video.current
     if (!el || manual) return
-    const watcher = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) el.play().catch(() => {})
-        else el.pause()
-      },
-      { threshold: 0.4 },
-    )
+    const watcher = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), { threshold: 0.4 })
     watcher.observe(el)
     return () => watcher.disconnect()
   }, [manual])
+
+  // plays on the middle card, pauses everywhere else
+  useEffect(() => {
+    const el = video.current
+    if (!el || manual) return
+    if (!active || !onScreen) return el.pause()
+    if (blocked) return
+    // when autoplay isn't allowed the play button shows up instead
+    el.play().catch(err => {
+      if (err?.name === 'NotAllowedError') setBlocked(true)
+    })
+  }, [manual, active, onScreen, blocked])
 
   return (
     <video
@@ -31,7 +42,7 @@ function Clip({ media }: { media: ProjectMedia }) {
       className="w-full h-full object-cover"
       poster={media.poster}
       aria-label={media.alt}
-      controls={manual}
+      controls={manual || blocked}
       muted
       loop
       playsInline
@@ -59,23 +70,27 @@ function Blank({ project }: { project: Project }) {
 }
 
 // the clip or screenshot at the top of a card, shaped like the screen recordings
-function Media({ project }: { project: Project }) {
+function Media({ project, active }: { project: Project; active: boolean }) {
   const media = project.media
   return (
     <div className="aspect-[1280/692] rounded-xl overflow-hidden bg-mute border border-paper/15">
-      {!media ? <Blank project={project} /> : media.kind === 'video' ? <Clip media={media} /> : <Shot media={media} />}
+      {!media ? <Blank project={project} /> : media.kind === 'video' ? <Clip media={media} active={active} /> : <Shot media={media} />}
     </div>
   )
 }
 
-// one floating dark card for a project
-function ProjectCard({ project }: { project: Project }) {
+// one floating dark card for a project, active when it's the one in the middle of the wheel
+function ProjectCard({ project, active }: { project: Project; active: boolean }) {
+  // links only show when they are real https addresses
+  const demo = safeLink(project.demo)
+  const code = project.fromGithub ? safeLink(project.github) : undefined
+
   return (
     <article
       data-cursor="project"
       className="float-card on-ink h-full flex flex-col rounded-2xl bg-ink text-paper p-1.5 md:p-3"
     >
-      <Media project={project} />
+      <Media project={project} active={active} />
 
       <div className="flex-1 flex flex-col px-3 md:px-3 pt-5 pb-4">
         <h3 className="display text-3xl md:text-4xl">{project.title}</h3>
@@ -83,19 +98,19 @@ function ProjectCard({ project }: { project: Project }) {
 
         {/* stack tags */}
         <ul className="mt-4 flex flex-wrap gap-2">
-          {project.tags.map(tag => (
-            <li key={tag} className="tag">
+          {project.tags.map((tag, i) => (
+            <li key={i} className="tag">
               {tag}
             </li>
           ))}
         </ul>
 
         {/* demo and code buttons, only when there is something to link, pinned to the bottom of the card */}
-        {(project.demo || project.fromGithub) && (
+        {(demo || code) && (
           <div className="mt-auto pt-6 flex flex-wrap items-center gap-3">
-            {project.demo && (
+            {demo && (
               <a
-                href={project.demo}
+                href={demo}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="pill pill-accent"
@@ -105,9 +120,9 @@ function ProjectCard({ project }: { project: Project }) {
               </a>
             )}
             {/* cards pulled from github also link to the repo */}
-            {project.fromGithub && (
+            {code && (
               <a
-                href={project.github}
+                href={code}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="pill pill-on-ink"
@@ -131,6 +146,8 @@ export default function Projects() {
   const track = useRef<HTMLDivElement>(null)
   // the card sitting in the middle of the wheel
   const [active, setActive] = useState(0)
+  // the card the wheel is heading to, so fast clicks count on from there and not from the card going past
+  const target = useRef(0)
   // cards on the wheel: the hand-written ones, plus any repos tagged on github
   const [list, setList] = useState(projects)
 
@@ -154,6 +171,7 @@ export default function Projects() {
     const slots = Array.from(el.querySelectorAll<HTMLElement>('[data-slot]'))
     const flat = reducedMotion()
     let frame = 0
+    let settle = 0
 
     function update() {
       frame = 0
@@ -175,6 +193,9 @@ export default function Projects() {
         card.style.opacity = String(1 - Math.min(Math.abs(t), 1) * 0.5)
       })
       setActive(nearest)
+      // once the wheel has stopped, wherever it stopped is where the arrows count from
+      clearTimeout(settle)
+      settle = window.setTimeout(() => (target.current = nearest), 150)
     }
 
     // at most one update per frame
@@ -193,6 +214,7 @@ export default function Projects() {
     window.addEventListener('resize', onScroll)
     return () => {
       cancelAnimationFrame(frame)
+      clearTimeout(settle)
       el.removeEventListener('scroll', onScroll)
       el.removeEventListener('wheel', onWheel)
       window.removeEventListener('resize', onScroll)
@@ -205,26 +227,38 @@ export default function Projects() {
     const el = track.current
     const slot = el?.querySelectorAll<HTMLElement>('[data-slot]')[index]
     if (!el || !slot) return
+    target.current = index
     el.scrollTo({
       left: slot.offsetLeft - (el.clientWidth - slot.offsetWidth) / 2,
       behavior: reducedMotion() ? 'auto' : 'smooth',
     })
   }
 
+  // moves the wheel one card back or forward, and does nothing at either end
+  function step(by: number) {
+    const next = gsap.utils.clamp(0, Math.max(list.length - 1, 0), target.current + by)
+    if (next !== target.current) spinTo(next)
+  }
+
+  // a github link that isn't a real https address isn't shown
+  const github = safeLink(site.github)
+
   return (
     <section id="projects" className="px-4 md:px-8 py-20 md:py-28 border-t border-ink">
       {/* headline with the one github button next to it */}
       <div data-reveal className="flex flex-wrap items-end gap-x-5 md:gap-x-8 gap-y-4">
         <h2 className="display section-title">{site.projects.title}</h2>
-        <a
-          href={site.github}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="pill md:mb-3"
-          aria-label="My GitHub (opens in new tab)"
-        >
-          GitHub
-        </a>
+        {github && (
+          <a
+            href={github}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pill md:mb-3"
+            aria-label="My GitHub (opens in new tab)"
+          >
+            GitHub
+          </a>
+        )}
       </div>
 
       {/* the wheel, edge to edge: swipe or scroll sideways, the middle card faces you */}
@@ -239,33 +273,33 @@ export default function Projects() {
               onClick={() => i !== active && spinTo(i)}
             >
               <div className="h-full">
-                <ProjectCard project={p} />
+                <ProjectCard project={p} active={i === active} />
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* arrows and a counter for the wheel */}
+      {/* arrows and a counter for the wheel, the arrows dim at the ends but keep keyboard focus */}
       <div className="flex items-center justify-center gap-5">
         <button
           type="button"
-          onClick={() => spinTo(active - 1)}
-          disabled={active === 0}
+          onClick={() => step(-1)}
+          aria-disabled={active <= 0}
           aria-label="Previous project"
-          className="pill disabled:opacity-30 disabled:pointer-events-none"
+          className="pill aria-disabled:opacity-30 aria-disabled:pointer-events-none"
         >
           <ArrowLeft size={20} strokeWidth={2} aria-hidden="true" />
         </button>
         <p className="meta tabular-nums" aria-live="polite">
-          {String(active + 1).padStart(2, '0')} / {String(list.length).padStart(2, '0')}
+          {String(Math.min(active + 1, list.length)).padStart(2, '0')} / {String(list.length).padStart(2, '0')}
         </p>
         <button
           type="button"
-          onClick={() => spinTo(active + 1)}
-          disabled={active === list.length - 1}
+          onClick={() => step(1)}
+          aria-disabled={active >= list.length - 1}
           aria-label="Next project"
-          className="pill disabled:opacity-30 disabled:pointer-events-none"
+          className="pill aria-disabled:opacity-30 aria-disabled:pointer-events-none"
         >
           <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
         </button>

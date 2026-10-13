@@ -1,13 +1,24 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { site } from '../data/site'
+import { safeLink } from '../lib/links'
 
 const ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_KEY
+
+// the least an email has to look like: something@something.something
+const EMAIL_SHAPE = /^\S+@\S+\.\S+$/
+
+// profile links, shown only when they are real https addresses
+const github = safeLink(site.github)
+const linkedin = safeLink(site.linkedin)
 
 export default function Footer() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  // true while the email field holds something that isn't an email
+  const [emailBad, setEmailBad] = useState(false)
+  const emailField = useRef<HTMLInputElement>(null)
 
   // send button only works once every field has something in it
   const canSubmit = name.trim() !== '' && email.trim() !== '' && message.trim() !== '' && status !== 'sending'
@@ -15,16 +26,26 @@ export default function Footer() {
   // sends the message through web3forms
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    // a bad email never gets sent, the field is marked and takes focus instead
+    if (!EMAIL_SHAPE.test(email.trim())) {
+      setEmailBad(true)
+      emailField.current?.focus()
+      return
+    }
     if (!ACCESS_KEY) { setStatus('error'); return }
-    // bots that tick the hidden box get dropped
+    // the hidden box only bots tick
     const botcheck = (e.currentTarget as HTMLFormElement).querySelector<HTMLInputElement>('input[name="botcheck"]')
-    if (botcheck?.checked) return
     setStatus('sending')
     const fd = new FormData()
     fd.append('name', name)
-    fd.append('email', email)
+    fd.append('email', email.trim())
     fd.append('message', message)
     fd.append('access_key', ACCESS_KEY)
+    // a ticked trap box goes along like a normal form would send it, so web3forms drops the message on its side
+    if (botcheck?.checked) fd.append('botcheck', 'on')
+    // fixed subject and sender name for the email that lands in my inbox
+    fd.append('subject', 'New message from the portfolio contact form')
+    fd.append('from_name', 'Portfolio contact form')
     try {
       const res = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: fd })
       const data = await res.json()
@@ -52,16 +73,20 @@ export default function Footer() {
             {site.email}
           </a>
           <ul className="mt-6 flex gap-6 text-lg">
-            <li>
-              <a href={site.github} target="_blank" rel="noopener noreferrer" className="link inline-block py-2">
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href={site.linkedin} target="_blank" rel="noopener noreferrer" className="link inline-block py-2">
-                LinkedIn
-              </a>
-            </li>
+            {github && (
+              <li>
+                <a href={github} target="_blank" rel="noopener noreferrer" className="link inline-block py-2">
+                  GitHub
+                </a>
+              </li>
+            )}
+            {linkedin && (
+              <li>
+                <a href={linkedin} target="_blank" rel="noopener noreferrer" className="link inline-block py-2">
+                  LinkedIn
+                </a>
+              </li>
+            )}
             <li>
               <a href={site.resume} target="_blank" rel="noopener noreferrer" className="link inline-block py-2">
                 Resume
@@ -100,14 +125,25 @@ export default function Footer() {
               Email
             </label>
             <input
+              ref={emailField}
               id="contact-email"
               className="field"
               type="email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={e => {
+                setEmail(e.target.value)
+                // the warning goes away as soon as the email is fixed
+                if (emailBad && EMAIL_SHAPE.test(e.target.value.trim())) setEmailBad(false)
+              }}
+              // checks the email when leaving the field, an empty one is left alone until sending
+              onBlur={() => setEmailBad(email.trim() !== '' && !EMAIL_SHAPE.test(email.trim()))}
               autoComplete="email"
               required
+              aria-invalid={emailBad}
+              aria-describedby={emailBad ? 'contact-email-error' : undefined}
             />
+            {/* what's wrong with the email, read out with the field */}
+            {emailBad && <p id="contact-email-error">Enter a valid email, like name@company.com</p>}
           </div>
 
           <div>

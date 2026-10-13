@@ -32,8 +32,8 @@ function JobRow({ job }: { job: Job }) {
           className={`more ${open ? 'is-open' : ''}`}
         >
           <ul className="space-y-4 text-base md:text-lg leading-snug">
-            {job.bullets.map(b => (
-              <li key={b} className="first:pt-6">
+            {job.bullets.map((b, i) => (
+              <li key={i} className="first:pt-6">
                 {b}
               </li>
             ))}
@@ -64,17 +64,17 @@ export default function Experience() {
 
       {/* one row per job, role on the left and the summary on the right */}
       <div className="mt-10 md:mt-14 border-b border-ink">
-        {jobs.map(job => (
-          <JobRow key={job.company} job={job} />
+        {jobs.map((job, i) => (
+          <JobRow key={i} job={job} />
         ))}
       </div>
 
       {/* schools, same row layout */}
       <h3 className="mt-16 md:mt-20 text-lg font-semibold tracking-tight mb-4">{site.experience.educationTitle}</h3>
       <div className="border-b border-ink">
-        {education.map(s => (
+        {education.map((s, i) => (
           <article
-            key={s.school}
+            key={i}
             data-reveal
             className="grid gap-x-8 gap-y-2 md:grid-cols-12 border-t border-ink py-6"
           >

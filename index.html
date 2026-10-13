@@ -27,6 +27,15 @@
     <meta name="twitter:image" content="https://joshua-portfolio195.netlify.app/og-image.png" />
   </head>
   <body>
+    <!-- the basics for anyone browsing with javascript switched off -->
+    <noscript>
+      <div style="max-width: 40rem; margin: 0 auto; padding: 3rem 1rem; line-height: 1.6">
+        <h1 style="font-size: 2rem; font-weight: 600">%SITE_NAME%</h1>
+        <p>%SITE_ROLE%</p>
+        <p style="margin-top: 1.5rem"><a href="mailto:%SITE_EMAIL%" style="text-decoration: underline">%SITE_EMAIL%</a></p>
+        <p><a href="%SITE_RESUME%" style="text-decoration: underline">Resume</a></p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

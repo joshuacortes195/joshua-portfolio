@@ -73,6 +73,11 @@ button, a, input, textarea {
   outline-color: var(--accent);
 }
 
+/* things that only take focus from code, like the skip link target and a section picked in the menu, show no ring */
+[tabindex='-1']:focus-visible {
+  outline: none;
+}
+
 /* skip link for keyboard users */
 .skip-link {
   position: absolute;

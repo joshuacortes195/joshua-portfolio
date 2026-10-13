@@ -1,13 +1,14 @@
 import { useEffect, useRef } from 'react'
 import { site } from '../data/site'
 import { gsap, SplitText, useGSAP, reducedMotion } from '../lib/motion'
+import { safeLink } from '../lib/links'
 
 // links shown across the top of the page
 const links = [
-  { label: 'GitHub', href: site.github },
-  { label: 'LinkedIn', href: site.linkedin },
+  { label: 'GitHub', href: safeLink(site.github) ?? '' },
+  { label: 'LinkedIn', href: safeLink(site.linkedin) ?? '' },
   { label: 'Email', href: `mailto:${site.email}` },
-]
+].filter(l => l.href)
 
 export default function Hero({ ready }: { ready: boolean }) {
   const root = useRef<HTMLElement>(null)

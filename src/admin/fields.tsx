@@ -92,10 +92,26 @@ export function List({ label, value, onChange, lines = false, rows = 5 }: ListPr
 }
 
 // a tick box with its label
-export function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (on: boolean) => void }) {
+export function Check({
+  label,
+  checked,
+  onChange,
+  disabled,
+}: {
+  label: string
+  checked: boolean
+  onChange: (on: boolean) => void
+  disabled?: boolean
+}) {
   return (
-    <label className="flex items-center gap-3 min-h-11 cursor-pointer">
-      <input type="checkbox" className="size-5 accent-ink" checked={checked} onChange={e => onChange(e.target.checked)} />
+    <label className={`flex items-center gap-3 min-h-11 ${disabled ? 'opacity-50' : 'cursor-pointer'}`}>
+      <input
+        type="checkbox"
+        className="size-5 accent-ink"
+        checked={checked}
+        disabled={disabled}
+        onChange={e => onChange(e.target.checked)}
+      />
       <span>{label}</span>
     </label>
   )

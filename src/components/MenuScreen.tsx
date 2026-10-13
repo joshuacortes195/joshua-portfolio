@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { site } from '../data/site'
 import { gsap, SplitText, useGSAP, reducedMotion } from '../lib/motion'
-import { scrollToSection } from '../lib/scroll'
+import { safeLink } from '../lib/links'
 
 // what the little computer prints while it starts up
 const BOOT = site.boot.menu
@@ -12,12 +12,12 @@ const SECTIONS = ['experience', 'projects', 'contact']
 // choices that open something in a new tab
 const LINKS = [
   { name: 'resume', href: site.resume },
-  { name: 'github', href: site.github },
-  { name: 'linkedin', href: site.linkedin },
-]
+  { name: 'github', href: safeLink(site.github) },
+  { name: 'linkedin', href: safeLink(site.linkedin) },
+].filter(link => link.href)
 
 // the site menu, drawn as an old computer that boots up when it opens
-export default function MenuScreen({ onNavigate }: { onNavigate: () => void }) {
+export default function MenuScreen({ onNavigate }: { onNavigate: (section?: string) => void }) {
   const root = useRef<HTMLDivElement>(null)
 
   // the boot-up: case drops in, the tube flashes on, then the text prints
@@ -43,16 +43,11 @@ export default function MenuScreen({ onNavigate }: { onNavigate: () => void }) {
 
       // boot text types out, then the choices print one by one
       tl.from(split.chars, { autoAlpha: 0, duration: 0.01, stagger: 0.009 }, '-=0.2')
-      tl.from('[data-menu-choice]', { autoAlpha: 0, duration: 0.01, stagger: 0.05 }, '+=0.05')
+      // only faded, never hidden, so the first choice can take keyboard focus right away
+      tl.from('[data-menu-choice]', { opacity: 0, duration: 0.01, stagger: 0.05 }, '+=0.05')
     },
     { scope: root },
   )
-
-  // scrolls to a section and closes the menu
-  function goTo(section: string) {
-    scrollToSection(section)
-    onNavigate()
-  }
 
   return (
     <div ref={root} className="monitor-case menu-case">
@@ -61,8 +56,8 @@ export default function MenuScreen({ onNavigate }: { onNavigate: () => void }) {
         <div data-menu-flash aria-hidden="true" className="crt-flash" />
 
         {/* boot text at the top of the screen */}
-        {BOOT.map(line => (
-          <p key={line} data-menu-line aria-hidden="true" className="whitespace-pre">
+        {BOOT.map((line, i) => (
+          <p key={i} data-menu-line aria-hidden="true" className="whitespace-pre">
             {line}
           </p>
         ))}
@@ -74,7 +69,8 @@ export default function MenuScreen({ onNavigate }: { onNavigate: () => void }) {
         <ul className="mt-3">
           {SECTIONS.map(name => (
             <li key={name} data-menu-choice>
-              <button type="button" onClick={() => goTo(name)} className="menu-choice">
+              {/* closes the menu, then the page scrolls to that section */}
+              <button type="button" onClick={() => onNavigate(name)} className="menu-choice">
                 <span aria-hidden="true">&gt;</span>
                 {name}
               </button>
