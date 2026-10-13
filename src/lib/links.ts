@@ -1,6 +1,7 @@
 // lets a link from the content files or from github through only when it's a full https address with no login tucked into it
 export function safeLink(url?: string | null) {
-  if (!url?.startsWith('https://')) return undefined
+  // anything that isn't text is dropped too
+  if (typeof url !== 'string' || !url.startsWith('https://')) return undefined
   try {
     const parsed = new URL(url)
     return parsed.username || parsed.password ? undefined : url
