@@ -41,10 +41,11 @@ export default function MenuScreen({ onNavigate }: { onNavigate: (section?: stri
       // power light flickers on
       tl.from('[data-menu-light]', { opacity: 0.15, duration: 0.07, repeat: 4, yoyo: true }, 0.2)
 
-      // boot text types out, then the choices print one by one
+      // boot text types out
       tl.from(split.chars, { autoAlpha: 0, duration: 0.01, stagger: 0.009 }, '-=0.2')
+      // the choices print one by one as soon as the case has landed, so nobody waits on the boot text to pick one
       // only faded, never hidden, so the first choice can take keyboard focus right away
-      tl.from('[data-menu-choice]', { opacity: 0, duration: 0.01, stagger: 0.05 }, '+=0.05')
+      tl.from('[data-menu-choice]', { opacity: 0, duration: 0.01, stagger: 0.03 }, 0.2)
     },
     { scope: root },
   )

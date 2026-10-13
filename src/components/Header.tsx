@@ -48,7 +48,7 @@ export default function Header() {
   return (
     <>
       {/* faded backdrop, clicking it closes the menu */}
-      {open && <div className="fixed inset-0 z-40 bg-paper/80" onClick={() => close()} />}
+      {open && <div className="menu-backdrop fixed inset-0 z-40 bg-paper/80" onClick={() => close()} />}
 
       <header className="fixed top-4 right-4 md:right-8 z-50 flex flex-col items-end gap-3">
         {/* the pill menu button */}
@@ -58,7 +58,7 @@ export default function Header() {
           onClick={() => (open ? close() : setOpen(true))}
           aria-expanded={open}
           aria-controls="site-menu"
-          className="on-ink pill bg-ink text-paper border-paper/40 hover:bg-ink"
+          className="on-ink pill bg-ink text-paper border-paper/40 hover:bg-accent hover:text-ink hover:border-accent"
         >
           {open ? 'Close' : 'Menu'}
         </button>

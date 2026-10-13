@@ -1,8 +1,8 @@
 [
   {
     "id": "resumefit",
-    "title": "Resumefit",
-    "description": "Free resume match and job application assistant",
+    "title": "ResumeFit",
+    "description": "Free resume match and job application assistant.",
     "tags": [
       "TypeScript",
       "React",
@@ -17,13 +17,13 @@
       "kind": "video",
       "src": "/media/resumefit.mp4",
       "poster": "/media/resumefit-poster.jpg",
-      "alt": "Screen recording of Resumefit"
+      "alt": "Screen recording of ResumeFit"
     }
   },
   {
     "id": "tinygpt",
-    "title": "Tinygpt",
-    "description": "A GPT-style language model built from scratch that runs in your browser",
+    "title": "TinyGPT",
+    "description": "A GPT-style language model built from scratch that runs in your browser.",
     "tags": [
       "TypeScript",
       "React",
@@ -41,7 +41,7 @@
       "kind": "video",
       "src": "/media/tinygpt.mp4",
       "poster": "/media/tinygpt.jpg",
-      "alt": "Screen recording of Tinygpt"
+      "alt": "Screen recording of TinyGPT"
     }
   },
   {

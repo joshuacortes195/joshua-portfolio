@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { site } from '../data/site'
 import { safeLink } from '../lib/links'
+import { scrollToSection } from '../lib/scroll'
 
 const ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_KEY
 
@@ -69,10 +70,10 @@ export default function Footer() {
       <div className="mt-12 md:mt-16 grid gap-x-8 gap-y-12 md:grid-cols-12">
         {/* email and social links */}
         <div data-reveal className="md:col-span-5">
-          <a href={`mailto:${site.email}`} className="link text-xl md:text-2xl font-semibold tracking-tight break-all">
+          <a href={`mailto:${site.email}`} className="link inline-block py-2.5 text-xl md:text-2xl font-semibold tracking-tight break-all">
             {site.email}
           </a>
-          <ul className="mt-6 flex gap-6 text-lg">
+          <ul className="mt-3 flex gap-6 text-lg">
             {github && (
               <li>
                 <a href={github} target="_blank" rel="noopener noreferrer" className="link inline-block py-2">
@@ -107,7 +108,7 @@ export default function Footer() {
           />
 
           <div>
-            <label htmlFor="contact-name" className="meta block text-ink-soft">
+            <label htmlFor="contact-name" className="meta block">
               Name
             </label>
             <input
@@ -121,7 +122,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <label htmlFor="contact-email" className="meta block text-ink-soft">
+            <label htmlFor="contact-email" className="meta block">
               Email
             </label>
             <input
@@ -143,11 +144,16 @@ export default function Footer() {
               aria-describedby={emailBad ? 'contact-email-error' : undefined}
             />
             {/* what's wrong with the email, read out with the field */}
-            {emailBad && <p id="contact-email-error">Enter a valid email, like name@company.com</p>}
+            {emailBad && (
+              <p id="contact-email-error" className="field-error">
+                <span aria-hidden="true">!</span>
+                Enter a valid email, like name@company.com
+              </p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="contact-message" className="meta block text-ink-soft">
+            <label htmlFor="contact-message" className="meta block">
               Message
             </label>
             <textarea
@@ -160,22 +166,28 @@ export default function Footer() {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            className="pill pill-accent disabled:bg-mute disabled:border-mute disabled:text-ink-soft disabled:cursor-not-allowed"
-          >
-            {status === 'sending' ? 'Sending…' : site.contact.sendButton}
-          </button>
+          <div>
+            <button
+              type="submit"
+              disabled={!canSubmit}
+              className="pill pill-accent disabled:bg-mute disabled:border-mute disabled:text-ink-soft disabled:cursor-not-allowed"
+            >
+              {status === 'sending' ? 'Sending…' : site.contact.sendButton}
+            </button>
+            {/* says why the button is gray while a field is still empty */}
+            {!canSubmit && status !== 'sending' && <p className="meta mt-3 text-ink-soft">All three fields are needed.</p>}
+          </div>
 
-          {/* result of sending */}
+          {/* result of sending, with a small mono mark in front like the boot log */}
           {status === 'sent' && (
-            <p role="status" className="meta">
+            <p role="status" className="form-note">
+              <span aria-hidden="true">ok</span>
               {site.contact.sentMessage}
             </p>
           )}
           {status === 'error' && (
-            <p role="alert" className="meta">
+            <p role="alert" className="form-note">
+              <span aria-hidden="true">!</span>
               Message didn't send. Try again or email me at{' '}
               <a href={`mailto:${site.email}`} className="link">
                 {site.email}
@@ -184,6 +196,26 @@ export default function Footer() {
             </p>
           )}
         </form>
+      </div>
+
+      {/* last line of the page, with a way back up */}
+      <div className="mt-20 md:mt-28 pt-4 border-t border-ink flex items-center justify-between gap-4 meta text-ink-soft">
+        <p>{site.name}</p>
+        <a
+          href="#top"
+          onClick={e => {
+            // scrolls back up smoothly and takes keyboard focus along
+            e.preventDefault()
+            scrollToSection('top')
+          }}
+          className="min-h-11 inline-flex items-center gap-[1ch] text-ink"
+        >
+          <span aria-hidden="true" className="text-ink-soft">
+            &gt;
+          </span>
+          {/* only the words are underlined, not the arrow */}
+          <span className="link">back to top</span>
+        </a>
       </div>
     </footer>
   )

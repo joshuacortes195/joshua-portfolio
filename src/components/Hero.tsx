@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { site } from '../data/site'
 import { gsap, SplitText, useGSAP, reducedMotion } from '../lib/motion'
 import { safeLink } from '../lib/links'
+import { scrollToSection } from '../lib/scroll'
 
 // links shown across the top of the page
 const links = [
@@ -9,6 +10,9 @@ const links = [
   { label: 'LinkedIn', href: safeLink(site.linkedin) ?? '' },
   { label: 'Email', href: `mailto:${site.email}` },
 ].filter(l => l.href)
+
+// parts of the page the row at the bottom of the hero jumps to
+const sections = ['experience', 'projects', 'contact']
 
 export default function Hero({ ready }: { ready: boolean }) {
   const root = useRef<HTMLElement>(null)
@@ -18,21 +22,23 @@ export default function Hero({ ready }: { ready: boolean }) {
   useGSAP(
     () => {
       if (reducedMotion()) return
-      const split = SplitText.create('h1 > span', { type: 'words' })
+      // my name just fades in with the rest, only the title and focus line get the word by word rise
+      const split = SplitText.create('h1 > span:not([data-name])', { type: 'words' })
       intro.current = gsap
         .timeline({ paused: true })
         .from(split.words, {
-          yPercent: 70,
+          yPercent: 40,
           opacity: 0,
-          filter: 'blur(14px)',
-          duration: 1,
+          filter: 'blur(8px)',
+          duration: 0.6,
           ease: 'power3.out',
-          stagger: 0.09,
+          stagger: 0.05,
         })
         .from(
           '[data-hero-fade]',
-          { opacity: 0, y: 16, filter: 'blur(8px)', duration: 0.8, ease: 'power3.out', stagger: 0.1 },
-          '-=0.7',
+          { opacity: 0, y: 16, filter: 'blur(8px)', duration: 0.5, ease: 'power3.out', stagger: 0.06 },
+          // starts right behind the first words so the button and links are readable quickly
+          0.15,
         )
     },
     { scope: root },
@@ -52,7 +58,7 @@ export default function Hero({ ready }: { ready: boolean }) {
             <li key={l.label}>
               <a
                 href={l.href}
-                className="link inline-block py-2"
+                className="link inline-block py-3 px-2 -mx-2"
                 {...(l.href.startsWith('mailto:') ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
               >
                 {l.label}
@@ -62,20 +68,30 @@ export default function Hero({ ready }: { ready: boolean }) {
         </ul>
       </nav>
 
-      <div className="my-auto py-12">
-        {/* my name, above the title */}
-        <p data-hero-fade data-cursor="josh" className="w-fit mb-3 md:mb-5 text-2xl md:text-4xl font-semibold tracking-tight">
-          {site.name}
-        </p>
-
-        {/* big job title, with the focus areas as a smaller line under it */}
+      <div className="my-auto py-8 md:py-12">
+        {/* my name, the big job title, and the focus areas as a smaller line, all one heading */}
         <h1>
+          <span
+            data-name
+            data-hero-fade
+            data-cursor="josh"
+            className="block w-fit mb-3 md:mb-5 text-2xl md:text-4xl font-semibold tracking-tight"
+          >
+            {site.name}
+          </span>{' '}
           <span className="display hero-title block">{site.hero.title}</span>{' '}
           <span className="hero-sub block">{site.hero.subtitle}</span>
         </h1>
 
+        {/* one or two sentences on what I do right now */}
+        {site.hero.pitch && (
+          <p data-hero-fade className="mt-6 md:mt-8 max-w-[46ch] text-lg md:text-2xl leading-snug">
+            {site.hero.pitch}
+          </p>
+        )}
+
         {/* the big resume button */}
-        <div data-hero-fade className="mt-10 md:mt-14">
+        <div data-hero-fade className="mt-8 md:mt-10">
           <a
             href={site.resume}
             target="_blank"
@@ -86,6 +102,31 @@ export default function Hero({ ready }: { ready: boolean }) {
           </a>
         </div>
       </div>
+
+      {/* jump links along the bottom, written like the menu's choices */}
+      <nav aria-label="Sections" data-hero-fade>
+        <ul className="flex flex-wrap gap-x-6 font-mono text-sm">
+          {sections.map(name => (
+            <li key={name}>
+              <a
+                href={`#${name}`}
+                onClick={e => {
+                  // scrolls there smoothly and takes keyboard focus along
+                  e.preventDefault()
+                  scrollToSection(name)
+                }}
+                className="min-h-11 inline-flex items-center gap-[1ch]"
+              >
+                <span aria-hidden="true" className="text-ink-soft">
+                  &gt;
+                </span>
+                {/* only the word is underlined, not the arrow */}
+                <span className="link">{name}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </section>
   )
 }

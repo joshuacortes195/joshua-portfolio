@@ -73,7 +73,7 @@ function Blank({ project }: { project: Project }) {
 function Media({ project, active }: { project: Project; active: boolean }) {
   const media = project.media
   return (
-    <div className="aspect-[1280/692] rounded-xl overflow-hidden bg-mute border border-paper/15">
+    <div className="aspect-[1280/692] rounded-[10px] md:rounded-xl overflow-hidden bg-mute border border-paper/15">
       {!media ? <Blank project={project} /> : media.kind === 'video' ? <Clip media={media} active={active} /> : <Shot media={media} />}
     </div>
   )
@@ -88,12 +88,14 @@ function ProjectCard({ project, active }: { project: Project; active: boolean })
   return (
     <article
       data-cursor="project"
-      className="float-card on-ink h-full flex flex-col rounded-2xl bg-ink text-paper p-1.5 md:p-3"
+      className="float-card on-ink h-full flex flex-col rounded-2xl md:rounded-3xl bg-ink text-paper p-1.5 md:p-3"
     >
       <Media project={project} active={active} />
 
       <div className="flex-1 flex flex-col px-3 md:px-3 pt-5 pb-4">
         <h3 className="display text-3xl md:text-4xl">{project.title}</h3>
+        {/* headline numbers for the project, only when there are some */}
+        {project.stat && <p className="meta mt-3 text-accent">{project.stat}</p>}
         <p className="mt-3 text-base leading-snug text-mute max-w-[52ch]">{project.description}</p>
 
         {/* stack tags */}
@@ -190,7 +192,7 @@ export default function Projects() {
         const card = slot.firstElementChild as HTMLElement
         // side cards turn, shrink and dim like they're going around the wheel
         card.style.transform = `perspective(1100px) rotateY(${t * TURN}deg) scale(${1 - Math.abs(t) * 0.1})`
-        card.style.opacity = String(1 - Math.min(Math.abs(t), 1) * 0.5)
+        card.style.opacity = String(1 - Math.min(Math.abs(t), 1) * 0.35)
       })
       setActive(nearest)
       // once the wheel has stopped, wherever it stopped is where the arrows count from
@@ -280,8 +282,8 @@ export default function Projects() {
         </div>
       </div>
 
-      {/* arrows and a counter for the wheel, the arrows dim at the ends but keep keyboard focus */}
-      <div className="flex items-center justify-center gap-5">
+      {/* arrows for the wheel, they dim at the ends but keep keyboard focus */}
+      <div className="flex items-center justify-center gap-3">
         <button
           type="button"
           onClick={() => step(-1)}
@@ -291,8 +293,10 @@ export default function Projects() {
         >
           <ArrowLeft size={20} strokeWidth={2} aria-hidden="true" />
         </button>
-        <p className="meta tabular-nums" aria-live="polite">
-          {String(Math.min(active + 1, list.length)).padStart(2, '0')} / {String(list.length).padStart(2, '0')}
+        {/* tells screen readers which project is in the middle now */}
+        <p className="sr-only" aria-live="polite">
+          Project {Math.min(active + 1, list.length)} of {list.length}
+          {list[active] ? `: ${list[active].title}` : ''}
         </p>
         <button
           type="button"
@@ -304,6 +308,18 @@ export default function Projects() {
           <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
         </button>
       </div>
+
+      {/* every project by name, so the whole list shows at a glance, click one to spin the wheel to it */}
+      <ol className="wheel-index">
+        {list.map((p, i) => (
+          <li key={p.id}>
+            <button type="button" onClick={() => spinTo(i)} aria-current={i === active ? 'true' : undefined}>
+              <span aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              {p.title}
+            </button>
+          </li>
+        ))}
+      </ol>
     </section>
   )
 }

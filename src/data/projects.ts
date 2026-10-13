@@ -14,6 +14,8 @@ export type Project = {
   title: string
   description: string
   tags: string[]
+  // one short line of numbers shown under the title, the card leaves it out when empty
+  stat?: string
   demo?: string
   // repo link, kept for reference, the cards don't show it
   github?: string

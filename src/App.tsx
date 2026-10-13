@@ -46,7 +46,7 @@ export default function App() {
   // anything marked data-reveal un-blurs into place when scrolled to
   useGSAP(() => {
     if (reducedMotion()) return
-    gsap.set('[data-reveal]', { opacity: 0, y: 20, filter: 'blur(8px)' })
+    gsap.set('[data-reveal]', { opacity: 0, y: 12, filter: 'blur(4px)' })
     ScrollTrigger.batch('[data-reveal]', {
       start: 'top 90%',
       once: true,
@@ -55,9 +55,9 @@ export default function App() {
           opacity: 1,
           y: 0,
           filter: 'blur(0px)',
-          duration: 0.7,
+          duration: 0.5,
           ease: 'power3.out',
-          stagger: 0.08,
+          stagger: 0.06,
           clearProps: 'opacity,filter,transform',
         }),
     })
