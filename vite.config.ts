@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { sitePath } from './src/lib/links'
 
 // makes text safe to drop inside an html attribute
 function escapeHtml(text: string) {
@@ -20,8 +21,8 @@ function seoTags(): Plugin {
       const description = seo.description ?? ''
       // job title and focus line from the hero, on one line
       const role = [site.hero?.title, site.hero?.subtitle].filter(Boolean).join(', ')
-      // the resume link has to be a file on this site
-      const resume = typeof site.resume === 'string' && /^\/[^/]/.test(site.resume) ? site.resume : '/'
+      // the resume link has to be a plain file on this site, same rule the page itself uses
+      const resume = sitePath(site.resume) ?? '/'
       return html
         .replaceAll('%SEO_TITLE%', escapeHtml(title))
         .replaceAll('%SEO_DESCRIPTION%', escapeHtml(description))

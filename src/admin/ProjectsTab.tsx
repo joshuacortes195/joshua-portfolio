@@ -247,6 +247,12 @@ function ProjectEditor({ project, edit, current, files, token, topic }: EditorPr
     <div className="mt-5 space-y-5">
       <Text label="Title" value={project.title} onChange={v => edit(p => void (p.title = v))} />
       <Area label="Description" value={project.description} onChange={v => edit(p => void (p.description = v))} />
+      <Text
+        label="Stat line"
+        value={project.stat ?? ''}
+        onChange={v => edit(p => void (p.stat = v || undefined))}
+        hint="One short line of numbers under the title. Leave empty to hide it"
+      />
       <List label="Tags" value={project.tags} onChange={v => edit(p => void (p.tags = v))} />
 
       {/* fills the tags in from the repo's code, only when there is a repo link */}

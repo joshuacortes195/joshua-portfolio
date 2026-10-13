@@ -38,17 +38,31 @@ if (landed.has('token') || landed.has('error') || landed.has('marker')) {
   history.replaceState(null, '', window.location.pathname)
 }
 
+// asks the login function to cancel a token at github, best effort, nothing here waits on it
+function revoke(token: string) {
+  fetch('/api/auth/logout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+    keepalive: true,
+  }).catch(() => {})
+}
+
 // a token in the url only counts when it comes back with the marker this tab made at sign in, which is then used up
 function acceptLanded() {
   const token = landed.get('token')
   if (!token) return null
+  let expected: string | null = null
   try {
-    const expected = sessionStorage.getItem(MARKER_KEY)
+    expected = sessionStorage.getItem(MARKER_KEY)
     sessionStorage.removeItem(MARKER_KEY)
-    return expected && landed.get('marker') === expected ? token : null
   } catch {
-    return null
+    // storage blocked, so there is no marker to match and the token is refused
   }
+  if (expected && landed.get('marker') === expected) return token
+  // a token this tab didn't ask for is cancelled at github, not just ignored
+  revoke(token)
+  return null
 }
 const fresh = acceptLanded()
 
@@ -411,15 +425,8 @@ export default function AdminApp() {
 
   // cancels the token at github, forgets it here and goes back to the sign in screen
   function signOut(reason: string | null = null) {
-    // best effort, signing out here still happens when github can't be reached
-    if (token) {
-      fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
-        keepalive: true,
-      }).catch(() => {})
-    }
+    // signing out here still happens when github can't be reached
+    if (token) revoke(token)
     try {
       sessionStorage.removeItem(TOKEN_KEY)
     } catch {

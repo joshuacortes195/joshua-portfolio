@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { site } from '../data/site'
 import { gsap, SplitText, useGSAP, reducedMotion } from '../lib/motion'
-import { safeLink } from '../lib/links'
+import { safeLink, sitePath } from '../lib/links'
 
 // what the little computer prints while it starts up
 const BOOT = site.boot.menu
@@ -11,7 +11,7 @@ const SECTIONS = ['experience', 'projects', 'contact']
 
 // choices that open something in a new tab
 const LINKS = [
-  { name: 'resume', href: site.resume },
+  { name: 'resume', href: sitePath(site.resume) },
   { name: 'github', href: safeLink(site.github) },
   { name: 'linkedin', href: safeLink(site.linkedin) },
 ].filter(link => link.href)

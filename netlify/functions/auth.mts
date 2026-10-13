@@ -59,17 +59,19 @@ async function revoke(clientId: string, clientSecret: string, token: string) {
 
 export default async (req: Request) => {
   const url = new URL(req.url)
+  // the site is only ever served over https, so the address is built that way no matter what a proxy header says
+  const origin = `https://${url.host}`
   const clientId = process.env.GITHUB_CLIENT_ID
   const clientSecret = process.env.GITHUB_CLIENT_SECRET
 
   // back to the dashboard on a clean address, with the result in the hash and the login cookie cleared
-  const backToAdmin = (hash: string) => redirect(`${url.origin}/admin/#${hash}`, CLEAR_STATE)
+  const backToAdmin = (hash: string) => redirect(`${origin}/admin/#${hash}`, CLEAR_STATE)
 
   // sign out: the dashboard posts its token here so github cancels it
   if (url.pathname.endsWith('/logout')) {
     if (req.method !== 'POST') return reply(405)
     // only the dashboard on this same site may call it
-    if (req.headers.get('origin') !== url.origin) return reply(403)
+    if (req.headers.get('origin') !== origin) return reply(403)
     if (!clientId || !clientSecret) return reply(503)
     const body = (await req.json().catch(() => null)) as { token?: unknown } | null
     const token = body?.token
@@ -81,6 +83,10 @@ export default async (req: Request) => {
 
   // step 1: send me to github to approve the login
   if (url.pathname.endsWith('/login')) {
+    // a login can start from the dashboard's own button or a typed address, never from a link on another site
+    const from = req.headers.get('sec-fetch-site')
+    if (from && from !== 'same-origin' && from !== 'none') return backToAdmin('error=login_failed')
+
     // the dashboard sends a one-time marker it made when sign in was clicked
     const marker = url.searchParams.get('marker') ?? ''
     if (!MARKER_SHAPE.test(marker)) return backToAdmin('error=login_failed')
@@ -88,7 +94,7 @@ export default async (req: Request) => {
     const state = crypto.randomUUID()
     const to = new URL('https://github.com/login/oauth/authorize')
     to.searchParams.set('client_id', clientId)
-    to.searchParams.set('redirect_uri', `${url.origin}/api/auth/callback`)
+    to.searchParams.set('redirect_uri', `${origin}/api/auth/callback`)
     // lets the dashboard commit here and read my private repos for the import list
     to.searchParams.set('scope', 'repo')
     to.searchParams.set('state', state)
@@ -109,15 +115,21 @@ export default async (req: Request) => {
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
     body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code }),
   })
-  const { access_token: token } = (await tokenRes.json().catch(() => ({}))) as { access_token?: string }
-  if (!token) return backToAdmin('error=login_failed')
+  const { access_token: token } = (await tokenRes.json().catch(() => ({}))) as { access_token?: unknown }
+  // anything that doesn't look like a github token never goes near the address bar
+  if (typeof token !== 'string' || !TOKEN_SHAPE.test(token)) return backToAdmin('error=login_failed')
 
   // checks who just logged in, anyone but me gets turned away
   const userRes = await fetch('https://api.github.com/user', {
     headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'portfolio-admin' },
   })
-  const user = (await userRes.json().catch(() => ({}))) as { login?: string; id?: number }
-  if (!userRes.ok || user.id !== ADMIN_ID || user.login?.toLowerCase() !== ADMIN) {
+  const user = ((await userRes.json().catch(() => null)) ?? {}) as { login?: unknown; id?: unknown }
+  // an answer that isn't a name and an account number counts as a failed login, and the token is cancelled
+  if (userRes.ok && (typeof user.login !== 'string' || typeof user.id !== 'number')) {
+    await revoke(clientId, clientSecret, token)
+    return backToAdmin('error=login_failed')
+  }
+  if (!userRes.ok || user.id !== ADMIN_ID || (user.login as string).toLowerCase() !== ADMIN) {
     // a stranger's token is cancelled on the spot so nothing is left behind
     await revoke(clientId, clientSecret, token)
     return backToAdmin('error=not_allowed')

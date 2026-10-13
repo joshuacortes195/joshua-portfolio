@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { site } from '../data/site'
-import { safeLink } from '../lib/links'
+import { safeLink, sitePath } from '../lib/links'
 import { scrollToSection } from '../lib/scroll'
 
 const ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_KEY
@@ -11,6 +11,8 @@ const EMAIL_SHAPE = /^\S+@\S+\.\S+$/
 // profile links, shown only when they are real https addresses
 const github = safeLink(site.github)
 const linkedin = safeLink(site.linkedin)
+// the resume is a file on this site
+const resume = sitePath(site.resume)
 
 export default function Footer() {
   const [name, setName] = useState('')
@@ -88,11 +90,13 @@ export default function Footer() {
                 </a>
               </li>
             )}
-            <li>
-              <a href={site.resume} target="_blank" rel="noopener noreferrer" className="link inline-block py-2">
-                Resume
-              </a>
-            </li>
+            {resume && (
+              <li>
+                <a href={resume} target="_blank" rel="noopener noreferrer" className="link inline-block py-2">
+                  Resume
+                </a>
+              </li>
+            )}
           </ul>
         </div>
 

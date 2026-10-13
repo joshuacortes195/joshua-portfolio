@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { site } from '../data/site'
 import { gsap, SplitText, useGSAP, reducedMotion } from '../lib/motion'
-import { safeLink } from '../lib/links'
+import { safeLink, sitePath } from '../lib/links'
 import { scrollToSection } from '../lib/scroll'
 
 // links shown across the top of the page
@@ -93,7 +93,7 @@ export default function Hero({ ready }: { ready: boolean }) {
         {/* the big resume button */}
         <div data-hero-fade className="mt-8 md:mt-10">
           <a
-            href={site.resume}
+            href={sitePath(site.resume)}
             target="_blank"
             rel="noopener noreferrer"
             className="pill pill-accent min-h-16 px-10 text-xl font-semibold"

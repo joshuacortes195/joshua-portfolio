@@ -2,6 +2,7 @@ import type { Content } from './config'
 import { MAX_UPLOAD_MB } from './config'
 import type { Files } from './AdminApp'
 import { Group, FileButton } from './fields'
+import { sitePath } from '../lib/links'
 
 type Props = {
   content: Content
@@ -10,7 +11,8 @@ type Props = {
 
 // swaps the resume pdf, the link on the site stays the same
 export default function ResumeTab({ content, files }: Props) {
-  const path = content.site.resume
+  // the resume has to be a plain pdf path on this site, anything else in the content file is not uploaded to
+  const path = sitePath(content.site.resume)?.endsWith('.pdf') ? content.site.resume : ''
   const waiting = files.pending.uploads[path]
 
   // queues the picked pdf to replace the current one
@@ -18,6 +20,14 @@ export default function ResumeTab({ content, files }: Props) {
     if (file.type !== 'application/pdf') return window.alert('The resume needs to be a PDF.')
     if (file.size > MAX_UPLOAD_MB * 1024 * 1024) return window.alert(`That file is over ${MAX_UPLOAD_MB} MB.`)
     files.add(path, file)
+  }
+
+  if (!path) {
+    return (
+      <Group title="Resume">
+        <p role="alert">The resume path in site.json isn't a PDF on this site, fix it in the repo first.</p>
+      </Group>
+    )
   }
 
   return (

@@ -18,7 +18,7 @@ export default function TextTab({ content, change }: Props) {
         <Text label="Name" value={site.name} onChange={v => change(d => void (d.site.name = v))} />
         <Text label="Big title" value={site.hero.title} onChange={v => change(d => void (d.site.hero.title = v))} />
         <Text label="Line under the title" value={site.hero.subtitle} onChange={v => change(d => void (d.site.hero.subtitle = v))} />
-        <Area label="Short pitch under the title" value={site.hero.pitch} onChange={v => change(d => void (d.site.hero.pitch = v))} />
+        <Area label="Short pitch under the title" value={site.hero.pitch ?? ''} onChange={v => change(d => void (d.site.hero.pitch = v))} />
         <Text label="Resume button" value={site.hero.resumeButton} onChange={v => change(d => void (d.site.hero.resumeButton = v))} />
       </Group>
 
