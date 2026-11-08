@@ -1,5 +1,21 @@
 [
   {
+    "id": "drone-sim",
+    "title": "Drone Sim",
+    "description": "Autonomous quadcopter simulator: C++ flight physics and cascaded PID control, tested natively, headed for the browser with WebAssembly and three.js",
+    "tags": [
+      "C++",
+      "TypeScript",
+      "React",
+      "Three.js",
+      "Vite",
+      "GitHub Actions"
+    ],
+    "demo": "https://joshuacortes195.github.io/drone-sim/",
+    "github": "https://github.com/joshuacortes195/drone-sim",
+    "fromGithub": true
+  },
+  {
     "id": "resumefit",
     "title": "ResumeFit",
     "description": "Free resume match and job application assistant.",
