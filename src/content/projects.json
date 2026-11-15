@@ -2,7 +2,7 @@
   {
     "id": "drone-sim",
     "title": "Drone Sim",
-    "description": "Autonomous quadcopter simulator: C++ flight physics and cascaded PID control, tested natively, headed for the browser with WebAssembly and three.js",
+    "description": "Autonomous quadcopter that flies itself through a city in the browser, with a C++ flight core compiled to WebAssembly.",
     "tags": [
       "C++",
       "TypeScript",
@@ -13,14 +13,22 @@
     ],
     "demo": "https://joshuacortes195.github.io/drone-sim/",
     "github": "https://github.com/joshuacortes195/drone-sim",
-    "fromGithub": true
+    "fromGithub": true,
+    "stat": "1000 of 1000 test flights reached the goal, in calm air and in wind",
+    "category": "robotics",
+    "media": {
+      "kind": "image",
+      "src": "/media/drone-sim.jpg",
+      "alt": "A quadcopter flying over a city intersection, with the lidar points it sees and its planned path drawn in"
+    },
+    "details": "Drone Sim is an autonomous quadcopter in the browser. The C++ core (6 DOF physics, a cascaded PID controller, 3D A*, a Kalman filter and a simulated lidar) runs as WebAssembly in a three.js city with a physical sky, soft shadows and glass that reflects it.\n\nWhat you can do\n\n- Pick a waypoint route, a lawnmower search or go home, where it climbs, flies back and lands on the pad\n- Tap to set goals, drop boxes in its way and add wind, and watch it replan\n\nResults\n\n- Over 1000 seeded cities it reached the goal on 1000 of 1000 flights in calm air and 1000 of 1000 in wind\n- Over 100 cities its search covered at least 99.78% of the area in calm air"
   },
   {
     "id": "resumefit",
     "title": "ResumeFit",
     "description": "Free resume match and job application assistant.",
-    "stat": "About 6,750 skills matched · 30+ checks · 297 unit and 28 browser tests",
-    "details": "ResumeFit is a free web app and Chrome extension that scores a resume against a job description, shows what is missing, and keeps every application in one tracker. I wanted a resume scanner for me and my friends with no paywalls, credits or locked features, and a score I could explain.\n\nWhat I built\n\n- A scoring engine in plain code: hard skills 50%, soft skills 15%, searchability 15%, recruiter tips 10%, formatting 10%\n- PDF and DOCX readers that rebuild lines from text positions and document XML, so fonts, columns, tables and margins can be checked\n- A Manifest V3 Chrome extension that scans the job posting on the page you are on\n- A drag and drop application tracker, and a resume builder with 8 templates and PDF and Word export\n- Writing help that tries Gemini, then Groq, then Cloudflare Workers AI, on free tiers only\n\nResults\n\n- About 6,750 skills matched per scan: 191 hard and 35 soft picked by hand, 6,559 imported from the O*NET database\n- 30+ report checks and 11 applicant tracking systems detected\n- 297 unit and data layer tests, 28 browser tests, and accessibility checks on 16 pages\n- 17 database tables, with row level security on every one\n\nLimits\n\nI built an auto apply feature, tested it on real company sites, and removed about 4,800 lines when it did not hold up. Sign in is invite only by default, and there is no usage data or feedback from other people yet.",
+    "stat": "About 6,860 skills matched · 30+ checks · 480 unit and 33 browser tests",
+    "details": "ResumeFit is a free web app and Chrome extension that scores a resume against a job description, shows what is missing, and keeps every application in one tracker. I wanted a resume scanner for me and my friends with no paywalls, credits or locked features, and a score I could explain.\n\nWhat I built\n\n- A scoring engine in plain code: hard skills 50%, soft skills 15%, searchability 15%, recruiter tips 10%, formatting 10%\n- PDF and DOCX readers that rebuild lines from text positions and document XML, so fonts, columns, tables and margins can be checked\n- A Manifest V3 Chrome extension that scans the job posting on the page you are on and fills in application forms from a saved profile\n- A drag and drop application tracker, and a resume builder with 8 templates and PDF and Word export\n- Writing help that tries Gemini, then Groq, then Cloudflare Workers AI, on free tiers only\n\nResults\n\n- About 6,860 skills matched per scan, 6,559 of them imported from the O*NET database and the rest picked by hand\n- 30+ report checks and 11 applicant tracking systems detected\n- 480 unit and data layer tests, 33 browser tests, and accessibility checks on 16 pages\n- 17 database tables, with row level security on every one\n\nLimits\n\nMy first auto apply feature did not hold up on real company sites, so I removed about 4,800 lines and rebuilt it smaller. The new one has been tested against saved copies of real forms, not yet on live applications. Sign in is invite only by default, and there is no usage data or feedback from other people yet.",
     "category": "web-apps",
     "tags": [
       "TypeScript",
@@ -37,6 +45,52 @@
       "src": "/media/resumefit.mp4",
       "poster": "/media/resumefit-poster.jpg",
       "alt": "Screen recording of ResumeFit"
+    }
+  },
+  {
+    "id": "event-horizon",
+    "title": "Event Horizon",
+    "description": "A real-time black hole you can fly around in the browser, with every pixel a light ray traced through curved space.",
+    "stat": "Matches general relativity to 1 part in 100,000",
+    "details": "Event Horizon is a real-time black hole you can fly around in the browser. Every pixel is a light ray traced through curved space in a WebGL2 shader, checked pixel by pixel against a C++ reference tracer that matches general relativity to 1 part in 100,000.",
+    "category": "simulation",
+    "tags": [
+      "C++17",
+      "GLSL",
+      "WebGL2",
+      "TypeScript",
+      "React",
+      "Playwright"
+    ],
+    "demo": "https://joshuacortes195.github.io/event-horizon/",
+    "github": "https://github.com/joshuacortes195/event-horizon",
+    "media": {
+      "kind": "image",
+      "src": "/media/event-horizon.jpg",
+      "alt": "A black hole with its glowing disk bent into an arch over the top by gravity"
+    }
+  },
+  {
+    "id": "gravity-sandbox",
+    "title": "Gravity Sandbox",
+    "description": "N-body gravity in the browser, written in C++ and compiled to WebAssembly.",
+    "stat": "SIMD 2.44x faster · 3.26x on 4 threads · 44 physics tests",
+    "details": "Watch two galaxies collide, a black hole shred a star cluster, or three bodies chase each other round a figure eight. A C++17 core with a Barnes-Hut octree does the physics, three.js draws it straight from WebAssembly memory, and a React panel changes speed, accuracy and star count. Click to drop in a new body, and a live readout shows how well energy holds while it runs.\n\nResults\n\n- WebAssembly SIMD makes brute force 2.44x faster\n- The tree walk is split across threads, 3.26x faster on 4 threads for a 10,000 star disk\n- 44 tests check the physics",
+    "category": "simulation",
+    "tags": [
+      "C++",
+      "WebAssembly",
+      "SIMD",
+      "Three.js",
+      "React",
+      "TypeScript"
+    ],
+    "demo": "https://gravity-sandbox-teal.vercel.app",
+    "github": "https://github.com/joshuacortes195/gravity-sandbox",
+    "media": {
+      "kind": "image",
+      "src": "/media/gravity-sandbox.jpg",
+      "alt": "Two galaxies of glowing stars drifting toward each other in the dark"
     }
   },
   {

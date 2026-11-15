@@ -3,6 +3,7 @@ import { site } from '../data/site'
 import { gsap, SplitText, useGSAP, reducedMotion } from '../lib/motion'
 import { safeLink, sitePath } from '../lib/links'
 import { scrollToSection } from '../lib/scroll'
+import HeroWork from './HeroWork'
 
 // links shown across the top of the page
 const links = [
@@ -86,26 +87,35 @@ export default function Hero({ ready }: { ready: boolean }) {
           <span className="hero-sub block">{site.hero.subtitle}</span>
         </h1>
 
-        {/* one or two sentences on what I do right now */}
-        {site.hero.pitch && (
-          <p data-hero-fade className="mt-6 md:mt-8 max-w-[46ch] text-lg md:text-2xl leading-snug">
-            {site.hero.pitch}
-          </p>
-        )}
+        {/* the pitch and the resume button on the left, a look at the work itself on the right */}
+        <div className="mt-6 md:mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,40rem)] lg:items-end">
+          <div>
+            {/* one or two sentences on what I do right now */}
+            {site.hero.pitch && (
+              <p data-hero-fade className="max-w-[46ch] text-lg md:text-2xl leading-snug">
+                {site.hero.pitch}
+              </p>
+            )}
 
-        {/* the big resume button */}
-        {resume && (
-          <div data-hero-fade className="mt-8 md:mt-10">
-            <a
-              href={resume}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="pill pill-accent min-h-16 px-10 text-xl font-semibold"
-            >
-              {site.hero.resumeButton}
-            </a>
+            {/* the big resume button */}
+            {resume && (
+              <div data-hero-fade className="mt-8 md:mt-10">
+                <a
+                  href={resume}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="pill pill-accent min-h-16 px-10 text-xl font-semibold"
+                >
+                  {site.hero.resumeButton}
+                </a>
+              </div>
+            )}
           </div>
-        )}
+          {/* on a phone the projects are one swipe away, so the hero stays one screen tall */}
+          <div className="hidden md:block w-full max-w-[40rem]">
+            <HeroWork />
+          </div>
+        </div>
       </div>
 
       {/* jump links along the bottom, written like the menu's choices */}

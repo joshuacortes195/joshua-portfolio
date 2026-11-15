@@ -7,7 +7,7 @@
   "hero": {
     "title": "Software Engineer",
     "subtitle": "CV, ML & Robotics.",
-    "pitch": "Software engineering intern at Ormco, building computer vision and robot inspection systems for manufacturing lines, along with WPF and .NET MAUI applications. B.S. Computer Science at California Baptist University",
+    "pitch": "Software engineering intern at Ormco, building computer vision and robot inspection systems for manufacturing lines, along with WPF and .NET MAUI applications. B.S. Computer Science at California Baptist University.",
     "resumeButton": "View resume"
   },
   "experience": {
@@ -25,6 +25,10 @@
       {
         "id": "web-apps",
         "label": "Web apps"
+      },
+      {
+        "id": "simulation",
+        "label": "Simulation"
       },
       {
         "id": "games",
