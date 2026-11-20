@@ -50,9 +50,9 @@
   {
     "id": "event-horizon",
     "title": "Event Horizon",
-    "description": "A real-time black hole you can fly around in the browser, with every pixel a light ray traced through curved space.",
+    "description": "A real-time black hole you can fly around and spin up in the browser, with every pixel a light ray traced through curved space.",
     "stat": "Matches general relativity to 1 part in 100,000",
-    "details": "Event Horizon is a real-time black hole you can fly around in the browser. Every pixel is a light ray traced through curved space in a WebGL2 shader, checked pixel by pixel against a C++ reference tracer that matches general relativity to 1 part in 100,000.",
+    "details": "Event Horizon is a real-time black hole you can fly around in the browser. Every pixel is a light ray traced through curved space in a WebGL2 shader, checked pixel by pixel against a C++ reference tracer that matches general relativity to 1 part in 100,000. A spin slider turns it into a spinning (Kerr) black hole, and a bloom pass gives the glowing disk a film look.",
     "category": "simulation",
     "tags": [
       "C++17",
