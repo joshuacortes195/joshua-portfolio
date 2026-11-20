@@ -68,7 +68,7 @@ export default function BootIntro({ onReveal, onDone }: Props) {
     <div
       ref={root}
       onClick={finish}
-      className="fixed inset-0 z-[100] grid place-items-center bg-paper p-6"
+      className="fixed inset-0 z-[100] grid place-items-center bg-paper page-wood p-6"
       style={{ clipPath: 'inset(0% 0% 0% 0%)' }}
     >
       {/* the small computer in the middle */}

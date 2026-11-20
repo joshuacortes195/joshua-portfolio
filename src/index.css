@@ -12,8 +12,195 @@
   /* beige plastic for the retro monitor */
   --case: #E6DFCF;
   --case-shade: #CFC6B2;
+  --case-hi: #F4EFE3;
+  --case-edge: #0D0D0D;
+  /* dark cards and the words on them */
+  --card-bg: #0D0D0D;
+  --card-ink: #FFFFFF;
+  --card-mute: #E8E8E6;
+  /* the glass of the little crt screens */
+  --screen: #0D0D0D;
+  /* words that sit on an orange fill */
+  --on-accent: #0D0D0D;
+  /* divider lines between sections */
+  --line: #0D0D0D;
+  /* keyboard focus ring */
+  --focus: #0D0D0D;
+  /* the flash when the menu screen turns on */
+  --flash: #FFF3DC;
+  /* grid paper that shows through behind the page */
+  --grid-bg: #E8E8E6;
+  --grid-line: #A8A8A2;
+  --grid-line-soft: #C9C9C4;
+  /* texture on the page and on cards, none on the plain theme */
+  --wood: none;
+  --wood-size: auto;
+  --card-tex: none;
   /* snappy ease-out shared by buttons, cards and the read more panel */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* warm dark themes, picked from the swatch button in the corner. the list lives in src/lib/theme.ts and public/theme-init.js */
+
+/* walnut: deep brown planks, cream words, amber accents */
+:root[data-theme='walnut'] {
+  --paper: #2A1D15;
+  --ink: #F2E7D5;
+  --ink-soft: #C9B59B;
+  --mute: #3E2D21;
+  --accent: #E9A440;
+  --accent-soft: #4C3422;
+  --on-accent: #1E140D;
+  --card-bg: #1A120C;
+  --card-ink: #F2E7D5;
+  --card-mute: #CDBBA3;
+  --screen: #120C08;
+  --line: rgb(242 231 213 / 0.3);
+  --focus: #E9A440;
+  --flash: #F6DDB0;
+  --case: #6B4A32;
+  --case-shade: #4E3524;
+  --case-hi: #8C6648;
+  --case-edge: #0E0906;
+  --grid-bg: #34251B;
+  --grid-line: rgb(242 231 213 / 0.2);
+  --grid-line-soft: rgb(242 231 213 / 0.08);
+  --wood: url('/textures/walnut.svg');
+  --wood-size: 1200px 800px;
+  color-scheme: dark;
+}
+
+/* cabin: charred pine logs, ember orange */
+:root[data-theme='cabin'] {
+  --paper: #1F1712;
+  --ink: #F0E4D0;
+  --ink-soft: #C0AB90;
+  --mute: #33261D;
+  --accent: #F27D3A;
+  --accent-soft: #48291B;
+  --on-accent: #1A0F09;
+  --card-bg: #130D0A;
+  --card-ink: #F0E4D0;
+  --card-mute: #C7B39A;
+  --screen: #0D0907;
+  --line: rgb(240 228 208 / 0.28);
+  --focus: #F27D3A;
+  --flash: #FFD2A8;
+  --case: #5C3F2A;
+  --case-shade: #402C1E;
+  --case-hi: #7C5A3F;
+  --case-edge: #0A0605;
+  --grid-bg: #2A1F18;
+  --grid-line: rgb(240 228 208 / 0.18);
+  --grid-line-soft: rgb(240 228 208 / 0.07);
+  --wood: url('/textures/cabin.svg');
+  --wood-size: 1200px 900px;
+  color-scheme: dark;
+}
+
+/* mahogany: reddish standing panels, brass accents */
+:root[data-theme='mahogany'] {
+  --paper: #2D1513;
+  --ink: #F5E6D8;
+  --ink-soft: #D3B5A3;
+  --mute: #45241F;
+  --accent: #D9AE55;
+  --accent-soft: #4D2F1F;
+  --on-accent: #1F0F0C;
+  --card-bg: #1B0C0A;
+  --card-ink: #F5E6D8;
+  --card-mute: #D9BFAE;
+  --screen: #140807;
+  --line: rgb(245 230 216 / 0.3);
+  --focus: #D9AE55;
+  --flash: #F7E2B5;
+  --case: #6E2E22;
+  --case-shade: #4E1F18;
+  --case-hi: #904535;
+  --case-edge: #0F0605;
+  --grid-bg: #3A1C19;
+  --grid-line: rgb(245 230 216 / 0.2);
+  --grid-line-soft: rgb(245 230 216 / 0.08);
+  --wood: url('/textures/mahogany.svg');
+  --wood-size: 1100px 1200px;
+  color-scheme: dark;
+}
+
+/* leather and oak: golden oak floor, leather cards, warm off white */
+:root[data-theme='oak'] {
+  --paper: #3A2A1C;
+  --ink: #F7EEDF;
+  --ink-soft: #D6C4A9;
+  --mute: #4D3926;
+  --accent: #EDB75F;
+  --accent-soft: #5A4126;
+  --on-accent: #23180E;
+  --card-bg: #4A2618;
+  --card-ink: #F7EEDF;
+  --card-mute: #E5CFBD;
+  --screen: #1A110B;
+  --line: rgb(247 238 223 / 0.32);
+  --focus: #EDB75F;
+  --flash: #FBE7BE;
+  --case: #8A6640;
+  --case-shade: #67492D;
+  --case-hi: #AB865B;
+  --case-edge: #160E08;
+  --grid-bg: #45331F;
+  --grid-line: rgb(247 238 223 / 0.2);
+  --grid-line-soft: rgb(247 238 223 / 0.08);
+  --wood: url('/textures/oak.svg');
+  --wood-size: 1400px 920px;
+  --card-tex: url('/textures/leather.svg');
+  color-scheme: dark;
+}
+
+/* hearth: warm charcoal brown with a low fire glow, no planks */
+:root[data-theme='hearth'] {
+  --paper: #18110E;
+  --ink: #F3E9DD;
+  --ink-soft: #BCAB9A;
+  --mute: #2C211B;
+  --accent: #FF9E57;
+  --accent-soft: #3F2519;
+  --on-accent: #1A0E08;
+  --card-bg: #241A15;
+  --card-ink: #F3E9DD;
+  --card-mute: #C8B7A6;
+  --screen: #0E0907;
+  --line: rgb(243 233 221 / 0.24);
+  --focus: #FF9E57;
+  --flash: #FFD9B5;
+  --case: #3B2C24;
+  --case-shade: #2A1F19;
+  --case-hi: #534034;
+  --case-edge: #070403;
+  --grid-bg: #231A15;
+  --grid-line: rgb(243 233 221 / 0.16);
+  --grid-line-soft: rgb(243 233 221 / 0.06);
+  --wood: url('/textures/hearth.svg');
+  --wood-size: 360px 360px;
+  color-scheme: dark;
+}
+
+/* hearth: the fire glow along the bottom of the window, stays put while the page scrolls */
+:root[data-theme='hearth'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -20;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 55% at 50% 108%, rgb(255 120 40 / 0.2), rgb(255 120 40 / 0.06) 45%, transparent 70%),
+    radial-gradient(90% 60% at 50% -10%, rgb(0 0 0 / 0.35), transparent 70%);
+}
+
+/* leather cards get a stitched edge just inside the border */
+:root[data-theme='oak'] .float-card {
+  box-shadow:
+    inset 0 0 0 5px var(--card-bg),
+    inset 0 0 0 6px rgb(237 183 95 / 0.35),
+    0 2.5rem 4rem -1.75rem rgb(13 13 13 / 0.6);
 }
 
 /* hooks the tokens and fonts into tailwind classes */
@@ -27,11 +214,19 @@
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-ink-soft: var(--ink-soft);
+  --color-card: var(--card-bg);
+  --color-card-ink: var(--card-ink);
+  --color-card-mute: var(--card-mute);
+  --color-on-accent: var(--on-accent);
+  --color-line: var(--line);
 }
 
 /* base page look */
 html {
-  background: var(--paper);
+  background-color: var(--paper);
+  /* wood grain on the warm themes, nothing on the plain one */
+  background-image: var(--wood);
+  background-size: var(--wood-size);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -47,7 +242,7 @@ body {
 /* orange highlight when you select text */
 ::selection {
   background: var(--accent);
-  color: var(--ink);
+  color: var(--on-accent);
 }
 
 /* keeps anchor jumps from tucking under the menu button */
@@ -63,7 +258,7 @@ button, a, input, textarea {
 
 /* keyboard focus ring */
 :focus-visible {
-  outline: 2px solid var(--ink);
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 
@@ -129,8 +324,8 @@ button, a, input, textarea {
     aspect-ratio: 1280 / 692;
     overflow: hidden;
     border-radius: 1.25rem;
-    background: var(--ink);
-    box-shadow: 0 0 0 1px var(--ink), 0 24px 48px -28px rgb(13 13 13 / 0.45);
+    background: var(--screen);
+    box-shadow: 0 0 0 1px var(--line), 0 24px 48px -28px rgb(13 13 13 / 0.45);
     transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out);
   }
   .hero-work-shot {
@@ -162,7 +357,7 @@ button, a, input, textarea {
   @media (hover: hover) {
     .hero-work:hover .hero-work-frame {
       transform: translateY(-4px);
-      box-shadow: 0 0 0 1px var(--ink), 0 6px 0 0 var(--accent), 0 30px 54px -28px rgb(13 13 13 / 0.5);
+      box-shadow: 0 0 0 1px var(--line), 0 6px 0 0 var(--accent), 0 30px 54px -28px rgb(13 13 13 / 0.5);
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -240,13 +435,13 @@ button, a, input, textarea {
   .pill-accent {
     background: var(--accent);
     border-color: var(--accent);
-    color: var(--ink);
+    color: var(--on-accent);
   }
 
   /* outlined pill for dark cards */
   .pill-on-ink {
-    border-color: var(--paper);
-    color: var(--paper);
+    border-color: var(--card-ink);
+    color: var(--card-ink);
   }
 
   /* pill hover colors, only for a real mouse */
@@ -261,8 +456,8 @@ button, a, input, textarea {
       color: var(--paper);
     }
     .pill-on-ink:hover {
-      background: var(--paper);
-      color: var(--ink);
+      background: var(--card-ink);
+      color: var(--card-bg);
     }
   }
 
@@ -447,7 +642,7 @@ button, a, input, textarea {
   .blank-screen {
     background:
       repeating-linear-gradient(to bottom, transparent 0 2px, rgb(255 255 255 / 0.05) 2px 3px),
-      var(--ink);
+      var(--screen);
   }
 
   /* experience: the full breakdown, slides open and shut */
@@ -468,10 +663,10 @@ button, a, input, textarea {
   .menu-case {
     /* drops in from the corner the menu button sits in */
     transform-origin: top right;
-    border: 2px solid var(--ink);
+    border: 2px solid var(--case-edge);
     box-shadow:
       inset 0 -6px 0 var(--case-shade),
-      inset 0 2px 0 #F4EFE3,
+      inset 0 2px 0 var(--case-hi),
       0 1.5rem 2.5rem -1rem rgb(13 13 13 / 0.45);
   }
 
@@ -490,7 +685,7 @@ button, a, input, textarea {
     position: absolute;
     inset: 0;
     z-index: 1;
-    background: var(--accent-soft);
+    background: var(--flash);
     opacity: 0;
     pointer-events: none;
   }
@@ -504,7 +699,7 @@ button, a, input, textarea {
     min-height: 2.75rem;
     padding: 0 0.5rem;
     margin: 0 -0.5rem;
-    color: var(--paper);
+    color: var(--card-ink);
     font-size: 1.125rem;
     text-align: left;
     cursor: pointer;
@@ -515,15 +710,120 @@ button, a, input, textarea {
   .menu-choice:hover,
   .menu-choice:focus-visible {
     background: var(--accent);
-    color: var(--ink);
+    color: var(--on-accent);
   }
   .menu-choice:hover > span,
   .menu-choice:focus-visible > span {
-    color: var(--ink);
+    color: var(--on-accent);
+  }
+
+  /* theme picker: the round chip of colors */
+  .theme-swatch {
+    display: inline-block;
+    flex: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid;
+    border-radius: 999px;
+    box-shadow: 0 0 0 1px rgb(128 128 128 / 0.55);
+  }
+
+  /* theme picker: the round button next to menu, same dark fill so it reads as a pair */
+  .theme-button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--card-ink) 40%, transparent);
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: transform 0.16s var(--ease-out), border-color 0.15s ease;
+  }
+  .theme-button:active {
+    transform: scale(0.95);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .theme-button:hover {
+      border-color: var(--accent);
+    }
+  }
+
+  /* theme picker: the dropdown list under the button */
+  .theme-panel {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    width: 13.5rem;
+    padding: 0.5rem;
+    border-radius: 1.25rem;
+    border: 1px solid color-mix(in srgb, var(--card-ink) 18%, transparent);
+    background: var(--card-bg);
+    color: var(--card-ink);
+    box-shadow: 0 1.5rem 2.5rem -1rem rgb(13 13 13 / 0.55);
+    transform-origin: top right;
+    animation: detail-in 0.18s var(--ease-out);
+  }
+
+  /* theme picker: one row in the list */
+  .theme-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 0.75rem;
+    border-radius: 0.875rem;
+    font-size: 0.9375rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+  .theme-option:focus-visible {
+    outline-offset: -2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .theme-option:hover {
+      background: color-mix(in srgb, var(--card-ink) 10%, transparent);
+    }
+  }
+  /* the dot marking the theme that's on, hidden on the others */
+  .theme-check {
+    color: var(--accent);
+    font-size: 0.625rem;
+    visibility: hidden;
+  }
+  .theme-option[aria-pressed='true'] .theme-check {
+    visibility: visible;
+  }
+
+  /* menu: one theme chip on the little screen, big enough to tap */
+  .menu-swatch {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  /* the picked chip gets an accent ring */
+  .menu-swatch[aria-pressed='true'] .theme-swatch {
+    box-shadow: 0 0 0 2px var(--screen), 0 0 0 4px var(--accent);
+  }
+  .menu-swatch:focus-visible {
+    outline-offset: -4px;
+  }
+
+  /* the page's wood grain, for full screen layers that cover the page like the intro */
+  .page-wood {
+    background-image: var(--wood);
+    background-size: var(--wood-size);
   }
 
   /* soft shadow under project cards so they look lifted off the page */
   .float-card {
+    /* leather or nothing, depending on the theme */
+    background-image: var(--card-tex);
     box-shadow: 0 2.5rem 4rem -1.75rem rgb(13 13 13 / 0.5);
     transition: scale 0.25s var(--ease-out);
     /* lets the browser move the card without redrawing it */
@@ -562,7 +862,7 @@ button, a, input, textarea {
     padding: 0.625rem 0;
     background: transparent;
     border: 0;
-    border-bottom: 1px solid var(--ink);
+    border-bottom: 1px solid var(--line);
     border-radius: 0;
     font-size: 1.0625rem;
     color: var(--ink);
@@ -612,7 +912,7 @@ button, a, input, textarea {
     background: var(--case);
     box-shadow:
       inset 0 -6px 0 var(--case-shade),
-      inset 0 2px 0 #F4EFE3;
+      inset 0 2px 0 var(--case-hi);
   }
 
   /* retro monitor: the crt screen */
@@ -624,7 +924,7 @@ button, a, input, textarea {
     overflow: hidden;
     padding: 1rem 1.125rem;
     border-radius: 1.25rem / 1.5rem;
-    background: var(--ink);
+    background: var(--screen);
     color: var(--accent);
     font-family: var(--font-mono);
     font-size: clamp(0.6875rem, 2.6vw, 0.875rem);
@@ -726,13 +1026,13 @@ button, a, input, textarea {
   /* thin lines plus a heavier one every fifth, --gx and --gy slide it so separate pieces still line up */
   .grid-paper {
     --shift: calc(0px - var(--gx, 0px)) calc(0px - var(--gy, 0px));
-    background-color: var(--mute);
+    background-color: var(--grid-bg);
     background-image:
       radial-gradient(circle, var(--accent) 3px, transparent 3.5px),
-      linear-gradient(to right, #A8A8A2 1px, transparent 1px),
-      linear-gradient(to bottom, #A8A8A2 1px, transparent 1px),
-      linear-gradient(to right, #C9C9C4 1px, transparent 1px),
-      linear-gradient(to bottom, #C9C9C4 1px, transparent 1px);
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to right, var(--grid-line-soft) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line-soft) 1px, transparent 1px);
     background-size: 200px 200px, 200px 200px, 200px 200px, 40px 40px, 40px 40px;
     background-position:
       calc(-100px - var(--gx, 0px)) calc(-100px - var(--gy, 0px)),
@@ -811,7 +1111,7 @@ button, a, input, textarea {
   /* cursor: ring squared off into a detection box */
   .cv-box.is-locked {
     border-radius: 3px;
-    border-color: rgb(255 181 71 / 0.35);
+    border-color: color-mix(in srgb, var(--accent) 35%, transparent);
   }
 
   /* cursor: corner brackets of the detection box */

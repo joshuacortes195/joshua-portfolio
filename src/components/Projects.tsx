@@ -21,7 +21,7 @@ function ProjectCard({ project, active, onMore }: { project: Project; active: bo
   return (
     <article
       data-cursor="project"
-      className="float-card on-ink h-full flex flex-col rounded-2xl md:rounded-3xl bg-ink text-paper p-1.5 md:p-3"
+      className="float-card on-ink h-full flex flex-col rounded-2xl md:rounded-3xl bg-card text-card-ink p-1.5 md:p-3"
     >
       <ProjectMedia project={project} active={active} />
 
@@ -29,7 +29,7 @@ function ProjectCard({ project, active, onMore }: { project: Project; active: bo
         <h3 className="display text-3xl md:text-4xl">{project.title}</h3>
         {/* headline numbers for the project, only when there are some */}
         {project.stat && <StatLine stat={project.stat} className="meta mt-3 text-accent" />}
-        <p className="mt-3 text-base leading-snug text-mute max-w-[52ch]">{project.description}</p>
+        <p className="mt-3 text-base leading-snug text-card-mute max-w-[52ch]">{project.description}</p>
 
         {/* stack tags */}
         <ul className="mt-4 flex flex-wrap gap-2">
@@ -78,7 +78,7 @@ function ProjectCard({ project, active, onMore }: { project: Project; active: bo
                 View code
               </a>
             )}
-            {project.desktopOnly && <p className="meta text-mute">Desktop only, needs a keyboard</p>}
+            {project.desktopOnly && <p className="meta text-card-mute">Desktop only, needs a keyboard</p>}
           </div>
         )}
       </div>
@@ -236,7 +236,7 @@ export default function Projects() {
   const github = safeLink(site.github)
 
   return (
-    <section id="projects" className="px-4 md:px-8 py-20 md:py-28 border-t border-ink">
+    <section id="projects" className="px-4 md:px-8 py-20 md:py-28 border-t border-line">
       {/* headline with the one github button next to it */}
       <div data-reveal className="flex flex-wrap items-end gap-x-5 md:gap-x-8 gap-y-4">
         <h2 className="display section-title">{site.projects.title}</h2>

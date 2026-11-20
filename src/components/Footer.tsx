@@ -69,7 +69,7 @@ export default function Footer() {
   }
 
   return (
-    <footer id="contact" className="px-4 md:px-8 py-20 md:py-28 border-t border-ink">
+    <footer id="contact" className="px-4 md:px-8 py-20 md:py-28 border-t border-line">
       <h2 data-reveal className="display section-title">
         {site.contact.title}
       </h2>
@@ -218,7 +218,7 @@ export default function Footer() {
       </div>
 
       {/* last line of the page, with a way back up */}
-      <div className="mt-20 md:mt-28 pt-4 border-t border-ink flex items-center justify-between gap-4 meta text-ink-soft">
+      <div className="mt-20 md:mt-28 pt-4 border-t border-line flex items-center justify-between gap-4 meta text-ink-soft">
         <p>{site.name}</p>
         <a
           href="#top"

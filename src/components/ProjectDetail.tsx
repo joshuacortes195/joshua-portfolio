@@ -63,10 +63,10 @@ export default function ProjectDetail({ project, onClose, onClosed }: Props) {
         aria-modal="true"
         aria-labelledby={titleId}
         onKeyDown={keepFocusInside}
-        className="detail-panel flex w-full max-w-3xl flex-col overflow-hidden rounded-2xl md:rounded-3xl border border-ink bg-paper"
+        className="detail-panel flex w-full max-w-3xl flex-col overflow-hidden rounded-2xl md:rounded-3xl border border-line bg-paper"
       >
         {/* top strip that stays put: which project this is, and the close button */}
-        <div className="flex items-center justify-between gap-4 border-b border-ink py-2 pl-4 pr-2 md:pl-6 md:pr-3">
+        <div className="flex items-center justify-between gap-4 border-b border-line py-2 pl-4 pr-2 md:pl-6 md:pr-3">
           <p className="meta min-w-0 truncate text-ink-soft" aria-hidden="true">
             &gt; projects/{project.id}
           </p>
@@ -93,7 +93,7 @@ export default function ProjectDetail({ project, onClose, onClosed }: Props) {
           <div className="mt-6 space-y-4 text-base md:text-lg leading-[1.45]">
             {blocks.map((block, i) =>
               block.kind === 'heading' ? (
-                <h3 key={i} className="meta mt-8 border-t border-ink pt-4 font-medium">
+                <h3 key={i} className="meta mt-8 border-t border-line pt-4 font-medium">
                   {block.text}
                 </h3>
               ) : block.kind === 'list' ? (
@@ -118,7 +118,7 @@ export default function ProjectDetail({ project, onClose, onClosed }: Props) {
 
           {/* stack tags */}
           {project.tags.length > 0 && (
-            <ul className="mt-8 flex flex-wrap gap-2 border-t border-ink pt-5">
+            <ul className="mt-8 flex flex-wrap gap-2 border-t border-line pt-5">
               {project.tags.map((tag, i) => (
                 <li key={i} className="tag">
                   {tag}

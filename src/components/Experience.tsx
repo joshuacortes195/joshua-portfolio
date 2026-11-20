@@ -10,7 +10,7 @@ function JobRow({ job, startOpen }: { job: Job; startOpen: boolean }) {
   const detailsId = useId()
 
   return (
-    <article data-reveal className="grid gap-x-8 gap-y-4 md:grid-cols-12 border-t border-ink py-8">
+    <article data-reveal className="grid gap-x-8 gap-y-4 md:grid-cols-12 border-t border-line py-8">
       <div className="md:col-span-4">
         <h3 className="text-2xl md:text-3xl font-semibold tracking-tight leading-tight">{job.role}</h3>
         <p className="mt-1 text-lg">{job.company}</p>
@@ -62,13 +62,13 @@ function JobRow({ job, startOpen }: { job: Job; startOpen: boolean }) {
 
 export default function Experience() {
   return (
-    <section id="experience" className="px-4 md:px-8 py-20 md:py-28 border-t border-ink">
+    <section id="experience" className="px-4 md:px-8 py-20 md:py-28 border-t border-line">
       <h2 data-reveal className="display section-title">
         {site.experience.title}
       </h2>
 
       {/* one row per job, role on the left and the summary on the right */}
-      <div className="mt-10 md:mt-14 border-b border-ink">
+      <div className="mt-10 md:mt-14 border-b border-line">
         {jobs.map((job, i) => (
           <JobRow key={i} job={job} startOpen={i === 0} />
         ))}
@@ -76,12 +76,12 @@ export default function Experience() {
 
       {/* schools, same row layout */}
       <h3 className="mt-16 md:mt-20 text-2xl md:text-3xl font-semibold tracking-tight mb-4">{site.experience.educationTitle}</h3>
-      <div className="border-b border-ink">
+      <div className="border-b border-line">
         {education.map((s, i) => (
           <article
             key={i}
             data-reveal
-            className="grid gap-x-8 gap-y-2 md:grid-cols-12 border-t border-ink py-6"
+            className="grid gap-x-8 gap-y-2 md:grid-cols-12 border-t border-line py-6"
           >
             <div className="md:col-span-4">
               <h4 className="text-xl md:text-2xl font-semibold tracking-tight leading-tight">{s.school}</h4>

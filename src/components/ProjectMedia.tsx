@@ -73,7 +73,7 @@ export default function ProjectMedia({ project, active, onPaper = false }: { pro
   const media = project.media
   return (
     <div
-      className={`aspect-[1280/692] rounded-[10px] md:rounded-xl overflow-hidden bg-mute border ${onPaper ? 'border-ink' : 'border-paper/15'}`}
+      className={`aspect-[1280/692] rounded-[10px] md:rounded-xl overflow-hidden bg-mute border ${onPaper ? 'border-line' : 'border-card-ink/15'}`}
     >
       {!media ? <Blank project={project} /> : media.kind === 'video' ? <Clip media={media} active={active} /> : <Shot media={media} />}
     </div>

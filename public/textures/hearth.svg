@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360">
+  <!-- soft soot grain for the hearth theme, tiles -->
+  <filter id="soot" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="3" stitchTiles="stitch"/>
+    <feColorMatrix values="0 0 0 0 1  0 0 0 0 0.8  0 0 0 0 0.6  1.6 0 0 0 -0.8"/>
+  </filter>
+  <filter id="smoke" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.006" numOctaves="3" seed="17" stitchTiles="stitch"/>
+    <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -1.4 0 0 0 0.9"/>
+  </filter>
+  <rect width="360" height="360" filter="url(#smoke)" opacity="0.35"/>
+  <rect width="360" height="360" filter="url(#soot)" opacity="0.12"/>
+</svg>
