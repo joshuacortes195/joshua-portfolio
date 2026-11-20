@@ -250,16 +250,5 @@
       "AI",
       "Search Algorithms"
     ]
-  },
-  {
-    "id": "acquisition-robot",
-    "title": "Acquisition Robot",
-    "description": "Button-controlled robotic arm with a 99% retrieval success rate.",
-    "category": "robotics",
-    "tags": [
-      "EV3 Mindstorms",
-      "AutoCAD",
-      "SolidWorks"
-    ]
   }
 ]
