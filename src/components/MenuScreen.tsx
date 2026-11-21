@@ -2,8 +2,6 @@ import { useRef } from 'react'
 import { site } from '../data/site'
 import { gsap, SplitText, useGSAP, reducedMotion } from '../lib/motion'
 import { safeLink, sitePath } from '../lib/links'
-import { THEMES, setTheme, useTheme } from '../lib/theme'
-import { Swatch } from './ThemePicker'
 
 // what the little computer prints while it starts up
 const BOOT = site.boot.menu
@@ -21,8 +19,6 @@ const LINKS = [
 // the site menu, drawn as an old computer that boots up when it opens
 export default function MenuScreen({ onNavigate }: { onNavigate: (section?: string) => void }) {
   const root = useRef<HTMLDivElement>(null)
-  // the theme that's on now, so its swatch shows as picked
-  const theme = useTheme()
 
   // the boot-up: case drops in, the tube flashes on, then the text prints
   useGSAP(
@@ -90,26 +86,6 @@ export default function MenuScreen({ onNavigate }: { onNavigate: (section?: stri
             </li>
           ))}
         </ul>
-
-        {/* theme swatches, handy on phones where the corner button is small */}
-        <div data-menu-choice className="mt-4">
-          <p className="text-card-mute">&gt; theme</p>
-          <div role="group" aria-label="Theme" className="mt-1 -ml-2 flex flex-wrap">
-            {THEMES.map(t => (
-              <button
-                key={t.id}
-                type="button"
-                aria-pressed={t.id === theme}
-                aria-label={t.label}
-                title={t.label}
-                onClick={() => setTheme(t.id)}
-                className="menu-swatch"
-              >
-                <Swatch theme={t} />
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* strip under the screen with the vent and power light */}

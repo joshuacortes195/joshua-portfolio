@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react'
 import MenuScreen from './MenuScreen'
-import ThemePicker from './ThemePicker'
 import { scrollToSection } from '../lib/scroll'
 import { useModal } from '../lib/modal'
 
@@ -36,23 +35,17 @@ export default function Header() {
       {open && <div className="menu-backdrop fixed inset-0 z-40 bg-paper/80" onClick={() => close()} />}
 
       <header className="fixed top-4 right-4 md:right-8 z-50 flex flex-col items-end gap-3">
-        {/* the theme swatch and the menu button side by side */}
-        <div className="flex items-start gap-2">
-          {/* opening the theme list closes the menu so they never stack */}
-          <ThemePicker onOpen={() => open && close()} />
-
-          {/* the pill menu button */}
-          <button
-            ref={button}
-            type="button"
-            onClick={() => (open ? close() : setOpen(true))}
-            aria-expanded={open}
-            aria-controls="site-menu"
-            className="on-ink pill bg-card text-card-ink border-card-ink/40 hover:bg-accent hover:text-on-accent hover:border-accent"
-          >
-            {open ? 'Close' : 'Menu'}
-          </button>
-        </div>
+        {/* the pill menu button */}
+        <button
+          ref={button}
+          type="button"
+          onClick={() => (open ? close() : setOpen(true))}
+          aria-expanded={open}
+          aria-controls="site-menu"
+          className="on-ink pill bg-card text-card-ink border-card-ink/40 hover:bg-accent hover:text-on-accent hover:border-accent"
+        >
+          {open ? 'Close' : 'Menu'}
+        </button>
 
         {/* the menu is a little old computer that boots up when opened */}
         {open && (
