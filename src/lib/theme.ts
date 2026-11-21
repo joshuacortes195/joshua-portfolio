@@ -22,6 +22,9 @@ export const THEMES: Theme[] = [
   { id: 'mahogany', label: 'Mahogany', paper: '#2D1513', card: '#1B0C0A', accent: '#D9AE55', texture: '/textures/mahogany.svg' },
   { id: 'oak', label: 'Leather & Oak', paper: '#3A2A1C', card: '#4A2618', accent: '#EDB75F', texture: '/textures/oak.svg' },
   { id: 'hearth', label: 'Hearth', paper: '#18110E', card: '#241A15', accent: '#FF9E57', texture: '/textures/hearth.svg' },
+  { id: 'hearth-moon', label: 'Hearth Moonlit', paper: '#15130F', card: '#241A15', accent: '#8EC5FF', texture: '/textures/hearth.svg' },
+  { id: 'hearth-spruce', label: 'Hearth Spruce', paper: '#14130F', card: '#241A15', accent: '#7FD4B8', texture: '/textures/hearth.svg' },
+  { id: 'hearth-dusk', label: 'Hearth Dusk', paper: '#16130F', card: '#241A15', accent: '#B9A8FF', texture: '/textures/hearth.svg' },
 ]
 
 const KEY = 'theme'

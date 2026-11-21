@@ -15,7 +15,7 @@
     "github": "https://github.com/joshuacortes195/drone-sim",
     "fromGithub": true,
     "stat": "1000 of 1000 test flights reached the goal, in calm air and in wind",
-    "category": "robotics",
+    "category": "simulation",
     "media": {
       "kind": "image",
       "src": "/media/drone-sim.jpg",

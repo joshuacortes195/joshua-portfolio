@@ -155,8 +155,8 @@
   color-scheme: dark;
 }
 
-/* hearth: warm charcoal brown with a low fire glow, no planks */
-:root[data-theme='hearth'] {
+/* hearth: warm charcoal brown with a low fire glow, no planks. the cooler hearth looks below start from this too */
+:root[data-theme^='hearth'] {
   --paper: #18110E;
   --ink: #F3E9DD;
   --ink-soft: #BCAB9A;
@@ -184,15 +184,59 @@
 }
 
 /* hearth: the fire glow along the bottom of the window, stays put while the page scrolls */
-:root[data-theme='hearth'] body::before {
+:root[data-theme^='hearth'] body::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -20;
   pointer-events: none;
   background:
-    radial-gradient(120% 55% at 50% 108%, rgb(255 120 40 / 0.2), rgb(255 120 40 / 0.06) 45%, transparent 70%),
+    radial-gradient(120% 55% at 50% 108%, rgb(var(--glow) / 0.2), rgb(var(--glow) / 0.06) 45%, transparent 70%),
     radial-gradient(90% 60% at 50% -10%, rgb(0 0 0 / 0.35), transparent 70%);
+}
+
+/* the glow color for each hearth look, orange for the original */
+:root[data-theme^='hearth'] {
+  --glow: 255 120 40;
+}
+
+/* hearth moonlit: same charcoal room, a soft blue light instead of the fire */
+:root[data-theme='hearth-moon'] {
+  --paper: #15130F;
+  --ink: #EEEAE3;
+  --ink-soft: #B3ADA4;
+  --accent: #8EC5FF;
+  --accent-soft: #1E2A38;
+  --on-accent: #08121D;
+  --focus: #8EC5FF;
+  --flash: #CFE5FF;
+  --glow: 90 150 255;
+}
+
+/* hearth spruce: charcoal room with a cool teal green light */
+:root[data-theme='hearth-spruce'] {
+  --paper: #14130F;
+  --ink: #EEEBE2;
+  --ink-soft: #B0ADA2;
+  --accent: #7FD4B8;
+  --accent-soft: #1B2E28;
+  --on-accent: #06150F;
+  --focus: #7FD4B8;
+  --flash: #C9F0E2;
+  --glow: 60 190 150;
+}
+
+/* hearth dusk: charcoal room with a lavender evening light */
+:root[data-theme='hearth-dusk'] {
+  --paper: #16130F;
+  --ink: #EFEAE4;
+  --ink-soft: #B6AEA6;
+  --accent: #B9A8FF;
+  --accent-soft: #2A2340;
+  --on-accent: #120C24;
+  --focus: #B9A8FF;
+  --flash: #E1D9FF;
+  --glow: 140 110 255;
 }
 
 /* leather cards get a stitched edge just inside the border */

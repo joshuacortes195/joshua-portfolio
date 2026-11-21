@@ -10,6 +10,9 @@
     mahogany: '#2D1513',
     oak: '#3A2A1C',
     hearth: '#18110E',
+    'hearth-moon': '#15130F',
+    'hearth-spruce': '#14130F',
+    'hearth-dusk': '#16130F',
   }
   var t = 'paper'
 
