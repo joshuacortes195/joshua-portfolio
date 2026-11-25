@@ -71,7 +71,7 @@ export default function Footer() {
   return (
     <footer id="contact" className="px-4 md:px-8 py-20 md:py-28">
       <p data-reveal className="eyebrow">
-        Get in touch
+        {site.contact.eyebrow}
       </p>
       <h2 data-reveal className="display section-title mt-3">
         {site.contact.title}

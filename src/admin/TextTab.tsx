@@ -114,6 +114,10 @@ export default function TextTab({ content, change }: Props) {
 
       {/* the big headline of each section */}
       <Group title="Section titles">
+        {/* the small gold lines above each section title */}
+        <Text label="Line above Projects" value={site.projects.eyebrow} onChange={v => change(d => void (d.site.projects.eyebrow = v))} />
+        <Text label="Line above Experience" value={site.experience.eyebrow} onChange={v => change(d => void (d.site.experience.eyebrow = v))} />
+        <Text label="Line above Contact" value={site.contact.eyebrow} onChange={v => change(d => void (d.site.contact.eyebrow = v))} />
         <Text label="Experience" value={site.experience.title} onChange={v => change(d => void (d.site.experience.title = v))} />
         <Text label="Education" value={site.experience.educationTitle} onChange={v => change(d => void (d.site.experience.educationTitle = v))} />
         <Text label="Projects" value={site.projects.title} onChange={v => change(d => void (d.site.projects.title = v))} />

@@ -12,10 +12,12 @@
   },
   "experience": {
     "title": "Professional Experience",
+    "eyebrow": "Where I've worked",
     "educationTitle": "Education"
   },
   "projects": {
     "title": "Projects",
+    "eyebrow": "Selected work",
     "githubTopic": "portfolio",
     "categories": [
       {
@@ -42,6 +44,7 @@
   },
   "contact": {
     "title": "Contact Me",
+    "eyebrow": "Get in touch",
     "sendButton": "Send message",
     "sentMessage": "Message sent. I'll get back to you soon."
   },

@@ -14,7 +14,7 @@ export default function ExperienceTab({ content, change }: Props) {
 
   // new jobs and schools go on top since the lists run newest first
   function addJob() {
-    change(d => void d.experience.jobs.unshift({ role: '', company: '', dates: '', location: '', summary: '', bullets: [] }))
+    change(d => void d.experience.jobs.unshift({ role: '', company: '', dates: '', location: '', summary: '', bullets: [], steps: [], numbers: [] }))
   }
   function addSchool() {
     change(d => void d.experience.education.unshift({ school: '', dates: '', detail: '' }))
@@ -51,6 +51,22 @@ export default function ExperienceTab({ content, change }: Props) {
               rows={8}
               value={job.bullets}
               onChange={v => change(d => void (d.experience.jobs[i].bullets = v))}
+            />
+            {/* the little animated diagram on the job's card */}
+            <List
+              label="Diagram steps, in order"
+              lines
+              rows={5}
+              value={job.steps ?? []}
+              onChange={v => change(d => void (d.experience.jobs[i].steps = v))}
+            />
+            {/* the big numbers under the diagram */}
+            <List
+              label='Key numbers, the number first then what it means, like "200+ trays an hour inspected"'
+              lines
+              rows={3}
+              value={job.numbers ?? []}
+              onChange={v => change(d => void (d.experience.jobs[i].numbers = v))}
             />
           </div>
         ))}

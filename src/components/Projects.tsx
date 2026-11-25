@@ -193,7 +193,7 @@ export default function Projects() {
       {/* headline with the github button next to it */}
       <div data-reveal className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
         <div>
-          <p className="eyebrow">Selected work</p>
+          <p className="eyebrow">{site.projects.eyebrow}</p>
           <h2 className="display section-title mt-3">{site.projects.title}</h2>
         </div>
         {github && (

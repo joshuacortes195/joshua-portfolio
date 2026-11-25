@@ -9,6 +9,10 @@ export type Job = {
   summary: string
   // the full breakdown behind read more
   bullets: string[]
+  // the stages of the work, drawn as a little diagram on the card, leave empty for none
+  steps?: string[]
+  // the headline numbers under the diagram, one per line like "200+ trays an hour inspected"
+  numbers?: string[]
 }
 
 export type School = {
@@ -18,5 +22,5 @@ export type School = {
 }
 
 // jobs and schools, newest first, edited from the admin dashboard
-export const jobs: Job[] = content.jobs
+export const jobs: Job[] = content.jobs as Job[]
 export const education: School[] = content.education

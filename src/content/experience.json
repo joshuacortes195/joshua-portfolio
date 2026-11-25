@@ -13,6 +13,18 @@
         "Paperless: Moved the full work-order process off paper using .NET, MSSQL, and AWS S3, removing hundreds of printed pages a day and cutting order processing time by over 50%",
         "Rewrote an unstable RFID read/write tool from scratch as a multithreaded app, speeding up tag reads/writes and stopping up to 5 crashes a day under heavy load",
         "Shipped a cassette damage tracker and label generator (backed by AWS S3) to production at the Mexicali plant"
+      ],
+      "steps": [
+        "Basler camera",
+        "Vision model",
+        "Modbus TCP",
+        "UR robot arm",
+        "OCR + QC"
+      ],
+      "numbers": [
+        "200+ trays an hour inspected",
+        "80% less inspection time",
+        "50%+ faster order processing"
       ]
     },
     {
@@ -25,6 +37,18 @@
         "Provided Tier 1 to 3 support for hardware, networking, and software for 200+ users on Windows and macOS",
         "Managed Office 365 and Azure AD for 10+ companies, handling user setup plus onboarding and offboarding",
         "Wrote Bash, PowerShell, and Java scripts to automate antivirus detection, system and SQL Server monitoring, and firewall setup"
+      ],
+      "steps": [
+        "200+ users",
+        "Tier 1 to 3",
+        "Office 365",
+        "Azure AD",
+        "Scripts"
+      ],
+      "numbers": [
+        "200+ users supported",
+        "10+ companies managed",
+        "3 support tiers covered"
       ]
     }
   ],
