@@ -961,12 +961,6 @@ button, a, input, textarea {
     color: var(--on-accent);
   }
 
-  /* the page's grain, for full screen layers that cover the page like the intro */
-  .page-grain {
-    background-image: var(--grain);
-    background-size: var(--grain-size);
-  }
-
   /* styling for stack tags */
   .tag {
     display: inline-block;
