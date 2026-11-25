@@ -37,7 +37,7 @@ function CategoryEditor({ content, change }: Props) {
   return (
     <Group title="Project categories">
       <p className="text-ink-soft">
-        The filter buttons above the project wheel, in this order. A category only shows once a project is filed under it,
+        The filter buttons above the project list, in this order. A category only shows once a project is filed under it,
         which is set on each project in the Projects tab.
       </p>
 
@@ -120,7 +120,7 @@ export default function TextTab({ content, change }: Props) {
         <Text label="Contact" value={site.contact.title} onChange={v => change(d => void (d.site.contact.title = v))} />
       </Group>
 
-      {/* the filter buttons above the project wheel */}
+      {/* the filter buttons above the project list */}
       <CategoryEditor content={content} change={change} />
 
       {/* contact form wording */}

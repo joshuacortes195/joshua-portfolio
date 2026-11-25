@@ -1,40 +1,40 @@
 @import "tailwindcss";
 
-/* design tokens for the whole site: warm charcoal with a cool moonlit blue accent */
+/* design tokens for the whole site: midnight gold, near black with deep blue map lines and gold */
 :root {
-  --paper: #15130F;
-  --ink: #EEEAE3;
-  --mute: #2C211B;
-  --accent: #8EC5FF;
-  --accent-soft: #1E2A38;
-  /* readable gray for secondary text, mute is too dark for words */
-  --ink-soft: #B3ADA4;
-  /* dark plastic for the retro monitor */
-  --case: #3B2C24;
-  --case-shade: #2A1F19;
-  --case-hi: #534034;
-  --case-edge: #070403;
-  /* cards and the words on them */
-  --card-bg: #241A15;
-  --card-ink: #EEEAE3;
-  --card-mute: #C8B7A6;
+  --paper: #05070C;
+  --ink: #EEF2F8;
+  --mute: #141A26;
+  /* gold is the main accent, blue is the second one */
+  --accent: #E9B949;
+  --accent-soft: rgb(233 185 73 / 0.14);
+  --blue: #4A8DFF;
+  --blue-soft: #8FB6FF;
+  /* readable gray for secondary text */
+  --ink-soft: #9AA6BA;
+  /* dark plastic for the retro monitor in the menu and the boot screen */
+  --case: #1B2333;
+  --case-shade: #121826;
+  --case-hi: #2A3550;
+  --case-edge: #020306;
+  /* cards and the words on them, frosted glass over the map */
+  --card-bg: rgb(12 16 26 / 0.72);
+  --card-ink: #EEF2F8;
+  --card-mute: #A9B4C6;
+  --glass: rgb(255 255 255 / 0.04);
+  --glass-edge: rgb(255 255 255 / 0.11);
   /* the glass of the little crt screens */
-  --screen: #0E0907;
-  /* words that sit on a blue fill */
-  --on-accent: #08121D;
+  --screen: #03050A;
+  /* words that sit on a gold fill */
+  --on-accent: #140F03;
   /* divider lines between sections */
-  --line: rgb(238 234 227 / 0.24);
+  --line: rgb(238 242 248 / 0.12);
   /* keyboard focus ring */
-  --focus: #8EC5FF;
+  --focus: #E9B949;
   /* the flash when the menu screen turns on */
-  --flash: #CFE5FF;
-  /* grid paper that shows through behind the page */
-  --grid-bg: #231A15;
-  --grid-line: rgb(238 234 227 / 0.16);
-  --grid-line-soft: rgb(238 234 227 / 0.06);
-  /* fine soot grain over the page */
-  --grain: url('/textures/grain.svg');
-  --grain-size: 360px 360px;
+  --flash: #CFE0FF;
+  /* the blue into gold gradient on the big words */
+  --gold-gradient: linear-gradient(90deg, #4A8DFF 0%, #8FB6FF 45%, #E9B949 100%);
   /* snappy ease-out shared by buttons, cards and the read more panel */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   color-scheme: dark;
@@ -56,14 +56,14 @@
   --color-card-mute: var(--card-mute);
   --color-on-accent: var(--on-accent);
   --color-line: var(--line);
+  --color-blue: var(--blue);
+  --color-blue-soft: var(--blue-soft);
 }
 
 /* base page look */
 html {
+  /* the map canvas sits behind everything, this is what shows before it draws */
   background-color: var(--paper);
-  /* fine grain so the charcoal reads like a surface, not a flat fill */
-  background-image: var(--grain);
-  background-size: var(--grain-size);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -135,6 +135,546 @@ button, a, input, textarea {
 
 /* our own classes, kept in a layer so tailwind utilities still win */
 @layer components {
+  /* the map canvas, fixed behind the whole page */
+  .topo-bg {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* frosted glass panel over the map */
+  .glass {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-edge);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  /* blue into gold words */
+  .gold-text {
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* small mono label above a headline */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  /* projects: the inspection bay, big screen on the left and the feeds on the right */
+  .bay {
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 1024px) {
+    .bay {
+      grid-template-columns: minmax(0, 1fr) 21rem;
+      align-items: start;
+    }
+  }
+  .bay-main {
+    border-radius: 1.5rem;
+    padding: 0.75rem;
+  }
+  .bay-cam {
+    position: relative;
+    aspect-ratio: 1280 / 692;
+    overflow: hidden;
+    border-radius: 1rem;
+    background: #000;
+  }
+  .bay-cam > video,
+  .bay-cam > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: bay-in 0.6s var(--ease-out);
+  }
+  .bay-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .bay-corner {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border: 2px solid rgb(238 242 248 / 0.85);
+  }
+  .bay-corner.tl { top: 14px; left: 14px; border-right: 0; border-bottom: 0; }
+  .bay-corner.tr { top: 14px; right: 14px; border-left: 0; border-bottom: 0; }
+  .bay-corner.bl { bottom: 14px; left: 14px; border-right: 0; border-top: 0; }
+  .bay-corner.br { bottom: 14px; right: 14px; border-left: 0; border-top: 0; }
+  /* a gold line sweeps down the frame each time a new project comes up */
+  .bay-scan {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 30%;
+    top: -30%;
+    background: linear-gradient(transparent, rgb(233 185 73 / 0.22));
+    border-bottom: 2px solid var(--accent);
+    animation: bay-scan 1.3s ease-in 0.1s both;
+  }
+  /* the detection box locks on, then drifts slowly round the frame as if tracking */
+  .bay-track {
+    position: absolute;
+    left: 30%;
+    top: 26%;
+    width: 34%;
+    height: 42%;
+    border: 2px solid var(--accent);
+    animation: bay-lock 0.5s var(--ease-out) 0.9s both, bay-drift 11s ease-in-out 1.4s infinite alternate;
+  }
+  .bay-track b {
+    position: absolute;
+    left: -2px;
+    top: -24px;
+    padding: 2px 7px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .bay-hud {
+    position: absolute;
+    left: 50px;
+    right: 50px;
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #fff;
+    text-shadow: 0 1px 3px #000;
+  }
+  .bay-hud.top { top: 17px; }
+  .bay-hud i {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 4px;
+    border-radius: 50%;
+    background: #ff5a4a;
+    animation: blink 1.4s steps(1) infinite;
+  }
+  .bay-nosignal {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: var(--screen);
+  }
+  .bay-nosignal pre {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.25;
+    color: var(--blue);
+    opacity: 0.35;
+    overflow: hidden;
+  }
+  .bay-nosignal p {
+    position: relative;
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    color: var(--accent);
+    text-align: center;
+  }
+  .bay-nosignal p span {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+  }
+  .bay-info {
+    display: grid;
+    gap: 1.25rem;
+    padding: 1.25rem 0.75rem 0.75rem;
+  }
+  @media (min-width: 768px) {
+    .bay-info {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+    }
+    .bay-side {
+      text-align: right;
+      max-width: 22rem;
+    }
+    .bay-side > div {
+      justify-content: flex-end;
+    }
+  }
+  .bay-stat {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+  .bay-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  .bay-list > li {
+    min-width: 0;
+  }
+  @media (max-width: 1023px) {
+    .bay-list {
+      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    }
+  }
+  .bay-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    width: 100%;
+    padding: 0.8rem 0.95rem;
+    border-radius: 0.9rem;
+    border: 1px solid var(--glass-edge);
+    background: rgb(12 16 26 / 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    text-align: left;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s, transform 0.2s var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .bay-row:hover {
+      border-color: rgb(143 182 255 / 0.5);
+      transform: translateX(3px);
+    }
+  }
+  .bay-row[aria-current='true'] {
+    border-color: var(--accent);
+    background: rgb(233 185 73 / 0.1);
+  }
+  .bay-num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .bay-row[aria-current='true'] .bay-num {
+    color: var(--accent);
+  }
+  .bay-row-title {
+    display: block;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+  .bay-row-meta {
+    display: block;
+    margin-top: 2px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bay-live {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--blue-soft);
+    border: 1px solid rgb(143 182 255 / 0.35);
+    border-radius: 999px;
+    padding: 1px 7px;
+  }
+  /* the bar along the bottom of the lit row, filling up until the next project comes on */
+  .bay-timer {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 100%;
+    background: var(--accent);
+    transform-origin: left;
+    animation: bay-timer 9s linear both;
+  }
+
+  /* experience: the timeline, a faint line with a gold fill that grows as you scroll */
+  .timeline {
+    position: relative;
+    display: grid;
+    gap: 1.5rem;
+    padding-left: 2rem;
+  }
+  @media (min-width: 768px) {
+    .timeline {
+      padding-left: 3.5rem;
+    }
+  }
+  .timeline-line {
+    position: absolute;
+    left: 0.45rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    background: var(--line);
+  }
+  @media (min-width: 768px) {
+    .timeline-line {
+      left: 1.2rem;
+    }
+  }
+  .timeline-fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(var(--blue), var(--accent));
+    transform-origin: top;
+  }
+  .job {
+    position: relative;
+  }
+  .job-node {
+    position: absolute;
+    left: -2rem;
+    top: 2rem;
+    width: 16px;
+    height: 16px;
+    translate: -1px 0;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 18px rgb(233 185 73 / 0.5);
+  }
+  @media (min-width: 768px) {
+    .job-node {
+      left: -3.5rem;
+      translate: 0.75rem 0;
+    }
+  }
+  .job-card {
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+  }
+  @media (min-width: 768px) {
+    .job-card {
+      padding: 2rem 2.25rem;
+    }
+  }
+  .school {
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+  }
+
+  /* the job diagrams: stages joined by a wire with gold pulses running through */
+  .pipe {
+    margin-top: 1.5rem;
+    padding: 1rem 1rem 1.1rem;
+    border-radius: 1rem;
+    border: 1px solid var(--glass-edge);
+    background: rgb(5 7 12 / 0.5);
+  }
+  .pipe-svg {
+    display: none;
+    width: 100%;
+    height: auto;
+  }
+  @media (min-width: 768px) {
+    .pipe-svg {
+      display: block;
+    }
+  }
+  .pipe-wire {
+    stroke: var(--blue);
+    stroke-width: 1.5;
+    opacity: 0.6;
+  }
+  .pipe-pulse {
+    stroke: var(--accent);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 6 94;
+    animation: pipe-run 3.2s linear infinite;
+  }
+  .pipe-pulse.late {
+    animation-delay: -1.6s;
+  }
+  .pipe-node rect {
+    fill: #0b1220;
+    stroke: var(--blue-soft);
+    stroke-width: 1.2;
+    animation: pipe-glow 3.2s ease-in-out infinite;
+    animation-delay: inherit;
+  }
+  .pipe-node text {
+    fill: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 15px;
+  }
+  .pipe-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .pipe-chips li {
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(143 182 255 / 0.4);
+  }
+  .pipe-chips li + li::before {
+    content: '→ ';
+    color: var(--accent);
+  }
+  @media (min-width: 768px) {
+    .pipe-chips {
+      display: none;
+    }
+  }
+  .pipe-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.9rem;
+  }
+  .pipe-metrics li {
+    display: flex;
+    flex-direction: column;
+  }
+  .pipe-metrics strong {
+    align-self: flex-start;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .pipe-metrics span {
+    margin-top: 0.3rem;
+    font-size: 0.8125rem;
+    color: var(--ink-soft);
+    line-height: 1.3;
+  }
+
+  /* hero: the survey layer with the project points, crosshair and readout */
+  .survey {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+  }
+  .survey-peak {
+    position: absolute;
+    translate: -50% -50%;
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .survey-peak i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 16px 4px rgb(233 185 73 / 0.45);
+  }
+  .survey-peak span {
+    position: absolute;
+    left: 26px;
+    top: 7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+  .survey-peak.is-flipped span {
+    left: auto;
+    right: 26px;
+  }
+  .survey-reticle {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    translate: -50% -50%;
+    color: var(--blue-soft);
+    pointer-events: none;
+    transition: left 1.5s cubic-bezier(0.6, 0, 0.2, 1), top 1.5s cubic-bezier(0.6, 0, 0.2, 1);
+  }
+  .survey-reticle svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    animation: spin 12s linear infinite;
+  }
+  .survey-box {
+    position: absolute;
+    inset: 30px;
+    border: 2px solid var(--accent);
+    opacity: 0;
+    transform: scale(1.7);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .survey-reticle.is-locked .survey-box {
+    opacity: 1;
+    transform: none;
+  }
+  .survey-read {
+    position: absolute;
+    top: 5.5rem;
+    width: 18.5rem;
+    padding: 0.75rem;
+    border-radius: 1.1rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.35s, transform 0.35s;
+    pointer-events: none;
+  }
+  .survey-read.is-on {
+    opacity: 1;
+    transform: none;
+  }
+  .survey-read video,
+  .survey-read img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 0.6rem;
+    display: block;
+    background: #000;
+  }
+  .survey-read-top {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--blue-soft);
+  }
+  .survey-read-title {
+    margin-top: 0.2rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  .survey-read-stat {
+    margin-top: 0.15rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
   /* styling for the big headlines */
   .display {
     font-weight: 700;
@@ -146,65 +686,16 @@ button, a, input, textarea {
 
   /* size of the hero headline */
   .hero-title {
-    font-size: 16vw;
+    font-size: clamp(3rem, 12vw, 5rem);
+    line-height: 0.95;
   }
   @media (min-width: 768px) {
     .hero-title {
-      font-size: min(10.6vw, 13rem);
+      font-size: clamp(5rem, 8.2vw, 8.5rem);
     }
   }
 
   /* smaller mono line under the hero headline */
-  /* hero preview of the work: a dark framed picture that changes every few seconds */
-  .hero-work-frame {
-    position: relative;
-    aspect-ratio: 1280 / 692;
-    overflow: hidden;
-    border-radius: 1.25rem;
-    background: var(--screen);
-    box-shadow: 0 0 0 1px var(--line), 0 24px 48px -28px rgb(13 13 13 / 0.45);
-    transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out);
-  }
-  .hero-work-shot {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    transform: scale(1.03);
-    transition: opacity 0.7s var(--ease-out), transform 1.4s var(--ease-out);
-  }
-  .hero-work-shot[data-on='true'] {
-    opacity: 1;
-    transform: scale(1);
-  }
-  /* one small bar per project, the current one is blue and wider */
-  .hero-work-tick {
-    width: 0.5rem;
-    height: 0.25rem;
-    border-radius: 999px;
-    background: var(--mute);
-    transition: width 0.35s var(--ease-out), background-color 0.35s var(--ease-out);
-  }
-  .hero-work-tick[data-on='true'] {
-    width: 1.25rem;
-    background: var(--accent);
-  }
-  @media (hover: hover) {
-    .hero-work:hover .hero-work-frame {
-      transform: translateY(-4px);
-      box-shadow: 0 0 0 1px var(--line), 0 6px 0 0 var(--accent), 0 30px 54px -28px rgb(13 13 13 / 0.5);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .hero-work-frame,
-    .hero-work-shot,
-    .hero-work-tick {
-      transition: none;
-    }
-  }
-
   .hero-sub {
     margin-top: 0.5em;
     font-family: var(--font-mono);
@@ -298,85 +789,6 @@ button, a, input, textarea {
     }
   }
 
-  /* project wheel: sideways strip that snaps one card to the middle */
-  .wheel {
-    /* a little narrower than the screen so the next card always peeks in */
-    --card: min(84vw, 44rem);
-    position: relative;
-    display: flex;
-    gap: 0.75rem;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    /* side padding lets the first and last card reach the middle, the rest is room for the shadow */
-    padding: 2rem calc(50% - var(--card) / 2) 4.5rem;
-    /* a new set of cards fades in when the filter changes */
-    animation: wheel-in 0.25s ease-out;
-  }
-  @media (min-width: 768px) {
-    .wheel {
-      gap: 2rem;
-    }
-  }
-
-  /* project wheel: one card's spot on the strip */
-  .wheel-slot {
-    flex: 0 0 var(--card);
-    scroll-snap-align: center;
-  }
-  .wheel-slot > div {
-    will-change: transform;
-  }
-
-  /* project wheel: the row of project names under it, wraps onto more rows on small screens */
-  .wheel-index {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.25rem 0.375rem;
-    max-width: 60rem;
-    margin: 1.25rem auto 0;
-  }
-
-  /* on phones the names line up in two tidy columns instead of a ragged pile */
-  @media (max-width: 639px) {
-    .wheel-index {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      justify-items: start;
-    }
-  }
-
-  /* project wheel: one name in that row, click it to spin the wheel there */
-  .wheel-index button {
-    display: inline-flex;
-    align-items: center;
-    gap: 1ch;
-    min-height: 44px;
-    padding: 0.375rem 0.75rem;
-    border-radius: 1.375rem;
-    font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    line-height: 1.3;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease;
-  }
-  /* the number in front of the name, a bit quieter */
-  .wheel-index button > span {
-    opacity: 0.6;
-  }
-  /* the project in the middle of the wheel is filled in */
-  .wheel-index button[aria-current='true'] {
-    background: var(--ink);
-    color: var(--paper);
-  }
-  @media (hover: hover) and (pointer: fine) {
-    .wheel-index button:not([aria-current='true']):hover {
-      background: var(--mute);
-    }
-  }
-
   /* project filter: the picked category is filled in */
   .filter-pill {
     gap: 0.5rem;
@@ -391,11 +803,6 @@ button, a, input, textarea {
     font-family: var(--font-mono);
     font-size: 0.8125rem;
     opacity: 0.7;
-  }
-
-  /* project wheel: a list of one name is no help, so it hides when a category has a single project */
-  .wheel-index li:only-child {
-    display: none;
   }
 
   /* stat line: the numbers sit in a row and wrap as whole bits, never in the middle of one */
@@ -560,20 +967,6 @@ button, a, input, textarea {
     background-size: var(--grain-size);
   }
 
-  /* soft shadow under project cards so they look lifted off the page */
-  .float-card {
-    box-shadow: 0 2.5rem 4rem -1.75rem rgb(13 13 13 / 0.5);
-    transition: scale 0.25s var(--ease-out);
-    /* lets the browser move the card without redrawing it */
-    will-change: transform;
-  }
-  /* cards lift a touch under a real mouse */
-  @media (hover: hover) and (pointer: fine) {
-    .float-card:hover {
-      scale: 1.015;
-    }
-  }
-
   /* styling for stack tags */
   .tag {
     display: inline-block;
@@ -733,82 +1126,6 @@ button, a, input, textarea {
     box-shadow: none;
   }
 
-  /* cursor background: layer behind the page that holds the trail and fades it in and out */
-  .cursor-trail {
-    position: fixed;
-    inset: 0;
-    z-index: -10;
-    overflow: hidden;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  /* cursor background: one round window of the trail, soft at the edges */
-  .cursor-spot {
-    position: absolute;
-    top: 0;
-    left: 0;
-    overflow: hidden;
-    border-radius: 999px;
-    will-change: transform;
-    mask-image: radial-gradient(closest-side, #000 45%, transparent);
-  }
-
-  /* cursor background: the big sheet of grid seen through the window */
-  .cursor-spot-grid {
-    width: 100vw;
-    height: 100vh;
-    will-change: transform;
-  }
-
-  /* thin lines plus a heavier one every fifth, --gx and --gy slide it so separate pieces still line up */
-  .grid-paper {
-    --shift: calc(0px - var(--gx, 0px)) calc(0px - var(--gy, 0px));
-    background-color: var(--grid-bg);
-    background-image:
-      radial-gradient(circle, var(--accent) 3px, transparent 3.5px),
-      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
-      linear-gradient(to right, var(--grid-line-soft) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-line-soft) 1px, transparent 1px);
-    background-size: 200px 200px, 200px 200px, 200px 200px, 40px 40px, 40px 40px;
-    background-position:
-      calc(-100px - var(--gx, 0px)) calc(-100px - var(--gy, 0px)),
-      var(--shift), var(--shift), var(--shift), var(--shift);
-  }
-
-  /* click ripples: layer behind the page that holds the rings */
-  .ripples {
-    position: fixed;
-    inset: 0;
-    z-index: -10;
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  /* click ripples: one ring, see-through in the middle and soft on both edges */
-  .ripple {
-    position: absolute;
-    border-radius: 999px;
-    mask-image: radial-gradient(closest-side, transparent 42%, #000 74%, transparent);
-  }
-
-  /* cutouts: layer behind the page that holds them all */
-  .cutouts {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: -10;
-    width: 100%;
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  /* cutouts: one small window, its uneven shape comes from a mask set per cutout */
-  .cutout {
-    position: absolute;
-  }
-
   /* cursor: the small dot */
   .cv-dot {
     position: fixed;
@@ -896,6 +1213,63 @@ button, a, input, textarea {
 }
 
 /* fade for the sheet behind the open menu */
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes pipe-run {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes pipe-glow {
+  0%,
+  100% {
+    stroke: var(--blue-soft);
+  }
+  50% {
+    stroke: var(--accent);
+  }
+}
+@keyframes bay-in {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+@keyframes bay-scan {
+  to {
+    top: 100%;
+  }
+}
+@keyframes bay-lock {
+  from {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+@keyframes bay-drift {
+  0% { left: 30%; top: 26%; }
+  35% { left: 44%; top: 34%; }
+  70% { left: 22%; top: 40%; }
+  100% { left: 38%; top: 20%; }
+}
+@keyframes bay-timer {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
 @keyframes backdrop-in {
   from {
     opacity: 0;

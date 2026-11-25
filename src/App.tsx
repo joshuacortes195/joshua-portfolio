@@ -6,10 +6,8 @@ import Experience from './components/Experience'
 import Footer from './components/Footer'
 import BootIntro from './components/BootIntro'
 import CvCursor from './components/CvCursor'
-import CursorSpot from './components/CursorSpot'
-import Cutouts from './components/Cutouts'
-import Ripples from './components/Ripples'
-import { gsap, ScrollTrigger, useGSAP, reducedMotion, finePointer } from './lib/motion'
+import TopoBackground from './components/TopoBackground'
+import { gsap, ScrollTrigger, useGSAP, reducedMotion } from './lib/motion'
 import { startSmoothScroll, lockScroll, scrollToSection } from './lib/scroll'
 import { shouldBoot } from './lib/boot'
 
@@ -18,9 +16,6 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(shouldBoot)
   // flips to true when the hero is allowed to animate in
   const [ready, setReady] = useState(() => !showIntro)
-
-  // the mouse trail runs on desktop, and switches itself off if the computer can't keep up
-  const [trail, setTrail] = useState(() => finePointer() && !reducedMotion())
 
   // smooth scrolling for the whole page
   useEffect(() => startSmoothScroll(), [])
@@ -72,6 +67,9 @@ export default function App() {
 
   return (
     <>
+      {/* the moving map behind the whole site */}
+      <TopoBackground />
+
       {/* lets keyboard users jump past the menu */}
       <a href="#main-content" className="skip-link">
         Skip to content
@@ -90,15 +88,6 @@ export default function App() {
       </main>
 
       <Footer />
-
-      {/* grid that flows behind the page after the mouse */}
-      <CursorSpot enabled={trail} onLag={() => setTrail(false)} />
-
-      {/* small windows onto the same grid, on phones and wherever the trail is off */}
-      <Cutouts enabled={!trail} />
-
-      {/* rings of grid that spread out from every click or tap */}
-      <Ripples />
 
       {/* custom cursor on desktop, tap detection boxes on phones */}
       <CvCursor />

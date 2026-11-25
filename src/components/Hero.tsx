@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { site } from '../data/site'
+import { projects } from '../data/projects'
 import { gsap, SplitText, useGSAP, reducedMotion } from '../lib/motion'
 import { safeLink, sitePath } from '../lib/links'
 import { scrollToSection } from '../lib/scroll'
-import HeroWork from './HeroWork'
 
 // links shown across the top of the page
 const links = [
@@ -12,38 +12,38 @@ const links = [
   { label: 'Email', href: `mailto:${site.email}` },
 ].filter(l => l.href)
 
-// parts of the page the row at the bottom of the hero jumps to
-const sections = ['experience', 'projects', 'contact']
-
 // the resume button only shows when the resume is a real file on this site
 const resume = sitePath(site.resume)
 
+// where each project sits on the map, in percent of the hero, kept up and to the right of the headline
+const SPOTS: [number, number][] = [[50, 14], [66, 24], [84, 12], [92, 32], [78, 44], [94, 58]]
+// the projects that get a spot: the first ones with a picture or a clip
+const PEAKS = projects.filter(p => p.media).slice(0, SPOTS.length)
+// how long the crosshair stays on each one, and how long it takes to get there
+const HOLD = 4200
+const TRAVEL = 1500
+
+// the opening screen: my name over the map, with a crosshair that glides from project to project and locks on
 export default function Hero({ ready }: { ready: boolean }) {
   const root = useRef<HTMLElement>(null)
   const intro = useRef<gsap.core.Timeline | null>(null)
+  // the project the crosshair is on, and whether it has locked on yet
+  const [aim, setAim] = useState(0)
+  // the project the crosshair has locked onto, it only counts as locked while that's still the one aimed at
+  const [lockedOn, setLockedOn] = useState(-1)
+  const locked = lockedOn === aim
+  // set when the mouse picks a project, so the crosshair stays put for a bit
+  const paused = useRef(0)
 
   // builds the entrance: headline words rise and un-blur, then the rest fades in
   useGSAP(
     () => {
       if (reducedMotion()) return
-      // my name just fades in with the rest, only the title and focus line get the word by word rise
-      const split = SplitText.create('h1 > span:not([data-name])', { type: 'words' })
+      const split = SplitText.create('h1 [data-split]', { type: 'words' })
       intro.current = gsap
         .timeline({ paused: true })
-        .from(split.words, {
-          yPercent: 40,
-          opacity: 0,
-          filter: 'blur(8px)',
-          duration: 0.6,
-          ease: 'power3.out',
-          stagger: 0.05,
-        })
-        .from(
-          '[data-hero-fade]',
-          { opacity: 0, y: 16, filter: 'blur(8px)', duration: 0.5, ease: 'power3.out', stagger: 0.06 },
-          // starts right behind the first words so the button and links are readable quickly
-          0.15,
-        )
+        .from(split.words, { yPercent: 40, opacity: 0, filter: 'blur(8px)', duration: 0.6, ease: 'power3.out', stagger: 0.06 })
+        .from('[data-hero-fade]', { opacity: 0, y: 16, filter: 'blur(8px)', duration: 0.5, ease: 'power3.out', stagger: 0.06 }, 0.15)
     },
     { scope: root },
   )
@@ -53,10 +53,27 @@ export default function Hero({ ready }: { ready: boolean }) {
     if (ready) intro.current?.play()
   }, [ready])
 
+  // moves the crosshair on to the next project every few seconds, locking on once it arrives
+  useEffect(() => {
+    if (PEAKS.length === 0) return
+    const lock = window.setTimeout(() => setLockedOn(aim), reducedMotion() ? 0 : TRAVEL)
+    const next = window.setTimeout(() => {
+      if (Date.now() < paused.current) return
+      setAim(a => (a + 1) % PEAKS.length)
+    }, HOLD)
+    return () => {
+      clearTimeout(lock)
+      clearTimeout(next)
+    }
+  }, [aim])
+
+  const target = PEAKS[aim]
+  const [x, y] = SPOTS[aim] ?? [0, 0]
+
   return (
-    <section ref={root} id="top" className="min-h-svh flex flex-col px-4 md:px-8 pt-4 pb-10">
+    <section ref={root} id="top" className="relative min-h-svh flex flex-col px-4 md:px-8 pt-4 pb-10 overflow-hidden">
       {/* links across the top */}
-      <nav aria-label="Links" data-hero-fade className="min-h-11 pr-28 flex items-center">
+      <nav aria-label="Links" data-hero-fade className="relative z-10 min-h-11 pr-28 flex items-center">
         <ul className="flex items-center gap-4 md:gap-7 text-sm md:text-base font-medium">
           {links.map(l => (
             <li key={l.label}>
@@ -72,78 +89,96 @@ export default function Hero({ ready }: { ready: boolean }) {
         </ul>
       </nav>
 
-      <div className="my-auto py-8 md:py-12">
-        {/* my name, the big job title, and the focus areas as a smaller line, all one heading */}
-        <h1>
-          <span
-            data-name
-            data-hero-fade
-            data-cursor="josh"
-            className="block w-fit mb-3 md:mb-5 text-2xl md:text-4xl font-semibold tracking-tight"
+      {/* the projects as glowing points on the map, the crosshair and its readout, wide screens only */}
+      <div className="survey hidden lg:block" aria-hidden="true">
+        {PEAKS.map((p, i) => (
+          <button
+            key={p.id}
+            type="button"
+            tabIndex={-1}
+            className={`survey-peak ${SPOTS[i][0] > 80 ? 'is-flipped' : ''}`}
+            style={{ left: `${SPOTS[i][0]}%`, top: `${SPOTS[i][1]}%` }}
+            onMouseEnter={() => {
+              paused.current = Date.now() + 6000
+              setAim(i)
+            }}
           >
-            {site.name}
-          </span>{' '}
-          <span className="display hero-title block">{site.hero.title}</span>{' '}
-          <span className="hero-sub block">{site.hero.subtitle}</span>
-        </h1>
+            <i />
+            <span>{p.title.toUpperCase()}</span>
+          </button>
+        ))}
 
-        {/* the pitch and the resume button on the left, a look at the work itself on the right */}
-        <div className="mt-6 md:mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,40rem)] lg:items-end">
-          <div>
-            {/* one or two sentences on what I do right now */}
-            {site.hero.pitch && (
-              <p data-hero-fade className="max-w-[46ch] text-lg md:text-2xl leading-snug">
-                {site.hero.pitch}
-              </p>
-            )}
-
-            {/* the big resume button */}
-            {resume && (
-              <div data-hero-fade className="mt-8 md:mt-10">
-                <a
-                  href={resume}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="pill pill-accent min-h-16 px-10 text-xl font-semibold"
-                >
-                  {site.hero.resumeButton}
-                </a>
-              </div>
-            )}
-          </div>
-          {/* on a phone the projects are one swipe away, so the hero stays one screen tall */}
-          <div className="hidden md:block w-full max-w-[40rem]">
-            <HeroWork />
-          </div>
+        {/* the crosshair, it glides to the next point and a box snaps in when it locks */}
+        <div className={`survey-reticle ${locked ? 'is-locked' : ''}`} style={{ left: `${x}%`, top: `${y}%` }}>
+          <svg viewBox="0 0 120 120" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="60" cy="60" r="56" strokeDasharray="4 8" />
+            <path d="M60 0v22M60 98v22M0 60h22M98 60h22" />
+          </svg>
+          <span className="survey-box" />
         </div>
+
+        {/* the readout card for the locked project, with its clip playing */}
+        {target && (
+          <div
+            key={target.id}
+            className={`survey-read glass ${locked ? 'is-on' : ''}`}
+            style={{ left: x > 75 ? `calc(${x}% - 22rem)` : `calc(${x}% + 4.5rem)` }}
+          >
+            {target.media?.kind === 'video' ? (
+              <video src={target.media.src} poster={target.media.poster} autoPlay muted loop playsInline preload="none" />
+            ) : (
+              target.media && <img src={target.media.src} alt="" />
+            )}
+            <div className="survey-read-top">
+              <span>project {String(aim + 1).padStart(2, '0')}</span>
+              <span>{site.projects.categories?.find(c => c.id === target.category)?.label ?? ''}</span>
+            </div>
+            <p className="survey-read-title">{target.title}</p>
+            {target.stat && <p className="survey-read-stat gold-text">{target.stat.split(' · ')[0]}</p>}
+          </div>
+        )}
       </div>
 
-      {/* jump links along the bottom, written like the menu's choices */}
-      <nav aria-label="Sections" data-hero-fade>
-        <ul className="flex flex-wrap gap-x-6 font-mono text-sm">
-          {sections.map(name => (
-            <li key={name}>
-              <a
-                href={`#${name}`}
-                onClick={e => {
-                  // scrolls there smoothly and takes keyboard focus along
-                  e.preventDefault()
-                  scrollToSection(name)
-                  // puts the section in the address so it can be shared, without adding a step to the back button
-                  history.replaceState(null, '', `#${name}`)
-                }}
-                className="min-h-11 inline-flex items-center gap-[1ch]"
-              >
-                <span aria-hidden="true" className="text-ink-soft">
-                  &gt;
-                </span>
-                {/* only the word is underlined, not the arrow */}
-                <span className="link">{name}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      {/* the headline, pitch and buttons, bottom left over the darkest part of the map */}
+      <div className="relative z-10 mt-auto pt-24 pb-6 md:pb-10 max-w-6xl">
+        <p data-hero-fade className="eyebrow">
+          {site.hero.subtitle.replace(/\.$/, '')}
+        </p>
+        <h1 className="mt-4">
+          <span data-split className="display hero-title block">
+            {site.name}
+          </span>
+          <span data-hero-fade className="display hero-title block gold-text pb-[0.08em]">
+            {site.hero.title}
+          </span>
+        </h1>
+
+        {site.hero.pitch && (
+          <p data-hero-fade className="mt-6 max-w-[52ch] text-lg md:text-xl leading-snug text-ink-soft">
+            {site.hero.pitch}
+          </p>
+        )}
+
+        <div data-hero-fade className="mt-8 flex flex-wrap gap-3">
+          {/* jumps down to the projects */}
+          <a
+            href="#projects"
+            onClick={e => {
+              e.preventDefault()
+              scrollToSection('projects')
+              history.replaceState(null, '', '#projects')
+            }}
+            className="pill pill-accent min-h-13 px-7 text-base font-semibold"
+          >
+            See my projects
+          </a>
+          {resume && (
+            <a href={resume} target="_blank" rel="noopener noreferrer" className="pill glass min-h-13 px-7 text-base font-semibold">
+              {site.hero.resumeButton}
+            </a>
+          )}
+        </div>
+      </div>
     </section>
   )
 }

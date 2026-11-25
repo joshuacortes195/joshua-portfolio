@@ -1,123 +1,142 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { projects, type Project } from '../data/projects'
 import { site } from '../data/site'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { gsap, reducedMotion } from '../lib/motion'
+import { reducedMotion } from '../lib/motion'
 import { fetchGithubProjects } from '../lib/github'
 import { safeLink } from '../lib/links'
-import ProjectMedia from './ProjectMedia'
 import ProjectDetail from './ProjectDetail'
 import StatLine from './StatLine'
 
-// one floating dark card for a project, active when it's the one in the middle of the wheel
-// onMore opens the bigger write-up, and gets the button that was pressed so focus can come back to it
-function ProjectCard({ project, active, onMore }: { project: Project; active: boolean; onMore: (opener: HTMLElement) => void }) {
-  // links only show when they are real https addresses
-  const demo = safeLink(project.demo)
-  const code = project.fromGithub ? safeLink(project.github) : undefined
-  // the read more button only shows when there is a write-up to open
-  const more = typeof project.details === 'string' && project.details.trim() !== ''
+// the filter that shows every project
+const ALL = 'all'
+// how long each project stays on the big screen before the next one comes up, in ms
+const DWELL = 9000
+// how long the auto play waits after someone picks a project by hand
+const HANDS_OFF = 30000
 
+// a made up but steady confidence score for a project, so the label doesn't change every redraw
+function confidence(id: string) {
+  let n = 0
+  for (const ch of id) n = (n * 31 + ch.charCodeAt(0)) % 997
+  return (0.9 + (n % 9) / 100).toFixed(2)
+}
+
+// a field of ascii noise that's always the same for the same project
+function asciiField(id: string) {
+  const chars = ' .:-=+*#%@'
+  let seed = 0
+  for (const ch of id) seed = (seed * 33 + ch.charCodeAt(0)) >>> 0
+  const rand = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0
+    return seed / 4294967296
+  }
+  return Array.from({ length: 22 }, () => Array.from({ length: 80 }, () => chars[Math.floor(rand() * rand() * chars.length)]).join('')).join('\n')
+}
+
+// the screen for a project with no clip or picture: static in ascii with its name
+function NoSignal({ project }: { project: Project }) {
+  const field = useMemo(() => asciiField(project.id), [project.id])
   return (
-    <article
-      data-cursor="project"
-      className="float-card on-ink h-full flex flex-col rounded-2xl md:rounded-3xl bg-card text-card-ink p-1.5 md:p-3"
-    >
-      <ProjectMedia project={project} active={active} />
-
-      <div className="flex-1 flex flex-col px-3 md:px-3 pt-5 pb-4">
-        <h3 className="display text-3xl md:text-4xl">{project.title}</h3>
-        {/* headline numbers for the project, only when there are some */}
-        {project.stat && <StatLine stat={project.stat} className="meta mt-3 text-accent" />}
-        <p className="mt-3 text-base leading-snug text-card-mute max-w-[52ch]">{project.description}</p>
-
-        {/* stack tags */}
-        <ul className="mt-4 flex flex-wrap gap-2">
-          {project.tags.map((tag, i) => (
-            <li key={i} className="tag">
-              {tag}
-            </li>
-          ))}
-        </ul>
-
-        {/* demo, read more and code buttons, only when there is something behind them, pinned to the bottom of the card */}
-        {(demo || code || more) && (
-          <div className="mt-auto pt-6 flex flex-wrap items-center gap-3">
-            {demo && (
-              <a
-                href={demo}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="pill pill-accent"
-                aria-label={`Live demo of ${project.title} (opens in new tab)`}
-              >
-                Live demo
-              </a>
-            )}
-            {/* opens the bigger write-up for this project */}
-            {more && (
-              <button
-                type="button"
-                className="pill pill-on-ink"
-                aria-haspopup="dialog"
-                aria-label={`Read more about ${project.title}`}
-                onClick={e => onMore(e.currentTarget)}
-              >
-                Read more
-              </button>
-            )}
-            {/* cards pulled from github also link to the repo */}
-            {code && (
-              <a
-                href={code}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="pill pill-on-ink"
-                aria-label={`Code for ${project.title} (opens in new tab)`}
-              >
-                View code
-              </a>
-            )}
-            {project.desktopOnly && <p className="meta text-card-mute">Desktop only, needs a keyboard</p>}
-          </div>
-        )}
-      </div>
-    </article>
+    <div className="bay-nosignal">
+      <pre aria-hidden="true">{field}</pre>
+      <p>
+        &gt; {project.id}_<span>no footage yet</span>
+      </p>
+    </div>
   )
 }
 
-// how far a card one step off center turns away, in degrees
-const TURN = 34
+// the big camera screen: the project's clip or picture with a vision overlay on top
+function Stage({ project, index, playing }: { project: Project; index: number; playing: boolean }) {
+  const video = useRef<HTMLVideoElement>(null)
+  // a running clock in the corner, like a camera feed
+  const [clock, setClock] = useState(0)
+  const media = project.media
 
-// the filter that shows every project
-const ALL = 'all'
+  // plays the clip only while the screen is on view and nothing is open over it
+  useEffect(() => {
+    const el = video.current
+    if (!el) return
+    if (playing && !reducedMotion()) el.play().catch(() => {})
+    else el.pause()
+  }, [playing, project.id])
 
+  // ticks the clock while it's on view
+  useEffect(() => {
+    if (!playing) return
+    const start = Date.now()
+    const id = window.setInterval(() => setClock(Date.now() - start), 100)
+    return () => clearInterval(id)
+  }, [playing, project.id])
+
+  const secs = Math.floor(clock / 1000)
+  const time = `00:${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}:${String(Math.floor((clock % 1000) / 40)).padStart(2, '0')}`
+
+  return (
+    <div className="bay-cam" key={project.id}>
+      {/* the footage itself */}
+      {!media ? (
+        <NoSignal project={project} />
+      ) : media.kind === 'video' ? (
+        <video ref={video} src={media.src} poster={media.poster} aria-label={media.alt} muted loop playsInline preload="metadata" />
+      ) : (
+        <img src={media.src} alt={media.alt} decoding="async" />
+      )}
+
+      {/* the vision overlay: corners, a scan line on every switch, a box that tracks across the frame, and the readouts */}
+      <div className="bay-overlay" aria-hidden="true">
+        <span className="bay-corner tl" />
+        <span className="bay-corner tr" />
+        <span className="bay-corner bl" />
+        <span className="bay-corner br" />
+        <span className="bay-scan" />
+        <span className="bay-track">
+          <b>
+            {project.title.toLowerCase()} {confidence(project.id)}
+          </b>
+        </span>
+        <span className="bay-hud top">
+          <span>
+            <i /> CAM {String(index + 1).padStart(2, '0')}
+          </span>
+          <span>{time}</span>
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// projects as an inspection bay: a big camera screen on the left, the list of feeds on the right
 export default function Projects() {
-  const track = useRef<HTMLDivElement>(null)
-  // the card sitting in the middle of the wheel
-  const [active, setActive] = useState(0)
-  // the card the wheel is heading to, so fast clicks count on from there and not from the card going past
-  const target = useRef(0)
-  // true while the wheel is on its way to a card picked with an arrow or the list
-  const spinning = useRef(false)
-  // cards on the wheel: the hand-written ones, plus any repos tagged on github
+  const section = useRef<HTMLElement>(null)
+  // the hand-written projects, plus any repos tagged on github
   const [list, setList] = useState(projects)
   // the category picked in the filter row, or all of them
   const [filter, setFilter] = useState(ALL)
+  // the project on the big screen
+  const [current, setCurrent] = useState(0)
   // the project whose write-up is open, if any
   const [reading, setReading] = useState<Project | null>(null)
   // the read more button that opened the write-up, focus goes back to it on close
   const opener = useRef<HTMLElement | null>(null)
+  // true while the section is on screen, the clip and the auto play only run then
+  const [onScreen, setOnScreen] = useState(false)
+  // true for a while after a pick by hand, the auto play holds off until it clears
+  const handsOff = useRef(false)
+  const handsOffTimer = useRef(0)
+  // bumped to check again once the hands off wait is over
+  const [tick, setTick] = useState(0)
 
   // categories that have at least one project, in the order set in the dashboard
   const categories = (site.projects.categories ?? [])
     .filter(c => c.label.trim() !== '')
     .map(c => ({ ...c, count: list.filter(p => p.category === c.id).length }))
     .filter(c => c.count > 0)
-  // the cards on the wheel right now, github cards have no category so they only show under all
   const shown = filter === ALL ? list : list.filter(p => p.category === filter)
+  const project = shown[Math.min(current, shown.length - 1)]
+  const label = (id?: string) => categories.find(c => c.id === id)?.label ?? 'GitHub'
 
-  // adds the tagged github repos to the end of the wheel, the page works fine without them
+  // adds the tagged github repos to the end of the list, the page works fine without them
   useEffect(() => {
     let cancelled = false
     fetchGithubProjects()
@@ -130,224 +149,164 @@ export default function Projects() {
     }
   }, [])
 
-  // turns the cards as the wheel scrolls, the middle one faces you and the rest swing away
-  // set up before the browser paints, so a changed set of cards never shows with the old turn on them
-  useLayoutEffect(() => {
-    const el = track.current
+  // keeps track of whether the section is on screen
+  useEffect(() => {
+    const el = section.current
     if (!el) return
-    const slots = Array.from(el.querySelectorAll<HTMLElement>('[data-slot]'))
-    const flat = reducedMotion()
-    let frame = 0
-    let settle = 0
+    const watcher = new IntersectionObserver(([entry]) => setOnScreen(entry.isIntersecting), { threshold: 0.25 })
+    watcher.observe(el)
+    return () => watcher.disconnect()
+  }, [])
 
-    function update() {
-      frame = 0
-      const middle = el!.scrollLeft + el!.clientWidth / 2
-      let nearest = 0
-      let best = Infinity
-      slots.forEach((slot, i) => {
-        // how many cards away from the middle this one is
-        const off = (slot.offsetLeft + slot.offsetWidth / 2 - middle) / slot.offsetWidth
-        if (Math.abs(off) < best) {
-          best = Math.abs(off)
-          nearest = i
-        }
-        if (flat) return
-        const t = gsap.utils.clamp(-1.5, 1.5, off)
-        const card = slot.firstElementChild as HTMLElement
-        // side cards turn, shrink and dim like they're going around the wheel
-        card.style.transform = `perspective(1100px) rotateY(${t * TURN}deg) scale(${1 - Math.abs(t) * 0.1})`
-        card.style.opacity = String(1 - Math.min(Math.abs(t), 1) * 0.35)
-      })
-      setActive(nearest)
-      // once the wheel has stopped, wherever it stopped is where the arrows count from
-      clearTimeout(settle)
-      settle = window.setTimeout(() => {
-        target.current = nearest
-        spinning.current = false
-      }, 150)
-    }
+  // moves on to the next project every few seconds while the section is on view
+  useEffect(() => {
+    if (!onScreen || reading || reducedMotion() || shown.length < 2) return
+    const id = window.setTimeout(() => {
+      if (handsOff.current) return setTick(t => t + 1)
+      setCurrent(c => (c + 1) % shown.length)
+    }, DWELL)
+    return () => clearTimeout(id)
+  }, [current, onScreen, reading, shown.length, tick])
 
-    // at most one update per frame
-    function onScroll() {
-      if (!frame) frame = requestAnimationFrame(update)
-    }
+  // puts a project on the big screen, picked by hand
+  function choose(i: number) {
+    handsOff.current = true
+    clearTimeout(handsOffTimer.current)
+    handsOffTimer.current = window.setTimeout(() => (handsOff.current = false), HANDS_OFF)
+    setCurrent(i)
+  }
 
-    // sideways trackpad swipes spin the wheel instead of being taken by the page scroll
-    function onWheel(e: WheelEvent) {
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) e.stopPropagation()
-    }
-
-    update()
-    el.addEventListener('scroll', onScroll, { passive: true })
-    el.addEventListener('wheel', onWheel, { passive: true })
-    window.addEventListener('resize', onScroll)
-    return () => {
-      cancelAnimationFrame(frame)
-      clearTimeout(settle)
-      el.removeEventListener('scroll', onScroll)
-      el.removeEventListener('wheel', onWheel)
-      window.removeEventListener('resize', onScroll)
-    }
-    // runs again when github cards get added or the filter changes the cards
-  }, [list.length, filter])
-
-  // shows one category, or everything, and counts the wheel from its first card again
-  // the wheel itself is built fresh for each filter, so it starts at the first card with no spin left over from the last one
+  // shows one category, or everything, starting from its first project
   function pick(next: string) {
     if (next === filter) return
-    target.current = 0
-    spinning.current = false
-    setActive(0)
+    setCurrent(0)
     setFilter(next)
   }
 
-  // spins the wheel so the given card ends up in the middle
-  function spinTo(index: number) {
-    const el = track.current
-    const slot = el?.querySelectorAll<HTMLElement>('[data-slot]')[index]
-    if (!el || !slot) return
-    const left = slot.offsetLeft - (el.clientWidth - slot.offsetWidth) / 2
-    target.current = index
-    // only counts as on its way when there is somewhere to go, a card already in the middle never scrolls
-    spinning.current = Math.abs(left - el.scrollLeft) > 1
-    el.scrollTo({ left, behavior: reducedMotion() ? 'auto' : 'smooth' })
-  }
-
-  // moves the wheel one card back or forward, and does nothing at either end
-  function step(by: number) {
-    // mid-spin the arrows count from where the wheel is heading, after a swipe by hand from the card in the middle
-    const from = spinning.current ? target.current : active
-    const next = gsap.utils.clamp(0, Math.max(shown.length - 1, 0), from + by)
-    if (next !== from) spinTo(next)
-  }
-
-  // after a write-up closes, the wheel turns to the card it belongs to and its read more button gets focus back
-  function backToCard() {
-    const button = opener.current
-    const slot = button?.closest('[data-slot]')
-    const slots = Array.from(track.current?.querySelectorAll('[data-slot]') ?? [])
-    if (slot && slots.includes(slot)) spinTo(slots.indexOf(slot))
-    // the wheel does the moving, so focus doesn't yank the card into view on its own
-    button?.focus({ preventScroll: true })
-  }
-
-  // a github link that isn't a real https address isn't shown
   const github = safeLink(site.github)
+  const demo = safeLink(project?.demo)
+  const code = project?.fromGithub ? safeLink(project.github) : undefined
+  const more = typeof project?.details === 'string' && project.details.trim() !== ''
 
   return (
-    <section id="projects" className="px-4 md:px-8 py-20 md:py-28 border-t border-line">
-      {/* headline with the one github button next to it */}
-      <div data-reveal className="flex flex-wrap items-end gap-x-5 md:gap-x-8 gap-y-4">
-        <h2 className="display section-title">{site.projects.title}</h2>
+    <section ref={section} id="projects" className="px-4 md:px-8 py-20 md:py-28">
+      {/* headline with the github button next to it */}
+      <div data-reveal className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+        <div>
+          <p className="eyebrow">Selected work</p>
+          <h2 className="display section-title mt-3">{site.projects.title}</h2>
+        </div>
         {github && (
-          <a
-            href={github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="pill md:mb-3"
-            aria-label="My GitHub (opens in new tab)"
-          >
+          <a href={github} target="_blank" rel="noopener noreferrer" className="pill glass" aria-label="My GitHub (opens in new tab)">
             GitHub
           </a>
         )}
       </div>
 
-      {/* filter buttons: everything, or one category at a time, only when some projects have a category */}
+      {/* filter buttons: everything, or one category at a time */}
       {categories.length > 0 && (
-        <div data-reveal role="group" aria-label="Filter projects by category" className="mt-6 md:mt-8 flex flex-wrap gap-2">
+        <div data-reveal role="group" aria-label="Filter projects by category" className="mt-8 flex flex-wrap gap-2">
           {[{ id: ALL, label: 'All', count: list.length }, ...categories].map(c => (
             <button
               key={c.id}
               type="button"
               onClick={() => pick(c.id)}
               aria-pressed={filter === c.id}
-              // read out as one phrase, like "Games, 2 projects"
               aria-label={`${c.label}, ${c.count} ${c.count === 1 ? 'project' : 'projects'}`}
               className="pill filter-pill"
             >
               {c.label}
-              {/* how many projects are in it */}
               <span className="filter-count">{c.count}</span>
             </button>
           ))}
         </div>
       )}
 
-      {/* the wheel, edge to edge: swipe or scroll sideways, the middle card faces you */}
-      <div data-reveal className={`-mx-4 md:-mx-8 ${categories.length > 0 ? 'mt-2 md:mt-4' : 'mt-6 md:mt-10'}`}>
-        <div key={filter} ref={track} role="group" aria-label="Projects" tabIndex={0} className="wheel no-scrollbar">
-          {shown.map((p, i) => (
-            <div
-              key={p.id}
-              id={`project-${p.id}`}
-              data-slot
-              className="wheel-slot"
-              onClick={() => i !== active && spinTo(i)}
-            >
-              <div className="h-full">
-                {/* the clip stops while a write-up is open over the page */}
-                <ProjectCard
-                  project={p}
-                  active={i === active && !reading}
-                  onMore={button => {
-                    opener.current = button
-                    setReading(p)
-                  }}
-                />
+      {project && (
+        <div data-reveal className="bay mt-8">
+          {/* the big screen and everything about the project on it */}
+          <article className="bay-main glass" data-cursor="project">
+            <Stage project={project} index={current} playing={onScreen && !reading} />
+            <div className="bay-info">
+              <div className="min-w-0">
+                <p className="eyebrow text-blue-soft">{label(project.category)}</p>
+                <h3 className="display mt-2 text-4xl md:text-5xl">{project.title}</h3>
+                <p className="mt-3 max-w-[60ch] text-base md:text-lg leading-snug text-card-mute">{project.description}</p>
+                <ul className="mt-4 flex flex-wrap gap-2">
+                  {project.tags.map((tag, i) => (
+                    <li key={i} className="tag">
+                      {tag}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {/* the headline numbers and the buttons, on the right on wide screens */}
+              <div className="bay-side">
+                {project.stat && <StatLine stat={project.stat} className="bay-stat" />}
+                <div className="mt-5 flex flex-wrap gap-3">
+                  {demo && (
+                    <a href={demo} target="_blank" rel="noopener noreferrer" className="pill pill-accent" aria-label={`Live demo of ${project.title} (opens in new tab)`}>
+                      Live demo
+                    </a>
+                  )}
+                  {more && (
+                    <button
+                      type="button"
+                      className="pill pill-on-ink"
+                      aria-haspopup="dialog"
+                      aria-label={`Read more about ${project.title}`}
+                      onClick={e => {
+                        opener.current = e.currentTarget
+                        setReading(project)
+                      }}
+                    >
+                      Read more
+                    </button>
+                  )}
+                  {code && (
+                    <a href={code} target="_blank" rel="noopener noreferrer" className="pill pill-on-ink" aria-label={`Code for ${project.title} (opens in new tab)`}>
+                      View code
+                    </a>
+                  )}
+                </div>
+                {project.desktopOnly && <p className="meta mt-3 text-card-mute">Desktop only, needs a keyboard</p>}
               </div>
             </div>
-          ))}
+          </article>
+
+          {/* every project as a feed you can switch to, the one on screen is lit gold with a bar counting down to the next */}
+          <ol className="bay-list" aria-label="Projects">
+            {shown.map((p, i) => (
+              <li key={p.id}>
+                <button
+                  type="button"
+                  onClick={() => choose(i)}
+                  aria-current={i === current ? 'true' : undefined}
+                  className="bay-row"
+                >
+                  <span className="bay-num">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="min-w-0">
+                    <span className="bay-row-title">{p.title}</span>
+                    <span className="bay-row-meta">
+                      {label(p.category)}
+                      {p.stat ? ` · ${p.stat.split(' · ')[0]}` : ''}
+                    </span>
+                  </span>
+                  {p.media?.kind === 'video' && <span className="bay-live">live</span>}
+                  {i === current && onScreen && !reading && <span key={`${p.id}-${current}`} className="bay-timer" />}
+                </button>
+              </li>
+            ))}
+          </ol>
+          {/* tells screen readers which project is up */}
+          <p className="sr-only" aria-live="polite">
+            Showing {project.title}, project {current + 1} of {shown.length}
+          </p>
         </div>
-      </div>
-
-      {/* arrows for the wheel, they dim at the ends but keep keyboard focus */}
-      <div className="flex items-center justify-center gap-3">
-        <button
-          type="button"
-          onClick={() => step(-1)}
-          aria-disabled={active <= 0}
-          aria-label="Previous project"
-          className="pill aria-disabled:opacity-30 aria-disabled:pointer-events-none"
-        >
-          <ArrowLeft size={20} strokeWidth={2} aria-hidden="true" />
-        </button>
-        {/* tells screen readers which project is in the middle now */}
-        <p className="sr-only" aria-live="polite">
-          Project {Math.min(active + 1, shown.length)} of {shown.length}
-          {shown[active] ? `: ${shown[active].title}` : ''}
-        </p>
-        <button
-          type="button"
-          onClick={() => step(1)}
-          aria-disabled={active >= shown.length - 1}
-          aria-label="Next project"
-          className="pill aria-disabled:opacity-30 aria-disabled:pointer-events-none"
-        >
-          <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
-        </button>
-      </div>
-
-      {/* every project by name, so the whole list shows at a glance, click one to spin the wheel to it */}
-      <ol className="wheel-index">
-        {shown.map((p, i) => (
-          <li key={p.id}>
-            <button type="button" onClick={() => spinTo(i)} aria-current={i === active ? 'true' : undefined}>
-              <span aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-              {p.title}
-            </button>
-          </li>
-        ))}
-      </ol>
+      )}
 
       {/* the bigger write-up for one project, on top of the page */}
-      {reading && (
-        <ProjectDetail
-          project={reading}
-          onClose={() => setReading(null)}
-          onClosed={backToCard}
-        />
-      )}
+      {reading && <ProjectDetail project={reading} onClose={() => setReading(null)} onClosed={() => opener.current?.focus({ preventScroll: true })} />}
     </section>
   )
 }

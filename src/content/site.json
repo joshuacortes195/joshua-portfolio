@@ -11,7 +11,7 @@
     "resumeButton": "View resume"
   },
   "experience": {
-    "title": "Experience",
+    "title": "Professional Experience",
     "educationTitle": "Education"
   },
   "projects": {
@@ -41,7 +41,7 @@
     ]
   },
   "contact": {
-    "title": "Contact me",
+    "title": "Contact Me",
     "sendButton": "Send message",
     "sentMessage": "Message sent. I'll get back to you soon."
   },

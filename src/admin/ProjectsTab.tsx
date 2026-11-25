@@ -476,7 +476,7 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
       </Group>
 
       <Group title="Projects">
-        <p className="text-ink-soft">The order here is the order on the wheel.</p>
+        <p className="text-ink-soft">The order here is the order in the project list.</p>
 
         {/* one row per project, click edit to open its fields */}
         {projects.map((project, i) => (
@@ -525,7 +525,7 @@ export default function ProjectsTab({ content, change, files, token }: Props) {
       {/* repos that show up on their own, without being added here */}
       <Group title="Automatic GitHub cards">
         <p>
-          Any public repo of yours tagged with this topic on GitHub gets its own card at the end of the wheel, filled in
+          Any public repo of yours tagged with this topic on GitHub gets its own spot at the end of the project list, filled in
           from the repo's description, language and website. Leave it empty to turn this off.
         </p>
         <Text

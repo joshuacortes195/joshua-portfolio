@@ -69,12 +69,15 @@ export default function Footer() {
   }
 
   return (
-    <footer id="contact" className="px-4 md:px-8 py-20 md:py-28 border-t border-line">
-      <h2 data-reveal className="display section-title">
+    <footer id="contact" className="px-4 md:px-8 py-20 md:py-28">
+      <p data-reveal className="eyebrow">
+        Get in touch
+      </p>
+      <h2 data-reveal className="display section-title mt-3">
         {site.contact.title}
       </h2>
 
-      <div className="mt-12 md:mt-16 grid gap-x-8 gap-y-12 md:grid-cols-12">
+      <div className="glass mt-10 md:mt-14 rounded-3xl p-6 md:p-10 grid gap-x-8 gap-y-12 md:grid-cols-12">
         {/* email and social links */}
         <div data-reveal className="md:col-span-5">
           <a href={`mailto:${site.email}`} className="link inline-block py-2.5 text-xl lg:text-2xl font-semibold tracking-tight break-all">
